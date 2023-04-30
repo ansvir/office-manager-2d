@@ -16,6 +16,7 @@ import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.Room;
 import com.tohant.om2d.stage.GameMainStage;
 import com.tohant.om2d.stage.GameUiStage;
+import com.tohant.om2d.storage.Cache;
 
 public class GameScreen implements Screen {
 
@@ -36,8 +37,8 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
-        mainStage = new GameMainStage(viewport, batch);
         uiStage = new GameUiStage(1200.0f);
+        mainStage = new GameMainStage(viewport, batch);
         multiplexer = new InputMultiplexer(mainStage, uiStage);
         Gdx.input.setInputProcessor(multiplexer);
     }

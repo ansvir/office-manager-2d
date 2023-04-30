@@ -13,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.Room;
+import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.GameCache;
 
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
@@ -23,10 +25,13 @@ public class GameUiStage extends Stage implements InputProcessor {
     private Window help;
     private Label helpLabel;
     private Room.Type currentRoom;
+    private GameCache gameCache;
 
     public GameUiStage(float budget) {
         Skin skin = getDefaultSkin();
+        gameCache = new GameCache();
         this.budget = new Label(Math.round(budget) + " $", skin);
+        gameCache.setBudget(budget);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
         this.budget.setSize(100, 50);
         this.budget.setColor(Color.GREEN);
@@ -43,7 +48,9 @@ public class GameUiStage extends Stage implements InputProcessor {
             room.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
+                    super.clicked(event, x, y);
                     currentRoom = rooms[finalI];
+                    gameCache.setRoomType(currentRoom);
                 }
             });
             addActor(room);
@@ -51,6 +58,12 @@ public class GameUiStage extends Stage implements InputProcessor {
         }
 
         addActor(this.budget);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        setBudget(gameCache.getBudget());
     }
 
     public Label getBudget() {

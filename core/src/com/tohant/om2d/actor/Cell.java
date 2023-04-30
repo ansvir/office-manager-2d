@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.tohant.om2d.storage.GameCache;
 
 public class Cell extends Group {
 
@@ -50,6 +51,7 @@ public class Cell extends Group {
             isEmpty = true;
         } else {
             this.room = room;
+            isEmpty = false;
         }
     }
 
@@ -68,6 +70,7 @@ public class Cell extends Group {
     public void setActive(boolean active) {
         isActive = active;
     }
+
 
     private void setTexture() {
         Pixmap borders = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
