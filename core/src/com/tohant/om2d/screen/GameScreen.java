@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
@@ -16,6 +17,7 @@ import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.stage.GameMainStage;
 import com.tohant.om2d.stage.GameUiStage;
 import com.tohant.om2d.storage.GameCache;
+
 
 public class GameScreen implements Screen {
 
@@ -31,6 +33,8 @@ public class GameScreen implements Screen {
     private AsyncResult<String> timeString;
     private String time;
     private GameCache gameCache;
+    private Vector3 touchPos;
+    private float startX, startY;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -39,12 +43,14 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
+        touchPos = new Vector3();
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
+        viewport.setCamera(camera);
         gameCache = new GameCache();
         asyncExecutor = new AsyncExecutor(1);
         timeString = asyncExecutor.submit(timeline);
-        time = "00:00";
+        time = "01/01/0001";
         gameCache.setTime(time);
         uiStage = new GameUiStage(1200.0f, time);
         mainStage = new GameMainStage(viewport, batch);
@@ -62,6 +68,13 @@ public class GameScreen implements Screen {
         mainStage.act(delta);
         batch.begin();
         batch.end();
+        if (Gdx.input.isTouched()) {
+            touchPos.set(mainStage.getScreenX(), mainStage.getScreenY(), 0);
+            camera.unproject(touchPos);
+            camera.translate(startX - touchPos.x, startY - touchPos.y);
+            startX = touchPos.x;
+            startY = touchPos.y;
+        }
         camera.update();
     }
 

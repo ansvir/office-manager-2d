@@ -1,7 +1,11 @@
 package com.tohant.om2d.stage;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -15,6 +19,7 @@ public class GameMainStage extends Stage implements InputProcessor {
 
     private static final float GRID_SIZE = 1000;
 
+    private int screenX, screenY;
     private Grid grid;
 
     public GameMainStage(Viewport viewport, Batch batch) {
@@ -41,7 +46,27 @@ public class GameMainStage extends Stage implements InputProcessor {
                 current.setActive(cell.contains(mouse));
             }
         });
+        Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
         return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        super.touchDragged(screenX, screenY, pointer);
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
+            this.screenX = screenX;
+            this.screenY = screenY;
+        }
+        return false;
+    }
+
+    public int getScreenX() {
+        return screenX;
+    }
+
+    public int getScreenY() {
+        return screenY;
     }
 
 }

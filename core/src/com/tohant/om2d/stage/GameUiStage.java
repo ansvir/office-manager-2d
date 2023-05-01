@@ -33,12 +33,10 @@ public class GameUiStage extends Stage implements InputProcessor {
         this.budget = new Label(Math.round(budget) + " $", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
         this.budget.setSize(100, 50);
-        this.budget.setColor(Color.GREEN);
         createToolPane(skin);
         this.time = new Label(time, skin);
         this.time.setSize(200, 50);
         this.time.setPosition(Gdx.graphics.getWidth() - 20 - this.time.getWidth(), Gdx.graphics.getHeight() - 60);
-        this.time.setColor(Color.BLACK);
         roomsButtons = new Array<>();
         Room.Type[] rooms = Room.Type.values();
         float buttonWidth = 200f;
@@ -119,7 +117,7 @@ public class GameUiStage extends Stage implements InputProcessor {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 super.clicked(event, x, y);
-                event.getTarget().getParent().setVisible(false);
+                event.getTarget().getParent().getParent().getParent().setVisible(false);
             }
         });
         this.officeStatWindow = new Window("Office", skin);

@@ -1,14 +1,9 @@
 package com.tohant.om2d.actor;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -23,8 +18,10 @@ public class Grid extends Group implements Disposable {
     private float budget;
 
     public Grid(int x, int y, float width, float height, int cellSize) {
+        float cellsWidth = width / cellSize;
+        float cellsHeight = height / cellSize;
         setPosition(x, y);
-        setSize(width + 1, height + 1);
+        setSize(width, height);
         gameCache = new GameCache();
         budget = gameCache.getBudget();
         this.cellSize = cellSize;
@@ -32,8 +29,8 @@ public class Grid extends Group implements Disposable {
         Color borderColor = Color.GRAY;
         borderColor.a = 0.5f;
         pixmap.setColor(borderColor);
-        for (int i = 0; i < getWidth(); i += cellSize) {
-            for (int j = 0; j < getHeight(); j += cellSize) {
+        for (int i = 0, w = 0; i < getWidth() && w <= cellsWidth; i += cellSize, w++) {
+            for (int j = 0, h = 0; j < getHeight() && h <= cellsHeight; j += cellSize, h++) {
                 pixmap.drawLine(i, j, i, j + cellSize);
                 pixmap.drawLine(i, j, i + cellSize, j);
                 Cell cell = new Cell(i, getHeight() - j, cellSize, cellSize);
