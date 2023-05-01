@@ -21,7 +21,7 @@ public class GameMainStage extends Stage implements InputProcessor {
         super(viewport, batch);
         grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - (GRID_SIZE / 2)),
                 ((int) ((Gdx.graphics.getHeight() / 2f) - (GRID_SIZE / 2))),
-                GRID_SIZE, GRID_SIZE, (int) GRID_SIZE / 20);
+                GRID_SIZE, GRID_SIZE, (int) GRID_SIZE / 15);
         addActor(grid);
     }
 
@@ -41,7 +41,7 @@ public class GameMainStage extends Stage implements InputProcessor {
                 current.setActive(cell.contains(mouse));
             }
         });
-        return true;
+        return false;
     }
 
 }

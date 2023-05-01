@@ -41,21 +41,34 @@ public class Grid extends Group implements Disposable {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         super.clicked(event, x, y);
+                        float cost = 0.0f;
+                        Room newRoom = null;
                         switch (gameCache.getRoomType()) {
                             case HALL: {
-                                cell.setRoom(new HallRoom(100f, cell.getX(), cell.getY(),
-                                        cell.getWidth(), cell.getHeight()));
-                                gameCache.setBudget(budget - 100f);
-                                budget -= 100f;
+                                newRoom = new HallRoom(100f, 20f, cell.getX(), cell.getY(),
+                                        cell.getWidth(), cell.getHeight());
+                                cost += 100f;
                                 break;
                             }
                             case OFFICE: {
-                                cell.setRoom(new OfficeRoom(550f, cell.getX(), cell.getY(),
-                                        cell.getWidth(), cell.getHeight()));
-                                gameCache.setBudget(budget - 550f);
-                                budget -= 550f;
+                                newRoom = new OfficeRoom(550f, 50f, cell.getX(), cell.getY(),
+                                        cell.getWidth(), cell.getHeight());
+
+                                cost += 550f;
                                 break;
                             }
+                            case SECURITY: {
+                                newRoom = new SecurityRoom(910f, 100f, cell.getX(), cell.getY(),
+                                        cell.getWidth(), cell.getHeight());
+                                cost += 910f;
+                                break;
+                            }
+                        }
+                        if (budget >= cost) {
+                            gameCache.setBudget(budget - cost);
+                            gameCache.setRoomsAmountByType(newRoom.getType(), gameCache.getRoomsAmountByType(newRoom.getType()) + 1L);
+                            cell.setRoom(newRoom);
+                            budget -= cost;
                         }
                     }
                 });

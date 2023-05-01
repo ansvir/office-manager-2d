@@ -29,6 +29,14 @@ public class Cache {
         this.globalCache.putFloat(key, value);
     }
 
+    public long getLong(String key) {
+        return this.globalCache.getLong(key);
+    }
+
+    public void setLong(String key, long value) {
+        this.globalCache.putLong(key, value);
+    }
+
     public Preferences getGlobalCache() {
         return this.globalCache;
     }

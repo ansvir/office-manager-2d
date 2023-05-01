@@ -14,15 +14,22 @@ public abstract class Room extends Actor implements Disposable {
     private String id;
     private Texture texture;
     private float price;
+    private float cost;
 
-    public Room(String id, float price) {
+    public Room(String id, float price, float cost, float x, float y, float width, float height) {
         this.id = id;
         this.price = price;
+        this.cost = cost;
+        setPosition(x, y);
+        setSize(width, height);
     }
 
-    public Room(float price) {
+    public Room(float price, float cost, float x, float y, float width, float height) {
         this.id = UUID.randomUUID().toString();
         this.price = price;
+        this.cost = cost;
+        setPosition(x, y);
+        setSize(width, height);
     }
 
     public String getId() {
@@ -41,10 +48,18 @@ public abstract class Room extends Actor implements Disposable {
         this.price = price;
     }
 
+    public float getCost() {
+        return cost;
+    }
+
+    public void setCost(float cost) {
+        this.cost = cost;
+    }
+
     public abstract Type getType();
 
     public enum Type {
-        HALL(Color.GREEN), OFFICE(Color.RED);
+        HALL(Color.GREEN), OFFICE(Color.RED), SECURITY(Color.BLUE);
 
         private final Color color;
         Type(Color color) {
