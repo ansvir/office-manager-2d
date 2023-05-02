@@ -2,25 +2,18 @@ package com.tohant.om2d.stage;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.Map;
 import com.tohant.om2d.actor.Room;
-import com.tohant.om2d.storage.GameCache;
+import com.tohant.om2d.storage.Cache;
 
 import static com.badlogic.gdx.utils.Align.left;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
@@ -33,7 +26,7 @@ public class GameStage extends Stage {
     private Label budget;
     private Array<TextButton> roomsButtons;
     private Room.Type currentRoom;
-    private GameCache gameCache;
+    private Cache gameCache;
     private Label time;
     private Window toolPane;
     private Window officeStatWindow;
@@ -47,7 +40,7 @@ public class GameStage extends Stage {
         map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
         addActor(map);
         Skin skin = getDefaultSkin();
-        gameCache = new GameCache();
+        gameCache = Cache.getInstance();
         gameCache.setBudget(budget);
         this.budget = new Label(Math.round(budget) + " $", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
@@ -149,11 +142,12 @@ public class GameStage extends Stage {
         this.roomsStat = new Label("Rooms:", skin);
         setRoomsStat();
         TextButton hideModal = new TextButton("x", skin);
-        hideModal.addListener(new ClickListener() {
+        hideModal.addListener(new InputListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchDown(event, x, y, pointer, button);
                 event.getTarget().getParent().getParent().getParent().setVisible(false);
+                return false;
             }
         });
         this.officeStatWindow = new Window("Office", skin);
@@ -196,4 +190,7 @@ public class GameStage extends Stage {
         this.toolPane.getTitleTable().add(hide).right();
     }
 
+    public Map getMap() {
+        return map;
+    }
 }

@@ -7,22 +7,21 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Disposable;
-import com.tohant.om2d.storage.GameCache;
+import com.tohant.om2d.storage.Cache;
 
 public class Grid extends Group implements Disposable {
 
     private float cellSize;
     private Texture texture;
-    private GameCache gameCache;
+    private Cache gameCache;
 
     public Grid(int x, int y, float width, float height, int cellSize) {
         float cellsWidth = width / cellSize;
         float cellsHeight = height / cellSize;
         setPosition(x, y);
         setSize(width, height);
-        gameCache = new GameCache();
+        gameCache = Cache.getInstance();
         this.cellSize = cellSize;
         Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
         Color borderColor = Color.GRAY;

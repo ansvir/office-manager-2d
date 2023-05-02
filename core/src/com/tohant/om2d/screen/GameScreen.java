@@ -7,14 +7,23 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.stage.GameStage;
-import com.tohant.om2d.storage.GameCache;
+import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.CachedEventListener;
+
+import java.util.Map;
+
+import static com.tohant.om2d.storage.Cache.CURRENT_DAY;
+import static com.tohant.om2d.storage.Cache.IS_PAYDAY;
 
 
 public class GameScreen implements Screen {
@@ -29,7 +38,8 @@ public class GameScreen implements Screen {
     private AsyncExecutor asyncExecutor;
     private AsyncResult<String> timeString;
     private String time;
-    private GameCache gameCache;
+    private Cache gameCache;
+    private CachedEventListener eventListener;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -41,7 +51,8 @@ public class GameScreen implements Screen {
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
         viewport.setCamera(camera);
-        gameCache = new GameCache();
+        gameCache = Cache.getInstance();
+        eventListener = CachedEventListener.getInstance();
         asyncExecutor = new AsyncExecutor(1);
         timeString = asyncExecutor.submit(timeline);
         time = "01/01/0001";
@@ -55,6 +66,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(Color.WHITE);
         processTimeLine();
+        updateCosts();
         gameStage.draw();
         gameStage.act(delta);
         batch.begin();
@@ -88,6 +100,7 @@ public class GameScreen implements Screen {
         gameStage.dispose();
         batch.dispose();
         timeline.forceFinish();
+        eventListener.stop();
     }
 
     private void processTimeLine() {
@@ -102,8 +115,23 @@ public class GameScreen implements Screen {
     }
 
     private void updateCosts() {
-        if (Long.parseLong(time.substring(time.lastIndexOf("DAY ") + 1)) % 30 == 0) {
-            gameCache.setBudget(gameCache.getBudget());
+        Map<String, ?> cacheSnapshot = eventListener.consume();
+        boolean isPayday = false;
+        if (cacheSnapshot != null) {
+            isPayday = Boolean.parseBoolean((String) cacheSnapshot.get(IS_PAYDAY));
+        }
+        if (isPayday) {
+            float totalCosts = 0.0f;
+            for (Actor a : gameStage.getMap().getGrid().getChildren().items) {
+                if (a instanceof Cell) {
+                    if (!((Cell) a).isEmpty()) {
+                        totalCosts += ((Cell) a).getRoom().getCost();
+                    }
+                }
+            }
+            gameCache.setBoolean(IS_PAYDAY, false);
+            eventListener.post();
+            gameCache.setBudget(gameCache.getBudget() - totalCosts);
         }
     }
 

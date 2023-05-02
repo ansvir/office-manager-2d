@@ -1,6 +1,10 @@
 package com.tohant.om2d.model.task;
 
 import com.badlogic.gdx.utils.async.AsyncTask;
+import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.CachedEventListener;
+
+import static com.tohant.om2d.storage.Cache.*;
 
 public class TimeLineTask implements AsyncTask<String> {
 
@@ -11,15 +15,31 @@ public class TimeLineTask implements AsyncTask<String> {
     private long prevTime;
     private long time;
     private boolean isFinished;
+    private Cache gameCache;
+    private CachedEventListener eventListener;
 
     public TimeLineTask(long waitTime) {
-        this.currentDay = 0L;
+        this.currentDay = 1L;
         this.currentMonth = 1L;
         this.currentYear = 1L;
         this.prevTime = System.currentTimeMillis();
         this.time = this.prevTime;
         this.waitTime = waitTime;
         this.isFinished = false;
+        this.gameCache = Cache.getInstance();
+        this.eventListener = CachedEventListener.getInstance();
+    }
+
+    public TimeLineTask(long currentDay, long currentMonth, long currentYear, long waitTime) {
+        this.currentDay = currentDay;
+        this.currentMonth = currentMonth;
+        this.currentYear = currentYear;
+        this.prevTime = System.currentTimeMillis();
+        this.time = this.prevTime;
+        this.waitTime = waitTime;
+        this.isFinished = false;
+        this.gameCache = Cache.getInstance();
+        this.eventListener = CachedEventListener.getInstance();
     }
 
     @Override
@@ -45,12 +65,15 @@ public class TimeLineTask implements AsyncTask<String> {
         if (this.currentDay >= 30L) {
             if (this.currentMonth >= 12L) {
                 this.currentYear++;
-                this.currentMonth = 0L;
+                this.currentMonth = 1L;
             } else {
                 this.currentMonth++;
             }
-            this.currentDay = 0L;
+            gameCache.setBoolean(IS_PAYDAY, true);
+            eventListener.post();
+            this.currentDay = 1L;
         } else {
+            gameCache.setBoolean(IS_PAYDAY, false);
             this.currentDay++;
         }
         return false;

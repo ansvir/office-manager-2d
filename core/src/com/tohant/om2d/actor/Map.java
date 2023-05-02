@@ -55,4 +55,7 @@ public class Map extends Group {
         });
     }
 
+    public Grid getGrid() {
+        return grid;
+    }
 }
