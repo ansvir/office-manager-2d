@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -19,9 +20,8 @@ public class GameMainStage extends Stage implements InputProcessor {
 
     private static final float GRID_SIZE = 1000;
 
-    private int screenX, screenY;
+    private float startX, startY;
     private Grid grid;
-
     public GameMainStage(Viewport viewport, Batch batch) {
         super(viewport, batch);
         grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - (GRID_SIZE / 2)),
@@ -33,6 +33,7 @@ public class GameMainStage extends Stage implements InputProcessor {
     public GameMainStage(Viewport viewport, Batch batch, Grid grid) {
         super(viewport, batch);
         this.grid = grid;
+        addActor(grid);
     }
 
     @Override
@@ -51,22 +52,22 @@ public class GameMainStage extends Stage implements InputProcessor {
     }
 
     @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        super.touchDragged(screenX, screenY, pointer);
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
-            this.screenX = screenX;
-            this.screenY = screenY;
-        }
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        super.touchDown(screenX, screenY, pointer, button);
+        startX = screenX;
+        startY = screenY;
         return false;
     }
 
-    public int getScreenX() {
-        return screenX;
-    }
-
-    public int getScreenY() {
-        return screenY;
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        super.touchDragged(screenX, screenY, pointer);
+        Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
+        grid.setPosition(MathUtils.clamp(grid.getX() + (startX - screenX),
+                        0, Gdx.graphics.getWidth() - grid.getWidth()),
+                MathUtils.clamp(grid.getY() - (startY - screenY),
+                        0, Gdx.graphics.getHeight() - grid.getHeight()));
+        return false;
     }
 
 }

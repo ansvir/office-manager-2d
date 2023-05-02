@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
@@ -68,13 +69,21 @@ public class GameScreen implements Screen {
         mainStage.act(delta);
         batch.begin();
         batch.end();
-        if (Gdx.input.isTouched()) {
-            touchPos.set(mainStage.getScreenX(), mainStage.getScreenY(), 0);
-            camera.unproject(touchPos);
-            camera.translate(startX - touchPos.x, startY - touchPos.y);
-            startX = touchPos.x;
-            startY = touchPos.y;
-        }
+//        if (Gdx.input.isTouched()) {
+
+//            touchPos.set(mainStage.getScreenX(), mainStage.getScreenY(), 0);
+//            camera.unproject(touchPos);
+//            camera.translate(startX - touchPos.x, startY - touchPos.y);
+//            startX = touchPos.x;
+//            startY = touchPos.y;
+//            mainStage.getGrid().setPosition(startX - touchPos.x, startY - touchPos.y);
+//            mainStage.getGrid().setPosition(MathUtils.clamp(mainStage.getScreenX(),
+//                    0, Gdx.graphics.getWidth() - mainStage.getGrid().getWidth()),
+//                    MathUtils.clamp(mainStage.getScreenY(),
+//                            Gdx.graphics.getHeight() - mainStage.getGrid().getHeight(), 0));
+//            startX = touchPos.x;
+//            startY = touchPos.y;
+//        }
         camera.update();
     }
 
