@@ -1,22 +1,35 @@
 package com.tohant.om2d.stage;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.Grid;
+import com.tohant.om2d.actor.Map;
 import com.tohant.om2d.actor.Room;
 import com.tohant.om2d.storage.GameCache;
 
 import static com.badlogic.gdx.utils.Align.left;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
-public class GameUiStage extends Stage implements InputProcessor {
+public class GameStage extends Stage {
 
+    private static final float GRID_SIZE = 1000;
+
+    private Map map;
     private Label budget;
     private Array<TextButton> roomsButtons;
     private Room.Type currentRoom;
@@ -26,7 +39,13 @@ public class GameUiStage extends Stage implements InputProcessor {
     private Window officeStatWindow;
     private Label roomsStat;
 
-    public GameUiStage(float budget, String time) {
+    public GameStage(float budget, String time, Viewport viewport, Batch batch) {
+        super(viewport, batch);
+        Grid grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - (GRID_SIZE / 2)),
+                ((int) ((Gdx.graphics.getHeight() / 2f) - (GRID_SIZE / 2))),
+                GRID_SIZE, GRID_SIZE, (int) GRID_SIZE / 15);
+        map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
+        addActor(map);
         Skin skin = getDefaultSkin();
         gameCache = new GameCache();
         gameCache.setBudget(budget);
@@ -49,12 +68,13 @@ public class GameUiStage extends Stage implements InputProcessor {
             room.setX(Gdx.graphics.getWidth() - (buttonWidth + 20));
             room.setY(j);
             int finalI = i;
-            room.addListener(new ClickListener() {
+            room.addListener(new InputListener() {
                 @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    super.clicked(event, x, y);
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    super.touchDown(event, x, y, pointer, button);
                     currentRoom = rooms[finalI];
                     gameCache.setRoomType(currentRoom);
+                    return false;
                 }
             });
             addActor(room);
@@ -70,6 +90,20 @@ public class GameUiStage extends Stage implements InputProcessor {
         super.act(delta);
         setBudget(gameCache.getBudget());
         setRoomsStat();
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        boolean childHandled = false;
+        Actor actor = hit(screenX, screenY, true);
+        if (actor != null) {
+            try {
+                childHandled = actor.fire(new InputEvent());
+            } catch (RuntimeException ignored) {
+
+            }
+        }
+        return childHandled || super.touchDown(screenX, screenY, pointer, button);
     }
 
     public Label getBudget() {
@@ -126,10 +160,11 @@ public class GameUiStage extends Stage implements InputProcessor {
         this.officeStatWindow.setModal(true);
         this.officeStatWindow.setResizable(true);
         this.officeStatWindow.setModal(true);
-        this.officeStatWindow.setPosition(this.budget.getX(), this.budget.getY() - 20 - this.officeStatWindow.getHeight());
         this.officeStatWindow.add(this.roomsStat).center();
         this.officeStatWindow.getTitleTable().add(hideModal).right();
         this.officeStatWindow.setVisible(false);
+        this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
+        this.officeStatWindow.setPosition(this.budget.getX(), this.budget.getY() - 20 - this.officeStatWindow.getHeight());
         this.toolPane = new Window("Office Manager 2D", skin);
         this.toolPane.setSize(Gdx.graphics.getWidth(), 150f);
         this.toolPane.setPosition(0, 0);
@@ -137,21 +172,23 @@ public class GameUiStage extends Stage implements InputProcessor {
         this.toolPane.setResizable(false);
         this.toolPane.align(left);
         TextButton hide = new TextButton("-", skin);
-        hide.addListener(new ClickListener() {
+        hide.addListener(new InputListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchDown(event, x, y, pointer, button);
                 toolPane.setHeight(toolPane.getTouchable() == Touchable.enabled ? 50f : 150f);
                 toolPane.setTouchable(toolPane.getTouchable() == Touchable.enabled
                         ? Touchable.childrenOnly : Touchable.enabled);
+                return false;
             }
         });
         TextButton officeButton = new TextButton("Office", skin);
-        officeButton.addListener(new ClickListener() {
+        officeButton.addListener(new InputListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchDown(event, x, y, pointer, button);
                 officeStatWindow.setVisible(!officeStatWindow.isVisible());
+                return false;
             }
         });
         addActor(this.officeStatWindow);
