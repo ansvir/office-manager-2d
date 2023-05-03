@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
@@ -22,8 +21,8 @@ import com.tohant.om2d.storage.CachedEventListener;
 
 import java.util.Map;
 
-import static com.tohant.om2d.storage.Cache.CURRENT_DAY;
 import static com.tohant.om2d.storage.Cache.IS_PAYDAY;
+import static com.tohant.om2d.storage.Cache.TOTAL_COSTS;
 
 
 public class GameScreen implements Screen {
@@ -52,6 +51,7 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
         viewport.setCamera(camera);
         gameCache = Cache.getInstance();
+        initGameCache();
         eventListener = CachedEventListener.getInstance();
         asyncExecutor = new AsyncExecutor(1);
         timeString = asyncExecutor.submit(timeline);
@@ -59,7 +59,7 @@ public class GameScreen implements Screen {
         gameCache.setTime(time);
         gameStage = new GameStage(2000.0f, time, viewport, batch);
         multiplexer = new InputMultiplexer(gameStage);
-        Gdx.input.setInputProcessor(gameStage);
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     @Override
@@ -121,18 +121,23 @@ public class GameScreen implements Screen {
             isPayday = Boolean.parseBoolean((String) cacheSnapshot.get(IS_PAYDAY));
         }
         if (isPayday) {
-            float totalCosts = 0.0f;
-            for (Actor a : gameStage.getMap().getGrid().getChildren().items) {
-                if (a instanceof Cell) {
-                    if (!((Cell) a).isEmpty()) {
-                        totalCosts += ((Cell) a).getRoom().getCost();
-                    }
-                }
-            }
+            float totalCosts = Float.parseFloat((String) cacheSnapshot.get(TOTAL_COSTS));
+//            for (Actor a : gameStage.getMap().getGrid().getChildren().items) {
+//                if (a instanceof Cell) {
+//                    if (!((Cell) a).isEmpty()) {
+//                        totalCosts += ((Cell) a).getRoom().getCost();
+//                    }
+//                }
+//            }
             gameCache.setBoolean(IS_PAYDAY, false);
-            eventListener.post();
             gameCache.setBudget(gameCache.getBudget() - totalCosts);
+            gameCache.setFloat(TOTAL_COSTS, 0.0f);
+            eventListener.post();
         }
+    }
+
+    private void initGameCache() {
+        gameCache.setFloat(TOTAL_COSTS, 0.0f);
     }
 
 }

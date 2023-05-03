@@ -35,7 +35,7 @@ public class Cell extends Group {
         if (!isEmpty) {
             room.draw(batch, parentAlpha);
         }
-        if (isActive) {
+        if (isActive && isEmpty) {
             batch.draw(texture, getX(), getY());
         }
     }
@@ -72,13 +72,13 @@ public class Cell extends Group {
 
 
     private void setTexture() {
-        Pixmap borders = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
+        Pixmap cellPixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
         Color bordersColor = Color.BLACK;
         bordersColor.a = 0.2f;
-        borders.setColor(bordersColor);
-        borders.fill();
-        texture = new Texture(borders);
-        borders.dispose();
+        cellPixmap.setColor(bordersColor);
+        cellPixmap.fill();
+        texture = new Texture(cellPixmap);
+        cellPixmap.dispose();
     }
 
     private void setTextureForNonEmpty() {

@@ -12,6 +12,7 @@ import java.util.UUID;
 public abstract class Room extends Actor implements Disposable {
 
     private String id;
+    private String number;
     private Texture texture;
     private float price;
     private float cost;
@@ -20,6 +21,7 @@ public abstract class Room extends Actor implements Disposable {
         this.id = id;
         this.price = price;
         this.cost = cost;
+        this.number = this.id.substring(0, 4);
         setPosition(x, y);
         setSize(width, height);
     }
@@ -28,6 +30,7 @@ public abstract class Room extends Actor implements Disposable {
         this.id = UUID.randomUUID().toString();
         this.price = price;
         this.cost = cost;
+        this.number = this.id.substring(0, 4);
         setPosition(x, y);
         setSize(width, height);
     }
@@ -54,6 +57,14 @@ public abstract class Room extends Actor implements Disposable {
 
     public void setCost(float cost) {
         this.cost = cost;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
     }
 
     public abstract Type getType();
@@ -88,5 +99,6 @@ public abstract class Room extends Actor implements Disposable {
     public void dispose() {
         texture.dispose();
     }
+
 
 }

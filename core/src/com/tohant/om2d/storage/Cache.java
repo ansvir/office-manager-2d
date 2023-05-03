@@ -14,10 +14,9 @@ public class Cache {
     public static final String OFFICES_AMOUNT = "OFFICES_AM";
     public static final String HALLS_AMOUNT = "HALLS_AM";
     public static final String SECURITY_AMOUNT = "SECURITY_AM";
-    public static final String CURRENT_DAY = "CURR_DAY";
-    public static final String CURRENT_MONTH = "CURR_MONTH";
-    public static final String CURRENT_YEAR = "CURR_YEAR";
     public static final String IS_PAYDAY = "IS_PAYDAY";
+    public static final String CURRENT_ROOM = "CURR_ROOM";
+    public static final String TOTAL_COSTS = "TOTAL_COSTS";
 
     private final Preferences globalCache;
     private static Cache cache;
@@ -69,7 +68,7 @@ public class Cache {
         return this.globalCache;
     }
 
-    public Room.Type getRoomType() {
+    public Room.Type getCurrentRoomType() {
         String value = getValue(CURRENT_ROOM_TYPE);
         if (value == null) {
             return null;
@@ -78,7 +77,7 @@ public class Cache {
         }
     }
 
-    public void setRoomType(Room.Type value) {
+    public void setCurrentRoomType(Room.Type value) {
         setValue(CURRENT_ROOM_TYPE, value.name());
     }
 
