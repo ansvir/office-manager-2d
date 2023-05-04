@@ -4,13 +4,18 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import com.tohant.om2d.storage.Cache;
-import com.tohant.om2d.storage.CacheImpl;
+import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.exception.GameException.Code;
 import com.tohant.om2d.storage.CacheProxy;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.storage.CacheImpl.CURRENT_BUDGET;
@@ -49,6 +54,7 @@ public class Grid extends Group implements Disposable {
                 pixmap.drawLine(i, j, i, j + cellSize);
                 pixmap.drawLine(i, j, i + cellSize, j);
                 Cell cell = new Cell(i, getHeight() - j, cellSize, cellSize);
+                cell.setName("Cell#" + h + "#" + w);
                 addCellEventHandling(cell);
                 addActor(cell);
             }
@@ -88,6 +94,11 @@ public class Grid extends Group implements Disposable {
                     Room.Type nextType = getCurrentRoomType();
                     if (nextType == null) {
                         return false;
+                    }
+                    if (checkNoCellOnGrid() && nextType != Room.Type.HALL) {
+                        throw new GameException(Code.E200);
+                    } else if (nextType != Room.Type.HALL && !checkNextToHall(cell)) {
+                        throw new GameException(Code.E100);
                     }
                     switch (nextType) {
                         case HALL: {
@@ -160,6 +171,46 @@ public class Grid extends Group implements Disposable {
             case CLEANING: gameCache.setValue(CLEANING_AMOUNT, amount); break;
             default: break;
         }
+    }
+
+    private boolean checkNextToHall(Cell cell) {
+        Vector2 coords = getCellCoordinates(cell);
+        int points = 0;
+        Array<Actor> children = getChildren();
+        for (int i = 0; i < children.size; i++) {
+            if (children.get(i) instanceof Cell) {
+                Cell currCell = (Cell) children.get(i);
+                Vector2 currCoords = getCellCoordinates(currCell);
+                if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
+                        (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
+                    if (!currCell.isEmpty() && currCell.getRoom() instanceof HallRoom) {
+                        points++;
+                        break;
+                    }
+                }
+            }
+        }
+        return points == 1;
+    }
+
+    private Vector2 getCellCoordinates(Cell cell) {
+        int cellX = Integer.parseInt(cell.getName().substring(cell.getName().indexOf("#") + 1, cell.getName().lastIndexOf("#")));
+        int cellY = Integer.parseInt(cell.getName().substring(cell.getName().lastIndexOf("#") + 1));
+        return new Vector2(cellX, cellY);
+    }
+
+    private boolean checkNoCellOnGrid() {
+        boolean result = true;
+        for (int i = 0; i < getChildren().size; i++) {
+            Actor a = getChildren().get(i);
+            if (a instanceof Cell) {
+                if (((Cell) a).getRoom() == null && ((Cell) a).isEmpty()) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
 }

@@ -11,6 +11,7 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.Map;
 import com.tohant.om2d.actor.Room;
+import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.storage.Cache;
 import com.tohant.om2d.storage.CacheImpl;
 import com.tohant.om2d.storage.CacheProxy;
@@ -35,6 +36,7 @@ public class GameStage extends Stage {
     private Label roomsStatLabel;
     private Window roomInfo;
     private Skin skin;
+    private Dialog notification;
 
     public GameStage(float budget, String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
@@ -61,6 +63,7 @@ public class GameStage extends Stage {
         this.budget.setSize(100, 50);
         this.budget.setColor(Color.GREEN);
         createToolPane();
+        createNotification();
         this.time = new Label(time, skin);
         this.time.setSize(200, 50);
         this.time.setPosition(Gdx.graphics.getWidth() - 20 - this.time.getWidth(), Gdx.graphics.getHeight() - 60);
@@ -94,7 +97,14 @@ public class GameStage extends Stage {
 
     @Override
     public void act(float delta) {
-        super.act(delta);
+        try {
+            super.act(delta);
+        } catch (GameException e) {
+            this.notification.getTitleLabel().setText(e.getCode().getType().getTitle());
+            this.notification.text(e.getCode().getMessage());
+            this.notification.show(this);
+            this.notification.hide();
+        }
         setBudget(Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET)));
         setRoomsStat();
         updateRoomInfoWindow();
@@ -189,7 +199,6 @@ public class GameStage extends Stage {
                         gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) - currentCellCopy.getRoom().getCost());
                         setRoomsAmountByType(currentCellCopy.getRoom().getType(), getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
                         gameCache.setValue(CURRENT_ROOM, null);
-                        currentCellCopy.setEmpty(true);
                         currentCellCopy.setRoom(null);
                         roomInfo.setVisible(false);
                         return true;
@@ -299,6 +308,12 @@ public class GameStage extends Stage {
             case CLEANING: gameCache.setValue(CLEANING_AMOUNT, amount); break;
             default: break;
         }
+    }
+
+    private void createNotification() {
+        this.notification = new Dialog("", skin);
+        this.notification.setPosition(Gdx.graphics.getWidth() / 2f
+                - this.notification.getWidth() / 2f, Gdx.graphics.getHeight() - 20);
     }
 
 }
