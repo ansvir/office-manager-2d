@@ -140,7 +140,6 @@ public class GameScreen implements Screen {
 //            }
             gameCache.setValue(IS_PAYDAY, false);
             gameCache.setValue(CURRENT_BUDGET, Float.parseFloat(((String) gameCache.getValue(CURRENT_BUDGET))) - totalCosts);
-            gameCache.setValue(TOTAL_COSTS, 0.0f);
             eventListener.post();
         }
     }
