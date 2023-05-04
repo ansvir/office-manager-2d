@@ -97,7 +97,7 @@ public class GameStage extends Stage {
         super.act(delta);
         setBudget(Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET)));
         setRoomsStat();
-//        setZIndices();
+        updateRoomInfoWindow();
     }
 
     @Override
@@ -106,9 +106,6 @@ public class GameStage extends Stage {
         Actor actor = hit(screenX, screenY, false);
         if (actor != null) {
             try {
-                if (actor instanceof Cell) {
-                    updateRoomInfoWindow();
-                }
                 childHandled = actor.fire(new InputEvent());
             } catch (RuntimeException ignored) {
 
@@ -165,7 +162,6 @@ public class GameStage extends Stage {
     private void updateRoomInfoWindow() {
         Cell currentCell = null;
         String id = (String) gameCache.getValue(CURRENT_ROOM);
-        System.out.println(id);
         for (Actor a : map.getGrid().getChildren().items) {
             if (a instanceof Cell) {
                 if (((Cell) a).getRoom() != null &&
@@ -283,16 +279,6 @@ public class GameStage extends Stage {
     @Override
     public void dispose() {
         skin.dispose();
-    }
-
-    private void setZIndices() {
-        this.map.setZIndex(1);
-        this.budget.setZIndex(2);
-        this.roomsButtons.forEach(b -> b.setZIndex(3));
-        this.time.setZIndex(2);
-        this.toolPane.setZIndex(2);
-        this.officeStatWindow.setZIndex(map.getZIndex() + 1);
-        this.roomInfo.setZIndex(map.getZIndex() + 1);
     }
 
     private long getRoomsAmountByType(Room.Type type) {
