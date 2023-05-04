@@ -1,15 +1,14 @@
 package com.tohant.om2d;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.screen.GameScreen;
-import com.tohant.om2d.screen.MenuScreen;
+import com.tohant.om2d.storage.CacheImpl;
+import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
+
+import static com.tohant.om2d.storage.CacheImpl.*;
 
 public class OfficeManager2D extends Game {
 

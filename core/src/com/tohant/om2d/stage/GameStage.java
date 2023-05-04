@@ -1,13 +1,10 @@
 package com.tohant.om2d.stage;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.Cell;
@@ -15,9 +12,12 @@ import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.Map;
 import com.tohant.om2d.actor.Room;
 import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.CacheImpl;
+import com.tohant.om2d.storage.CacheProxy;
 
 import static com.badlogic.gdx.utils.Align.center;
 import static com.badlogic.gdx.utils.Align.left;
+import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class GameStage extends Stage {
@@ -28,7 +28,7 @@ public class GameStage extends Stage {
     private Label budget;
     private Array<TextButton> roomsButtons;
     private Room.Type currentRoom;
-    private Cache gameCache;
+    private CacheProxy gameCache;
     private Label time;
     private Window toolPane;
     private Window officeStatWindow;
@@ -44,8 +44,18 @@ public class GameStage extends Stage {
         map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
         addActor(map);
         skin = getDefaultSkin();
-        gameCache = Cache.getInstance();
-        gameCache.setBudget(budget);
+        gameCache = new CacheProxy((c) -> {}, (c) -> {}, (c) -> {
+            c.setValue(CURRENT_ROOM_TYPE, null);
+            c.setValue(CURRENT_BUDGET, 2000.0f);
+            c.setValue(CURRENT_TIME, "01/01/0001");
+            c.setValue(OFFICES_AMOUNT, 0L);
+            c.setValue(HALLS_AMOUNT, 0L);
+            c.setValue(SECURITY_AMOUNT, 0L);
+            c.setValue(CLEANING_AMOUNT, 0L);
+            c.setValue(IS_PAYDAY, false);
+            c.setValue(CURRENT_ROOM, null);
+            c.setValue(TOTAL_COSTS, 0.0f);
+        });
         this.budget = new Label(Math.round(budget) + " $", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
         this.budget.setSize(100, 50);
@@ -70,7 +80,7 @@ public class GameStage extends Stage {
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     super.touchDown(event, x, y, pointer, button);
                     currentRoom = rooms[iCopy];
-                    gameCache.setCurrentRoomType(currentRoom);
+                    gameCache.setValue(CURRENT_ROOM_TYPE, currentRoom.name());
                     return false;
                 }
             });
@@ -85,7 +95,7 @@ public class GameStage extends Stage {
     @Override
     public void act(float delta) {
         super.act(delta);
-        setBudget(gameCache.getBudget());
+        setBudget(Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET)));
         setRoomsStat();
 //        setZIndices();
     }
@@ -146,7 +156,7 @@ public class GameStage extends Stage {
         for (Room.Type t : Room.Type.values()) {
             builder.append(t.name());
             builder.append(": ");
-            builder.append(gameCache.getRoomsAmountByType(t));
+            builder.append(getRoomsAmountByType(t));
             builder.append("\n");
         }
         this.roomsStatLabel.setText(builder.toString());
@@ -154,7 +164,8 @@ public class GameStage extends Stage {
 
     private void updateRoomInfoWindow() {
         Cell currentCell = null;
-        String id = gameCache.getValue(Cache.CURRENT_ROOM);
+        String id = (String) gameCache.getValue(CURRENT_ROOM);
+        System.out.println(id);
         for (Actor a : map.getGrid().getChildren().items) {
             if (a instanceof Cell) {
                 if (((Cell) a).getRoom() != null &&
@@ -179,7 +190,9 @@ public class GameStage extends Stage {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         super.touchDown(event, x, y, pointer, button);
-                        gameCache.setFloat(Cache.TOTAL_COSTS, gameCache.getFloatValue(Cache.TOTAL_COSTS) - currentCellCopy.getRoom().getCost());
+                        gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) - currentCellCopy.getRoom().getCost());
+                        setRoomsAmountByType(currentCellCopy.getRoom().getType(), getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
+                        gameCache.setValue(CURRENT_ROOM, null);
                         currentCellCopy.setEmpty(true);
                         currentCellCopy.setRoom(null);
                         roomInfo.setVisible(false);
@@ -280,6 +293,26 @@ public class GameStage extends Stage {
         this.toolPane.setZIndex(2);
         this.officeStatWindow.setZIndex(map.getZIndex() + 1);
         this.roomInfo.setZIndex(map.getZIndex() + 1);
+    }
+
+    private long getRoomsAmountByType(Room.Type type) {
+        switch (type) {
+            case OFFICE: return Long.parseLong((String) gameCache.getValue(OFFICES_AMOUNT));
+            case HALL: return Long.parseLong((String) gameCache.getValue(HALLS_AMOUNT));
+            case SECURITY: return Long.parseLong((String) gameCache.getValue(SECURITY_AMOUNT));
+            case CLEANING: return Long.parseLong((String) gameCache.getValue(CLEANING_AMOUNT));
+            default: return -1L;
+        }
+    }
+
+    private void setRoomsAmountByType(Room.Type type, long amount) {
+        switch (type) {
+            case OFFICE: gameCache.setValue(OFFICES_AMOUNT, amount); break;
+            case HALL: gameCache.setValue(HALLS_AMOUNT, amount); break;
+            case SECURITY: gameCache.setValue(SECURITY_AMOUNT, amount); break;
+            case CLEANING: gameCache.setValue(CLEANING_AMOUNT, amount); break;
+            default: break;
+        }
     }
 
 }

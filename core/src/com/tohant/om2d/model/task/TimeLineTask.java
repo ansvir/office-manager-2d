@@ -1,10 +1,10 @@
 package com.tohant.om2d.model.task;
 
 import com.badlogic.gdx.utils.async.AsyncTask;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.CacheImpl;
 import com.tohant.om2d.storage.CachedEventListener;
 
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.CacheImpl.*;
 
 public class TimeLineTask implements AsyncTask<String> {
 
@@ -15,7 +15,7 @@ public class TimeLineTask implements AsyncTask<String> {
     private long prevTime;
     private long time;
     private boolean isFinished;
-    private Cache gameCache;
+    private CacheImpl gameCache;
     private CachedEventListener eventListener;
 
     public TimeLineTask(long waitTime) {
@@ -26,7 +26,7 @@ public class TimeLineTask implements AsyncTask<String> {
         this.time = this.prevTime;
         this.waitTime = waitTime;
         this.isFinished = false;
-        this.gameCache = Cache.getInstance();
+        this.gameCache = CacheImpl.getInstance();
         this.eventListener = CachedEventListener.getInstance();
     }
 
@@ -38,7 +38,7 @@ public class TimeLineTask implements AsyncTask<String> {
         this.time = this.prevTime;
         this.waitTime = waitTime;
         this.isFinished = false;
-        this.gameCache = Cache.getInstance();
+        this.gameCache = CacheImpl.getInstance();
         this.eventListener = CachedEventListener.getInstance();
     }
 

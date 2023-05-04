@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Disposable;
+import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.UUID;
 
@@ -70,7 +71,7 @@ public abstract class Room extends Actor implements Disposable {
     public abstract Type getType();
 
     public enum Type {
-        HALL(Color.GREEN), OFFICE(Color.RED), SECURITY(Color.BLUE);
+        HALL(Color.GREEN), OFFICE(Color.RED), SECURITY(Color.BLUE), CLEANING(Color.YELLOW);
 
         private final Color color;
         Type(Color color) {
@@ -87,12 +88,18 @@ public abstract class Room extends Actor implements Disposable {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
-        pixmap.setColor(getType().getColor());
-        pixmap.fillRectangle(1, 1, pixmap.getWidth() - 1, pixmap.getHeight() - 1);
-        texture = new Texture(pixmap);
+        if (getTexturePath() != null) {
+            Texture newTexture = new Texture(getTexturePath());
+            texture = AssetsUtil.resizeTexture(newTexture, getWidth(), getHeight());
+            newTexture.dispose();
+        } else {
+            Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
+            pixmap.setColor(getType().getColor());
+            pixmap.fillRectangle(1, 1, pixmap.getWidth() - 1, pixmap.getHeight() - 1);
+            texture = new Texture(pixmap);
+            pixmap.dispose();
+        }
         batch.draw(texture, getX(), getY());
-        pixmap.dispose();
     }
 
     @Override
@@ -100,5 +107,6 @@ public abstract class Room extends Actor implements Disposable {
         texture.dispose();
     }
 
+    public abstract String getTexturePath();
 
 }

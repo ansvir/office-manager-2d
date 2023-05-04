@@ -17,4 +17,9 @@ public class OfficeRoom extends Room {
         return TYPE;
     }
 
+    @Override
+    public String getTexturePath() {
+        return null;
+    }
+
 }

@@ -19,4 +19,9 @@ public class HallRoom extends Room {
         return TYPE;
     }
 
+    @Override
+    public String getTexturePath() {
+        return "hall.png";
+    }
+
 }

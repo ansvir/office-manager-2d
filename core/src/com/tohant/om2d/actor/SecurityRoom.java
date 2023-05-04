@@ -17,4 +17,9 @@ public class SecurityRoom extends Room {
         return TYPE;
     }
 
+    @Override
+    public String getTexturePath() {
+        return "security.png";
+    }
+
 }
