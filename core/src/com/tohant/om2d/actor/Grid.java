@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.exception.GameException.Code;
+import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.storage.CacheProxy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -96,9 +97,11 @@ public class Grid extends Group implements Disposable {
                         return false;
                     }
                     if (checkNoCellOnGrid() && nextType != Room.Type.HALL) {
-                        throw new GameException(Code.E200);
+                        ((GameStage) getStage()).addException(new GameException(Code.E200));
+                        return false;
                     } else if (nextType != Room.Type.HALL && !checkNextToHall(cell)) {
-                        throw new GameException(Code.E100);
+                        ((GameStage) getStage()).addException(new GameException(Code.E100));
+                        return false;
                     }
                     switch (nextType) {
                         case HALL: {

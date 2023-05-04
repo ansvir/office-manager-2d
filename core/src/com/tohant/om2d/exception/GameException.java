@@ -15,7 +15,7 @@ public class GameException extends RuntimeException {
 
     public enum Code {
         E100("Room can be placed only next to hall!", Type.WARNING),
-        E200("At leats one hall is required!", Type.WARNING);
+        E200("At least one hall is required!", Type.WARNING);
 
         private final String message;
         private final Type type;

@@ -16,6 +16,7 @@ import com.tohant.om2d.storage.Cache;
 import com.tohant.om2d.storage.CacheImpl;
 import com.tohant.om2d.storage.CacheProxy;
 
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.badlogic.gdx.utils.Align.center;
 import static com.badlogic.gdx.utils.Align.left;
 import static com.tohant.om2d.storage.CacheImpl.*;
@@ -36,7 +37,8 @@ public class GameStage extends Stage {
     private Label roomsStatLabel;
     private Window roomInfo;
     private Skin skin;
-    private Dialog notification;
+    private Window notification;
+    private Array<GameException> exceptions;
 
     public GameStage(float budget, String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
@@ -46,7 +48,9 @@ public class GameStage extends Stage {
         map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
         addActor(map);
         skin = getDefaultSkin();
-        gameCache = new CacheProxy((c) -> {}, (c) -> {}, (c) -> {
+        gameCache = new CacheProxy((c) -> {
+        }, (c) -> {
+        }, (c) -> {
             c.setValue(CURRENT_ROOM_TYPE, null);
             c.setValue(CURRENT_BUDGET, 2000.0f);
             c.setValue(CURRENT_TIME, "01/01/0001");
@@ -58,12 +62,12 @@ public class GameStage extends Stage {
             c.setValue(CURRENT_ROOM, null);
             c.setValue(TOTAL_COSTS, 0.0f);
         });
+        this.exceptions = new Array<>();
         this.budget = new Label(Math.round(budget) + " $", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
         this.budget.setSize(100, 50);
         this.budget.setColor(Color.GREEN);
         createToolPane();
-        createNotification();
         this.time = new Label(time, skin);
         this.time.setSize(200, 50);
         this.time.setPosition(Gdx.graphics.getWidth() - 20 - this.time.getWidth(), Gdx.graphics.getHeight() - 60);
@@ -99,15 +103,27 @@ public class GameStage extends Stage {
     public void act(float delta) {
         try {
             super.act(delta);
-        } catch (GameException e) {
-            this.notification.getTitleLabel().setText(e.getCode().getType().getTitle());
-            this.notification.text(e.getCode().getMessage());
-            this.notification.show(this);
-            this.notification.hide();
+            checkForExceptionsAndThrowIfExist(0);
+        } catch (Exception e) {
+            if (e instanceof GameException) {
+                for (int i = 0; i < getActors().size; i++) {
+                    Actor a = getActors().get(i);
+                    if (a instanceof Dialog) {
+                        if (a.getName().equals("user_info")) {
+                            getActors().removeIndex(i);
+                            break;
+                        }
+                    }
+                }
+                createNotification((GameException) e);
+            } else {
+                throw e;
+            }
+        } finally {
+            setBudget(Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET)));
+            setRoomsStat();
+            updateRoomInfoWindow();
         }
-        setBudget(Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET)));
-        setRoomsStat();
-        updateRoomInfoWindow();
     }
 
     @Override
@@ -292,28 +308,61 @@ public class GameStage extends Stage {
 
     private long getRoomsAmountByType(Room.Type type) {
         switch (type) {
-            case OFFICE: return Long.parseLong((String) gameCache.getValue(OFFICES_AMOUNT));
-            case HALL: return Long.parseLong((String) gameCache.getValue(HALLS_AMOUNT));
-            case SECURITY: return Long.parseLong((String) gameCache.getValue(SECURITY_AMOUNT));
-            case CLEANING: return Long.parseLong((String) gameCache.getValue(CLEANING_AMOUNT));
-            default: return -1L;
+            case OFFICE:
+                return Long.parseLong((String) gameCache.getValue(OFFICES_AMOUNT));
+            case HALL:
+                return Long.parseLong((String) gameCache.getValue(HALLS_AMOUNT));
+            case SECURITY:
+                return Long.parseLong((String) gameCache.getValue(SECURITY_AMOUNT));
+            case CLEANING:
+                return Long.parseLong((String) gameCache.getValue(CLEANING_AMOUNT));
+            default:
+                return -1L;
         }
     }
 
     private void setRoomsAmountByType(Room.Type type, long amount) {
         switch (type) {
-            case OFFICE: gameCache.setValue(OFFICES_AMOUNT, amount); break;
-            case HALL: gameCache.setValue(HALLS_AMOUNT, amount); break;
-            case SECURITY: gameCache.setValue(SECURITY_AMOUNT, amount); break;
-            case CLEANING: gameCache.setValue(CLEANING_AMOUNT, amount); break;
-            default: break;
+            case OFFICE:
+                gameCache.setValue(OFFICES_AMOUNT, amount);
+                break;
+            case HALL:
+                gameCache.setValue(HALLS_AMOUNT, amount);
+                break;
+            case SECURITY:
+                gameCache.setValue(SECURITY_AMOUNT, amount);
+                break;
+            case CLEANING:
+                gameCache.setValue(CLEANING_AMOUNT, amount);
+                break;
+            default:
+                break;
         }
     }
 
-    private void createNotification() {
-        this.notification = new Dialog("", skin);
+    private void createNotification(GameException e) {
+        this.notification = new Window("", skin);
+        this.notification.setName("user_info");
+        this.notification.addAction(sequence(delay(4f), hide()));
+        this.notification.getTitleLabel().setText(e.getCode().getType().getTitle());
+        this.notification.add(new Label(e.getCode().getMessage(), skin)).center().expand();
+        this.notification.setSize(this.notification.getPrefWidth(), this.notification.getPrefHeight());
         this.notification.setPosition(Gdx.graphics.getWidth() / 2f
-                - this.notification.getWidth() / 2f, Gdx.graphics.getHeight() - 20);
+                - this.notification.getWidth() / 2f, Gdx.graphics.getHeight() - this.notification.getHeight() - 20);
+        addActor(this.notification);
+    }
+
+    private void checkForExceptionsAndThrowIfExist(int i) {
+        if (this.exceptions.size > 0 && i < this.exceptions.size) {
+            checkForExceptionsAndThrowIfExist(i + 1);
+            GameException e = this.exceptions.get(i);
+            this.exceptions.removeIndex(i);
+            throw e;
+        }
+    }
+
+    public void addException(GameException e) {
+        this.exceptions.add(e);
     }
 
 }
