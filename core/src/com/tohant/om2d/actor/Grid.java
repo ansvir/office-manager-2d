@@ -4,8 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -24,6 +22,8 @@ import com.tohant.om2d.storage.CacheProxy;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import static com.tohant.om2d.service.ServiceUtil.nextToHalls;
+import static com.tohant.om2d.service.ServiceUtil.checkNoCellOnGrid;
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.storage.CacheImpl.CURRENT_BUDGET;
 import static com.tohant.om2d.storage.CacheImpl.CURRENT_ROOM_TYPE;
@@ -100,10 +100,10 @@ public class Grid extends Group implements Disposable {
                     if (nextType == null) {
                         return false;
                     }
-                    if (checkNoCellOnGrid() && nextType != Room.Type.HALL) {
+                    if (checkNoCellOnGrid(getChildren()) && nextType != Room.Type.HALL) {
                         ((GameStage) getStage()).addException(new GameException(Code.E200));
                         return false;
-                    } else if (nextType != Room.Type.HALL && !checkNextToHall(cell)) {
+                    } else if (nextType != Room.Type.HALL && nextToHalls(cell, getChildren()) < 1) {
                         ((GameStage) getStage()).addException(new GameException(Code.E100));
                         return false;
                     }
@@ -198,46 +198,6 @@ public class Grid extends Group implements Disposable {
             case CLEANING: gameCache.setValue(CLEANING_AMOUNT, amount); break;
             default: break;
         }
-    }
-
-    private boolean checkNextToHall(Cell cell) {
-        Vector2 coords = getCellCoordinates(cell);
-        int points = 0;
-        Array<Actor> children = getChildren();
-        for (int i = 0; i < children.size; i++) {
-            if (children.get(i) instanceof Cell) {
-                Cell currCell = (Cell) children.get(i);
-                Vector2 currCoords = getCellCoordinates(currCell);
-                if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
-                        (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty() && currCell.getRoom() instanceof HallRoom) {
-                        points++;
-                        break;
-                    }
-                }
-            }
-        }
-        return points == 1;
-    }
-
-    private Vector2 getCellCoordinates(Cell cell) {
-        int cellX = Integer.parseInt(cell.getName().substring(cell.getName().indexOf("#") + 1, cell.getName().lastIndexOf("#")));
-        int cellY = Integer.parseInt(cell.getName().substring(cell.getName().lastIndexOf("#") + 1));
-        return new Vector2(cellX, cellY);
-    }
-
-    private boolean checkNoCellOnGrid() {
-        boolean result = true;
-        for (int i = 0; i < getChildren().size; i++) {
-            Actor a = getChildren().get(i);
-            if (a instanceof Cell) {
-                if (((Cell) a).getRoom() == null && ((Cell) a).isEmpty()) {
-                    result = false;
-                    break;
-                }
-            }
-        }
-        return result;
     }
 
 }

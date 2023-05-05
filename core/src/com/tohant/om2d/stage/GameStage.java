@@ -16,8 +16,9 @@ import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.storage.CacheProxy;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
-import static com.badlogic.gdx.utils.Align.center;
 import static com.badlogic.gdx.utils.Align.left;
+import static com.tohant.om2d.service.ServiceUtil.checkHallNextToRoomThatHasNoOtherHalls;
+import static com.tohant.om2d.service.ServiceUtil.nextToHalls;
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
@@ -221,22 +222,28 @@ public class GameStage extends Stage {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         super.touchDown(event, x, y, pointer, button);
-                        gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) - currentCellCopy.getRoom().getCost());
-                        if (currentRoom instanceof OfficeRoom) {
-                            gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) - 1000.0f);
+                        if (checkHallNextToRoomThatHasNoOtherHalls(currentCellCopy, map.getGrid().getChildren())
+                                && currentCellCopy.getRoom().getType() == Room.Type.HALL) {
+                            addException(new GameException(GameException.Code.E300));
+                        } else {
+                            gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) - currentCellCopy.getRoom().getCost());
+                            if (currentRoom instanceof OfficeRoom) {
+                                gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) - 1000.0f);
+                            }
+                            if (currentStaffTypeCopy != null) {
+                                setEmployeesAmountByType(currentStaffTypeCopy,
+                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getStaff().size);
+                            }
+                            gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
+                                    - currentRoom.getStaff().size * currentStaffTypeSalaryCopy);
+                            setRoomsAmountByType(currentCellCopy.getRoom().getType(),
+                                    getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
+                            gameCache.setValue(CURRENT_ROOM, null);
+                            currentCellCopy.setRoom(null);
+                            roomInfo.setVisible(false);
+                            return true;
                         }
-                        if (currentStaffTypeCopy != null) {
-                            setEmployeesAmountByType(currentStaffTypeCopy,
-                                    getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getStaff().size);
-                        }
-                        gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
-                                - currentRoom.getStaff().size * currentStaffTypeSalaryCopy);
-                        setRoomsAmountByType(currentCellCopy.getRoom().getType(),
-                                getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
-                        gameCache.setValue(CURRENT_ROOM, null);
-                        currentCellCopy.setRoom(null);
-                        roomInfo.setVisible(false);
-                        return true;
+                        return false;
                     }
                 });
                 roomInfo.add(roomInfoLabel).center().expand();
