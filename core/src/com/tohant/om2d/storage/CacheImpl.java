@@ -18,6 +18,7 @@ public class CacheImpl implements Cache {
     public static final String IS_PAYDAY = "IS_PAYDAY";
     public static final String CURRENT_ROOM = "CURR_ROOM";
     public static final String TOTAL_COSTS = "TOTAL_COSTS";
+    public static final String TOTAL_INCOMES = "TOTAL_INC";
 
     private final Preferences globalCache;
     private static CacheImpl cache;

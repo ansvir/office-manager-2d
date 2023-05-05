@@ -7,10 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.Cell;
-import com.tohant.om2d.actor.Grid;
-import com.tohant.om2d.actor.Map;
-import com.tohant.om2d.actor.Room;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.storage.CacheProxy;
 
@@ -34,7 +32,7 @@ public class GameStage extends Stage {
     private Label time;
     private Window toolPane;
     private Window officeStatWindow;
-    private Label roomsStatLabel;
+    private Label officeStatLabel;
     private Window roomInfo;
     private Skin skin;
     private Window notification;
@@ -48,20 +46,7 @@ public class GameStage extends Stage {
         map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
         addActor(map);
         skin = getDefaultSkin();
-        gameCache = new CacheProxy((c) -> {
-        }, (c) -> {
-        }, (c) -> {
-            c.setValue(CURRENT_ROOM_TYPE, null);
-            c.setValue(CURRENT_BUDGET, 2000.0f);
-            c.setValue(CURRENT_TIME, "01/01/0001");
-            c.setValue(OFFICES_AMOUNT, 0L);
-            c.setValue(HALLS_AMOUNT, 0L);
-            c.setValue(SECURITY_AMOUNT, 0L);
-            c.setValue(CLEANING_AMOUNT, 0L);
-            c.setValue(IS_PAYDAY, false);
-            c.setValue(CURRENT_ROOM, null);
-            c.setValue(TOTAL_COSTS, 0.0f);
-        });
+        gameCache = new CacheProxy();
         this.exceptions = new Array<>();
         this.budget = new Label(Math.round(budget) + " $", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
@@ -182,7 +167,15 @@ public class GameStage extends Stage {
             builder.append(getRoomsAmountByType(t));
             builder.append("\n");
         }
-        this.roomsStatLabel.setText(builder.toString());
+        builder.append("Incomes: ");
+        builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES))));
+        builder.append(" $/m");
+        builder.append("\n");
+        builder.append("Costs: ");
+        builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS))));
+        builder.append(" $/m");
+        this.officeStatLabel.setText(builder.toString());
+        this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
     }
 
     private void updateRoomInfoWindow() {
@@ -213,6 +206,9 @@ public class GameStage extends Stage {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         super.touchDown(event, x, y, pointer, button);
                         gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) - currentCellCopy.getRoom().getCost());
+                        if (currentRoom instanceof OfficeRoom) {
+                            gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) - 1000.0f);
+                        }
                         setRoomsAmountByType(currentCellCopy.getRoom().getType(), getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
                         gameCache.setValue(CURRENT_ROOM, null);
                         currentCellCopy.setRoom(null);
@@ -231,8 +227,7 @@ public class GameStage extends Stage {
     }
 
     private void createToolPane() {
-        this.roomsStatLabel = new Label("Rooms:", skin);
-        setRoomsStat();
+        this.officeStatLabel = new Label("Rooms:", skin);
         this.officeStatWindow = new Window("Office", skin);
         TextButton hideOfficeStatWindow = new TextButton("x", skin);
         hideOfficeStatWindow.addListener(new InputListener() {
@@ -245,9 +240,10 @@ public class GameStage extends Stage {
         });
         this.officeStatWindow.setMovable(true);
         this.officeStatWindow.setResizable(true);
-        this.officeStatWindow.add(this.roomsStatLabel).center();
+        this.officeStatWindow.add(this.officeStatLabel).center().expand();
         this.officeStatWindow.getTitleTable().add(hideOfficeStatWindow).right();
         this.officeStatWindow.setVisible(false);
+        setRoomsStat();
         this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
         this.officeStatWindow.setPosition(this.budget.getX(), this.budget.getY() - 20 - this.officeStatWindow.getHeight());
         this.roomInfo = new Window("Room Info", skin);

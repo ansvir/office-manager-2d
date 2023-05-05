@@ -35,18 +35,7 @@ public class Grid extends Group implements Disposable {
         setPosition(x, y);
         setSize(cellsWidth * cellSize, cellsHeight * cellSize);
         this.cellSize = cellSize;
-        gameCache = new CacheProxy((c) -> {}, (c) -> {}, (c) -> {
-            c.setValue(CURRENT_ROOM_TYPE, null);
-            c.setValue(CURRENT_BUDGET, 2000.0f);
-            c.setValue(CURRENT_TIME, "01/01/0001");
-            c.setValue(OFFICES_AMOUNT, 0L);
-            c.setValue(HALLS_AMOUNT, 0L);
-            c.setValue(SECURITY_AMOUNT, 0L);
-            c.setValue(CLEANING_AMOUNT, 0L);
-            c.setValue(IS_PAYDAY, false);
-            c.setValue(CURRENT_ROOM, null);
-            c.setValue(TOTAL_COSTS, 0.0f);
-        });
+        gameCache = new CacheProxy();
         Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
         Color borderColor = Color.GRAY;
         borderColor.a = 0.5f;
@@ -144,7 +133,10 @@ public class Grid extends Group implements Disposable {
                     float budget = Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET));
                     if (budget >= price) {
                         gameCache.setValue(CURRENT_BUDGET, budget - price);
-                        gameCache.setValue(TOTAL_COSTS, cost);
+                        gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) + cost);
+                        if (newRoom instanceof OfficeRoom) {
+                            gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) + 1000.0f);
+                        }
                         setRoomsAmountByType(newRoom.getType(), getRoomsAmountByType(newRoom.getType()) + 1L);
                         cell.setRoom(newRoom);
                     }
