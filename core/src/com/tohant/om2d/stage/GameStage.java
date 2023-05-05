@@ -9,6 +9,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.man.Staff;
+import com.tohant.om2d.actor.room.OfficeRoom;
+import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.storage.CacheProxy;
 
@@ -174,6 +177,10 @@ public class GameStage extends Stage {
         builder.append("Costs: ");
         builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS))));
         builder.append(" $/m");
+        builder.append("\n");
+        builder.append("Salaries: ");
+        builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))));
+        builder.append(" $/m");
         this.officeStatLabel.setText(builder.toString());
         this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
     }
@@ -192,15 +199,24 @@ public class GameStage extends Stage {
         if (currentCell != null) {
             if (currentCell.getRoom() != null) {
                 Room currentRoom = currentCell.getRoom();
+                Staff.Type currentStaffType = null;
+                float currentStaffTypeSalary = 0.0f;
+                switch (currentRoom.getType()) {
+                    case SECURITY: currentStaffType = Staff.Type.SECURITY; currentStaffTypeSalary = 1200.0f; break;
+                    case OFFICE: currentStaffType = Staff.Type.WORKER; break;
+                    case CLEANING: currentStaffType = Staff.Type.CLEANING; currentStaffTypeSalary = 500.0f; break;
+                }
                 String name = currentRoom.getType().name().charAt(0) +
                         currentRoom.getType().name().substring(1).toLowerCase();
                 roomInfo.getTitleLabel().setText(name + " #" + currentRoom.getNumber());
                 roomInfo.clearChildren();
                 Label roomInfoLabel = new Label("Price: " + Math.round(currentRoom.getPrice()) + "$\n"
-                        + "Cost: " + Math.round(currentRoom.getCost()) + "$/m",
-                        skin);
+                        + "Cost: " + Math.round(currentRoom.getCost()) + "$/m\n" + "Employees: "
+                        + currentRoom.getStaff().size, skin);
                 TextButton destroy = new TextButton("Destroy", skin);
                 Cell currentCellCopy = currentCell;
+                Staff.Type currentStaffTypeCopy = currentStaffType;
+                float currentStaffTypeSalaryCopy = currentStaffTypeSalary;
                 destroy.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -209,16 +225,21 @@ public class GameStage extends Stage {
                         if (currentRoom instanceof OfficeRoom) {
                             gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) - 1000.0f);
                         }
-                        setRoomsAmountByType(currentCellCopy.getRoom().getType(), getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
+                        setEmployeesAmountByType(currentStaffTypeCopy,
+                                getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getStaff().size);
+                        gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
+                                - currentRoom.getStaff().size * currentStaffTypeSalaryCopy);
+                        setRoomsAmountByType(currentCellCopy.getRoom().getType(),
+                                getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
                         gameCache.setValue(CURRENT_ROOM, null);
                         currentCellCopy.setRoom(null);
                         roomInfo.setVisible(false);
                         return true;
                     }
                 });
-                roomInfo.add(roomInfoLabel).align(center);
+                roomInfo.add(roomInfoLabel).center().expand();
                 roomInfo.row();
-                roomInfo.add(destroy);
+                roomInfo.add(destroy).center().expand();
                 roomInfo.setSize(roomInfo.getPrefWidth(), roomInfo.getPrefHeight());
                 roomInfo.setPosition(Gdx.graphics.getWidth() - roomInfo.getWidth() - 20, budget.getY() - 20 - roomInfo.getHeight());
                 roomInfo.setVisible(true);
@@ -336,8 +357,39 @@ public class GameStage extends Stage {
         }
     }
 
+    private long getEmployeesAmountByType(Staff.Type type) {
+        switch (type) {
+            case SECURITY: return Long.parseLong((String) gameCache.getValue(TOTAL_SECURITY_STAFF));
+            case WORKER: return Long.parseLong((String) gameCache.getValue(TOTAL_WORKERS));
+            case CLEANING: return Long.parseLong((String) gameCache.getValue(TOTAL_CLEANING_STAFF));
+            case ADMINISTRATION: return Long.parseLong((String) gameCache.getValue(TOTAL_ADMIN_STAFF));
+            default: return -1L;
+        }
+    }
+
+    private void setEmployeesAmountByType(Staff.Type type, long amount) {
+        switch (type) {
+            case SECURITY:
+                gameCache.setValue(TOTAL_SECURITY_STAFF, amount);
+                break;
+            case CLEANING:
+                gameCache.setValue(TOTAL_CLEANING_STAFF, amount);
+                break;
+            case WORKER:
+                gameCache.setValue(TOTAL_WORKERS, amount);
+                break;
+            case ADMINISTRATION:
+                gameCache.setValue(TOTAL_ADMIN_STAFF, amount);
+                break;
+            default:
+                break;
+        }
+    }
+
     private void createNotification(GameException e) {
         this.notification = new Window("", skin);
+        this.notification.setMovable(false);
+        this.notification.setResizable(false);
         this.notification.setName("user_info");
         this.notification.addAction(sequence(delay(4f), hide()));
         this.notification.getTitleLabel().setText(e.getCode().getType().getTitle());

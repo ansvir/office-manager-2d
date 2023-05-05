@@ -2,7 +2,6 @@ package com.tohant.om2d.storage;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.tohant.om2d.actor.Room;
 
 public class CacheImpl implements Cache {
 
@@ -18,7 +17,12 @@ public class CacheImpl implements Cache {
     public static final String IS_PAYDAY = "IS_PAYDAY";
     public static final String CURRENT_ROOM = "CURR_ROOM";
     public static final String TOTAL_COSTS = "TOTAL_COSTS";
+    public static final String TOTAL_SALARIES = "TOTAL_SALAR";
     public static final String TOTAL_INCOMES = "TOTAL_INC";
+    public static final String TOTAL_SECURITY_STAFF = "TOTAL_SEC_STAFF";
+    public static final String TOTAL_ADMIN_STAFF = "TOTAL_ADMIN_STAFF";
+    public static final String TOTAL_CLEANING_STAFF = "TOTAL_CLEANING_STAFF";
+    public static final String TOTAL_WORKERS = "TOTAL_WORKERS";
 
     private final Preferences globalCache;
     private static CacheImpl cache;

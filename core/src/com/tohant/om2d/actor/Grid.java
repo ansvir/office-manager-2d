@@ -11,12 +11,18 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.tohant.om2d.actor.man.CleaningStaff;
+import com.tohant.om2d.actor.man.SecurityStaff;
+import com.tohant.om2d.actor.man.Staff;
+import com.tohant.om2d.actor.man.WorkerStaff;
+import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.exception.GameException.Code;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.storage.CacheProxy;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.storage.CacheImpl.CURRENT_BUDGET;
@@ -88,6 +94,7 @@ public class Grid extends Group implements Disposable {
                 if (cell.isEmpty()) {
                     float price = 0.0f;
                     float cost = Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS));
+                    AtomicReference<Float> salaries = new AtomicReference<>(0.0f);
                     Room newRoom = null;
                     Room.Type nextType = getCurrentRoomType();
                     if (nextType == null) {
@@ -109,21 +116,37 @@ public class Grid extends Group implements Disposable {
                             break;
                         }
                         case OFFICE: {
-                            newRoom = new OfficeRoom(550f, 50f, cell.getX(), cell.getY(),
+                            Array<Staff> workers = Array.with(IntStream.range(0, 15).boxed()
+                                    .map(i -> new WorkerStaff()).toArray(WorkerStaff[]::new));
+                            newRoom = new OfficeRoom(workers, 550f, 50f, cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
                             price = newRoom.getPrice();
                             cost += newRoom.getCost();
                             break;
                         }
                         case SECURITY: {
-                            newRoom = new SecurityRoom(910f, 100f, cell.getX(), cell.getY(),
+                            Array<Staff> security = Array.with(IntStream.range(0, 4).boxed()
+                                    .map(i -> new SecurityStaff(1200.0f))
+                                    .map(s -> {
+                                        salaries.updateAndGet(v -> v + s.getSalary());
+                                        return s;
+                                    })
+                                    .toArray(SecurityStaff[]::new));
+                            newRoom = new SecurityRoom(security, 910f, 100f, cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
                             price = newRoom.getPrice();
                             cost += newRoom.getCost();
                             break;
                         }
                         case CLEANING: {
-                            newRoom = new CleaningRoom(430f, 45f, cell.getX(), cell.getY(),
+                            Array<Staff> cleaning = Array.with(IntStream.range(0, 2).boxed()
+                                    .map(i -> new CleaningStaff(500.0f))
+                                    .map(s -> {
+                                        salaries.updateAndGet(v -> v + s.getSalary());
+                                        return s;
+                                    })
+                                    .toArray(CleaningStaff[]::new));
+                            newRoom = new CleaningRoom(cleaning, 430f, 45f, cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
                             price = newRoom.getPrice();
                             cost += newRoom.getCost();
@@ -133,9 +156,10 @@ public class Grid extends Group implements Disposable {
                     float budget = Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET));
                     if (budget >= price) {
                         gameCache.setValue(CURRENT_BUDGET, budget - price);
+                        gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES)) + salaries.get());
                         gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) + cost);
                         if (newRoom instanceof OfficeRoom) {
-                            gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) + 1000.0f);
+                            gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) + 100.0f * newRoom.getStaff().size);
                         }
                         setRoomsAmountByType(newRoom.getType(), getRoomsAmountByType(newRoom.getType()) + 1L);
                         cell.setRoom(newRoom);

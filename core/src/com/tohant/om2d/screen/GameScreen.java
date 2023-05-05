@@ -127,9 +127,10 @@ public class GameScreen implements Screen {
 //            }
             gameCache.setValue(IS_PAYDAY, false);
             float budget = Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET));
+            float salaries = Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES));
             float costs = Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS));
             float incomes = Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES));
-            gameCache.setValue(CURRENT_BUDGET, (budget - costs + incomes));
+            gameCache.setValue(CURRENT_BUDGET, (budget - costs - salaries + incomes));
             eventListener.post();
         }
     }

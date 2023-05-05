@@ -53,6 +53,11 @@ public class CacheProxy implements Cache {
             c.setValue(CURRENT_ROOM, null);
             c.setValue(TOTAL_COSTS, 0.0f);
             c.setValue(TOTAL_INCOMES, 0.0f);
+            c.setValue(TOTAL_SALARIES, 0.0f);
+            c.setValue(TOTAL_WORKERS, 0L);
+            c.setValue(TOTAL_ADMIN_STAFF, 0L);
+            c.setValue(TOTAL_CLEANING_STAFF, 0L);
+            c.setValue(TOTAL_SECURITY_STAFF, 0L);
         };
     }
 
