@@ -225,8 +225,10 @@ public class GameStage extends Stage {
                         if (currentRoom instanceof OfficeRoom) {
                             gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) - 1000.0f);
                         }
-                        setEmployeesAmountByType(currentStaffTypeCopy,
-                                getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getStaff().size);
+                        if (currentStaffTypeCopy != null) {
+                            setEmployeesAmountByType(currentStaffTypeCopy,
+                                    getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getStaff().size);
+                        }
                         gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
                                 - currentRoom.getStaff().size * currentStaffTypeSalaryCopy);
                         setRoomsAmountByType(currentCellCopy.getRoom().getType(),
