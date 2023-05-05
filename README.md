@@ -10,6 +10,11 @@ features:
 4) Time passes while playing: days, months and years 
 5) 2 textures were recently added for 2 rooms
 
+Project stack:
+
+1) Java 11
+2) LibGDX
+
 But this is not the end! I'm actively developing my project to make it very funny!
 
 Here you can view the screenshot from current version:
