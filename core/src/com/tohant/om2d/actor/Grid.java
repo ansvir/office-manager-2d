@@ -24,15 +24,16 @@ import static com.tohant.om2d.storage.CacheImpl.CURRENT_ROOM_TYPE;
 
 public class Grid extends Group implements Disposable {
 
-    private float cellSize;
+    private int cellSize;
     private Texture texture;
     private CacheProxy gameCache;
+    private int cellsWidth, cellsHeight;
 
-    public Grid(int x, int y, float width, float height, int cellSize) {
-        float cellsWidth = width / cellSize;
-        float cellsHeight = height / cellSize;
+    public Grid(int x, int y, int cellsWidth, int cellsHeight, int cellSize) {
+        this.cellsWidth = cellsWidth;
+        this.cellsHeight = cellsHeight;
         setPosition(x, y);
-        setSize(width, height);
+        setSize(cellsWidth * cellSize, cellsHeight * cellSize);
         this.cellSize = cellSize;
         gameCache = new CacheProxy((c) -> {}, (c) -> {}, (c) -> {
             c.setValue(CURRENT_ROOM_TYPE, null);
@@ -50,11 +51,18 @@ public class Grid extends Group implements Disposable {
         Color borderColor = Color.GRAY;
         borderColor.a = 0.5f;
         pixmap.setColor(borderColor);
-        for (int i = 0, w = 0; i < getWidth() && w < cellsWidth; i += cellSize, w++) {
-            for (int j = 0, h = 0; j < getHeight() && h < cellsHeight; j += cellSize, h++) {
-                pixmap.drawLine(i, j, i, j + cellSize);
-                pixmap.drawLine(i, j, i + cellSize, j);
-                Cell cell = new Cell(i, getHeight() - j, cellSize, cellSize);
+        pixmap.drawRectangle(1, 1, (int) getWidth() - 1, (int) getHeight() - 1);
+        for (int i = 1; i <= cellsHeight; i++) {
+            pixmap.drawLine(i * cellSize, 1, i * cellSize, cellSize * cellsHeight);
+        }
+        for (int i = 1; i <= cellsWidth; i++) {
+            pixmap.drawLine(1, i * cellSize, cellSize * cellsWidth, i * cellSize);
+        }
+        for (int w = 0; w < cellsWidth; w++) {
+            for (int h = 0; h < cellsHeight; h++) {
+//                pixmap.drawLine(i, j, i, j + cellSize);
+//                pixmap.drawLine(i, j, i + cellSize, j);
+                Cell cell = new Cell(h * cellSize, w * cellSize, cellSize, cellSize);
                 cell.setName("Cell#" + h + "#" + w);
                 addCellEventHandling(cell);
                 addActor(cell);
@@ -68,14 +76,14 @@ public class Grid extends Group implements Disposable {
         return cellSize;
     }
 
-    public void setCellSize(float cellSize) {
+    public void setCellSize(int cellSize) {
         this.cellSize = cellSize;
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        batch.draw(texture, getX(), getY(), getWidth(), getHeight());
+        batch.draw(texture, getX(), getY(), cellsWidth * cellSize, cellsHeight * cellSize);
     }
 
     @Override

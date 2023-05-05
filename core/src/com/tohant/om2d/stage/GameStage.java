@@ -12,8 +12,6 @@ import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.Map;
 import com.tohant.om2d.actor.Room;
 import com.tohant.om2d.exception.GameException;
-import com.tohant.om2d.storage.Cache;
-import com.tohant.om2d.storage.CacheImpl;
 import com.tohant.om2d.storage.CacheProxy;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
@@ -24,7 +22,9 @@ import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class GameStage extends Stage {
 
-    private static final float GRID_SIZE = 1000;
+    private static final int GRID_WIDTH = 10;
+    private static final int GRID_HEIGHT = 10;
+    private static final int CELL_SIZE = 80;
 
     private Map map;
     private Label budget;
@@ -42,9 +42,9 @@ public class GameStage extends Stage {
 
     public GameStage(float budget, String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
-        Grid grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - (GRID_SIZE / 2)),
-                ((int) ((Gdx.graphics.getHeight() / 2f) - (GRID_SIZE / 2))),
-                GRID_SIZE, GRID_SIZE, (int) GRID_SIZE / 15);
+        Grid grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - ((GRID_WIDTH * CELL_SIZE) / 2)),
+                ((int) ((Gdx.graphics.getHeight() / 2f) - ((GRID_HEIGHT * CELL_SIZE)/ 2))),
+                GRID_WIDTH, GRID_HEIGHT,  CELL_SIZE);
         map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
         addActor(map);
         skin = getDefaultSkin();
