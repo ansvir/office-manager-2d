@@ -6,7 +6,9 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 public class Map extends Group {
 
@@ -55,7 +57,14 @@ public class Map extends Group {
         });
     }
 
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+//        background.setPosition(getWidth() - grid.getWidth() - grid.getX(), getHeight() - grid.getHeight() - grid.getY());
+    }
+
     public Grid getGrid() {
         return grid;
     }
+
 }

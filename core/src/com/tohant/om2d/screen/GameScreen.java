@@ -71,7 +71,6 @@ public class GameScreen implements Screen {
         gameStage.draw();
         gameStage.act(delta);
         batch.begin();
-        batch.setColor(Color.WHITE);
         batch.end();
         camera.update();
     }
