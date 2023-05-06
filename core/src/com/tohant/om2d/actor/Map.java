@@ -57,11 +57,11 @@ public class Map extends Group {
         });
     }
 
-    @Override
-    public void act(float delta) {
-        super.act(delta);
+//    @Override
+//    public void act(float delta) {
+//        super.act(delta);
 //        background.setPosition(getWidth() - grid.getWidth() - grid.getX(), getHeight() - grid.getHeight() - grid.getY());
-    }
+//    }
 
     public Grid getGrid() {
         return grid;

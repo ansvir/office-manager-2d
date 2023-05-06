@@ -20,16 +20,13 @@ import com.tohant.om2d.storage.CachedEventListener;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.badlogic.gdx.utils.Align.left;
+import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.checkHallNextToRoomThatHasNoOtherHalls;
 import static com.tohant.om2d.service.ServiceUtil.nextToHalls;
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class GameStage extends Stage {
-
-    private static final int GRID_WIDTH = 10;
-    private static final int GRID_HEIGHT = 10;
-    private static final int CELL_SIZE = 80;
 
     private Map map;
     private Label budget;
@@ -406,7 +403,7 @@ public class GameStage extends Stage {
         this.notification.setMovable(false);
         this.notification.setResizable(false);
         this.notification.setName("user_info");
-        this.notification.addAction(sequence(delay(4f), fadeOut(4f)));
+        this.notification.addAction(sequence(delay(4f), fadeOut(3f)));
         this.notification.getTitleLabel().setText(e.getCode().getType().getTitle());
         this.notification.add(new Label(e.getCode().getMessage(), skin)).center().expand();
         this.notification.setSize(this.notification.getPrefWidth(), this.notification.getPrefHeight());

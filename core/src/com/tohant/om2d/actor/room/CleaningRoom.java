@@ -20,9 +20,4 @@ public class CleaningRoom extends Room {
         return TYPE;
     }
 
-    @Override
-    public String getTexturePath() {
-        return null;
-    }
-
 }

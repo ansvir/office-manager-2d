@@ -8,18 +8,20 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.tohant.om2d.actor.man.Staff;
+import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.UUID;
 
-public abstract class Room extends Actor implements Disposable {
+public abstract class Room extends Actor {
 
     private String id;
     private String number;
-    private Texture texture;
+//    private Texture texture;
     private float price;
     private float cost;
     private final Array<Staff> staff;
+    private final AssetService assetService;
 
     public Room(String id, Array<Staff> staff, float price, float cost, float x, float y, float width, float height) {
         this.id = id;
@@ -29,6 +31,7 @@ public abstract class Room extends Actor implements Disposable {
         this.staff = staff;
         setPosition(x, y);
         setSize(width, height);
+        this.assetService = AssetService.getInstance();
     }
 
     public Room(Array<Staff> staff, float price, float cost, float x, float y, float width, float height) {
@@ -39,6 +42,7 @@ public abstract class Room extends Actor implements Disposable {
         this.staff = staff;
         setPosition(x, y);
         setSize(width, height);
+        this.assetService = AssetService.getInstance();
     }
 
     public String getId() {
@@ -109,26 +113,23 @@ public abstract class Room extends Actor implements Disposable {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        if (getTexturePath() != null) {
-            Texture newTexture = new Texture(getTexturePath());
-            texture = AssetsUtil.resizeTexture(newTexture, getWidth(), getHeight());
-            newTexture.dispose();
+        Texture texture;
+        if (getType() == Type.HALL) {
+            texture = assetService.getHallRoomTexture();
+        } else if (getType() == Type.SECURITY) {
+            texture = assetService.getSecurityRoomTexture();
+        } else if (getType() == Type.OFFICE) {
+            texture = assetService.getOfficeRoomTexture();
         } else {
-            Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
-            pixmap.setColor(getType().getColor());
-            pixmap.fillRectangle(1, 1, pixmap.getWidth() - 1, pixmap.getHeight() - 1);
-            texture = new Texture(pixmap);
-            pixmap.dispose();
+            texture = assetService.getCleaningRoomTexture();
         }
         batch.draw(texture, getX(), getY());
     }
 
-    @Override
-    public void dispose() {
-        texture.dispose();
-    }
-
-    public abstract String getTexturePath();
+//    @Override
+//    public void dispose() {
+//        texture.dispose();
+//    }
 
     public Array<Staff> getStaff() {
         return staff;

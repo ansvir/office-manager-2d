@@ -33,4 +33,13 @@ public class AssetsUtil {
         return new Texture(newPixmap);
     }
 
+    public static Texture resizeTexture(String internalPath, float width, float height) {
+        Pixmap pixmap = new Pixmap(Gdx.files.internal(internalPath));
+        Pixmap newPixmap = new Pixmap((int) width, (int) height, pixmap.getFormat());
+        pixmap.setFilter(Pixmap.Filter.NearestNeighbour);
+        newPixmap.drawPixmap(pixmap, 0, 0, pixmap.getWidth(), pixmap.getHeight(), 0, 0, (int) width, (int) height);
+        pixmap.dispose();
+        return new Texture(newPixmap);
+    }
+
 }
