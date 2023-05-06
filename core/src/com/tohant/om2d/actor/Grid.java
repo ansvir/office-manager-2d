@@ -16,6 +16,7 @@ import com.tohant.om2d.actor.man.WorkerStaff;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.exception.GameException.Code;
+import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.storage.CacheProxy;
 
@@ -33,6 +34,7 @@ public class Grid extends Group implements Disposable {
     private int cellSize;
     private Texture texture;
     private CacheProxy gameCache;
+    private CacheService cacheService;
     private int cellsWidth, cellsHeight;
 
     public Grid(int x, int y, int cellsWidth, int cellsHeight, int cellSize) {
@@ -42,6 +44,7 @@ public class Grid extends Group implements Disposable {
         setSize(cellsWidth * cellSize, cellsHeight * cellSize);
         this.cellSize = cellSize;
         gameCache = new CacheProxy();
+        cacheService = new CacheService(gameCache);
         Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
         Color borderColor = Color.GRAY;
         borderColor.a = 0.5f;
@@ -55,8 +58,6 @@ public class Grid extends Group implements Disposable {
         }
         for (int w = 0; w < cellsWidth; w++) {
             for (int h = 0; h < cellsHeight; h++) {
-//                pixmap.drawLine(i, j, i, j + cellSize);
-//                pixmap.drawLine(i, j, i + cellSize, j);
                 Cell cell = new Cell(h * cellSize, w * cellSize, cellSize, cellSize);
                 cell.setName("Cell#" + h + "#" + w);
                 addCellEventHandling(cell);
@@ -93,10 +94,11 @@ public class Grid extends Group implements Disposable {
                 super.touchDown(event, x, y, pointer, button);
                 if (cell.isEmpty()) {
                     float price = 0.0f;
-                    float cost = Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS));
+                    float cost = 0.0f;
                     AtomicReference<Float> salaries = new AtomicReference<>(0.0f);
                     Room newRoom = null;
                     Room.Type nextType = getCurrentRoomType();
+                    String nextStaffType = null;
                     if (nextType == null) {
                         return false;
                     }
@@ -122,6 +124,7 @@ public class Grid extends Group implements Disposable {
                                     cell.getWidth(), cell.getHeight());
                             price = newRoom.getPrice();
                             cost += newRoom.getCost();
+                            nextStaffType = TOTAL_WORKERS;
                             break;
                         }
                         case SECURITY: {
@@ -136,6 +139,7 @@ public class Grid extends Group implements Disposable {
                                     cell.getWidth(), cell.getHeight());
                             price = newRoom.getPrice();
                             cost += newRoom.getCost();
+                            nextStaffType = TOTAL_SECURITY_STAFF;
                             break;
                         }
                         case CLEANING: {
@@ -150,22 +154,27 @@ public class Grid extends Group implements Disposable {
                                     cell.getWidth(), cell.getHeight());
                             price = newRoom.getPrice();
                             cost += newRoom.getCost();
+                            nextStaffType = TOTAL_CLEANING_STAFF;
                             break;
                         }
                     }
                     float budget = Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET));
                     if (budget >= price) {
-                        gameCache.setValue(CURRENT_BUDGET, budget - price);
-                        gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES)) + salaries.get());
-                        gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) + cost);
+                        cacheService.setFloat(CURRENT_BUDGET, budget - price);
+                        cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES) + salaries.get());
+                        cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) + cost);
                         if (newRoom instanceof OfficeRoom) {
-                            gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) + 100.0f * newRoom.getStaff().size);
+                            cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * newRoom.getStaff().size);
+                        }
+                        if (nextStaffType != null) {
+                            cacheService.setLong(nextStaffType, cacheService.getLong(nextStaffType) + newRoom.getStaff().size);
                         }
                         setRoomsAmountByType(newRoom.getType(), getRoomsAmountByType(newRoom.getType()) + 1L);
                         cell.setRoom(newRoom);
                     }
                 }
                 gameCache.setValue(CURRENT_ROOM, cell.getRoom().getId());
+                ((GameStage) getStage()).updateRoomInfoWindow();
                 return true;
             }
         });
@@ -182,21 +191,50 @@ public class Grid extends Group implements Disposable {
 
     private long getRoomsAmountByType(Room.Type type) {
         switch (type) {
-            case OFFICE: return Long.parseLong((String) gameCache.getValue(OFFICES_AMOUNT));
-            case HALL: return Long.parseLong((String) gameCache.getValue(HALLS_AMOUNT));
-            case SECURITY: return Long.parseLong((String) gameCache.getValue(SECURITY_AMOUNT));
-            case CLEANING: return Long.parseLong((String) gameCache.getValue(CLEANING_AMOUNT));
+            case OFFICE: return cacheService.getLong(OFFICES_AMOUNT);
+            case HALL: return cacheService.getLong(HALLS_AMOUNT);
+            case SECURITY: return cacheService.getLong(SECURITY_AMOUNT);
+            case CLEANING: return cacheService.getLong(CLEANING_AMOUNT);
             default: return -1L;
         }
     }
 
     private void setRoomsAmountByType(Room.Type type, long amount) {
         switch (type) {
-            case OFFICE: gameCache.setValue(OFFICES_AMOUNT, amount); break;
-            case HALL: gameCache.setValue(HALLS_AMOUNT, amount); break;
-            case SECURITY: gameCache.setValue(SECURITY_AMOUNT, amount); break;
-            case CLEANING: gameCache.setValue(CLEANING_AMOUNT, amount); break;
+            case OFFICE: cacheService.setLong(OFFICES_AMOUNT, amount); break;
+            case HALL: cacheService.setLong(HALLS_AMOUNT, amount); break;
+            case SECURITY: cacheService.setLong(SECURITY_AMOUNT, amount); break;
+            case CLEANING: cacheService.setLong(CLEANING_AMOUNT, amount); break;
             default: break;
+        }
+    }
+
+    private long getEmployeesAmountByType(Staff.Type type) {
+        switch (type) {
+            case SECURITY: return Long.parseLong((String) gameCache.getValue(TOTAL_SECURITY_STAFF));
+            case WORKER: return Long.parseLong((String) gameCache.getValue(TOTAL_WORKERS));
+            case CLEANING: return Long.parseLong((String) gameCache.getValue(TOTAL_CLEANING_STAFF));
+            case ADMINISTRATION: return Long.parseLong((String) gameCache.getValue(TOTAL_ADMIN_STAFF));
+            default: return -1L;
+        }
+    }
+
+    private void setEmployeesAmountByType(Staff.Type type, long amount) {
+        switch (type) {
+            case SECURITY:
+                gameCache.setValue(TOTAL_SECURITY_STAFF, amount);
+                break;
+            case CLEANING:
+                gameCache.setValue(TOTAL_CLEANING_STAFF, amount);
+                break;
+            case WORKER:
+                gameCache.setValue(TOTAL_WORKERS, amount);
+                break;
+            case ADMINISTRATION:
+                gameCache.setValue(TOTAL_ADMIN_STAFF, amount);
+                break;
+            default:
+                break;
         }
     }
 

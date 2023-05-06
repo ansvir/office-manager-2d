@@ -76,16 +76,32 @@ public abstract class Room extends Actor implements Disposable {
     public abstract Type getType();
 
     public enum Type {
-        HALL(Color.GREEN), OFFICE(Color.RED), SECURITY(Color.BLUE), CLEANING(Color.YELLOW);
+        HALL(Color.GREEN, 100.0f, 20.0f),
+        OFFICE(Color.RED, 550.0f, 50.0f),
+        SECURITY(Color.BLUE, 910.0f, 100.0f),
+        CLEANING(Color.YELLOW, 430.0f, 45.0f);
 
         private final Color color;
-        Type(Color color) {
+        private final float price;
+        private final float cost;
+
+        Type(Color color, float price, float cost) {
             this.color = color;
             color.a = 0.5f;
+            this.price = price;
+            this.cost = cost;
         }
 
         public Color getColor() {
             return color;
+        }
+
+        public float getPrice() {
+            return price;
+        }
+
+        public float getCost() {
+            return cost;
         }
 
     }

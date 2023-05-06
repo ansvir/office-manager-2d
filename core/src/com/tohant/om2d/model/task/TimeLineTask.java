@@ -70,8 +70,9 @@ public class TimeLineTask implements AsyncTask<String> {
                 this.currentMonth++;
             }
             gameCache.setBoolean(IS_PAYDAY, true);
-            eventListener.post();
             this.currentDay = 1L;
+            eventListener.post();
+            gameCache.getFloatValue(TOTAL_INCOMES);
         } else {
             gameCache.setBoolean(IS_PAYDAY, false);
             this.currentDay++;

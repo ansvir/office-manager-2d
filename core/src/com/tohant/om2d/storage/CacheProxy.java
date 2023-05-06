@@ -1,5 +1,6 @@
 package com.tohant.om2d.storage;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.tohant.om2d.storage.CacheImpl.*;
@@ -40,10 +41,14 @@ public class CacheProxy implements Cache {
         return cache.getGlobalCache().get().get(key);
     }
 
+    public Map<String, ?> getGlobalCache() {
+        return cache.getGlobalCache().get();
+    }
+
     private Consumer<Cache> getDefaultInit() {
         return (c) -> {
             c.setValue(CURRENT_ROOM_TYPE, null);
-            c.setValue(CURRENT_BUDGET, 2000.0f);
+            c.setValue(CURRENT_BUDGET, 5000.0f);
             c.setValue(CURRENT_TIME, "01/01/0001");
             c.setValue(OFFICES_AMOUNT, 0L);
             c.setValue(HALLS_AMOUNT, 0L);

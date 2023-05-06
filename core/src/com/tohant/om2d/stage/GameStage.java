@@ -3,6 +3,7 @@ package com.tohant.om2d.stage;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Array;
@@ -13,7 +14,9 @@ import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.storage.CacheProxy;
+import com.tohant.om2d.storage.CachedEventListener;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.badlogic.gdx.utils.Align.left;
@@ -33,16 +36,18 @@ public class GameStage extends Stage {
     private Array<TextButton> roomsButtons;
     private Room.Type currentRoom;
     private CacheProxy gameCache;
+    private CacheService cacheService;
     private Label time;
     private Window toolPane;
     private Window officeStatWindow;
     private Label officeStatLabel;
     private Window roomInfo;
+    private TextButton hideRoomInfo;
     private Skin skin;
     private Window notification;
     private Array<GameException> exceptions;
 
-    public GameStage(float budget, String time, Viewport viewport, Batch batch) {
+    public GameStage(String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
         Grid grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - ((GRID_WIDTH * CELL_SIZE) / 2)),
                 ((int) ((Gdx.graphics.getHeight() / 2f) - ((GRID_HEIGHT * CELL_SIZE)/ 2))),
@@ -51,11 +56,13 @@ public class GameStage extends Stage {
         addActor(map);
         skin = getDefaultSkin();
         gameCache = new CacheProxy();
+        cacheService = new CacheService(gameCache);
         this.exceptions = new Array<>();
-        this.budget = new Label(Math.round(budget) + " $", skin);
+        this.budget = new Label("", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
         this.budget.setSize(100, 50);
         this.budget.setColor(Color.GREEN);
+        setBudget(cacheService.getFloat(CURRENT_BUDGET));
         createToolPane();
         this.time = new Label(time, skin);
         this.time.setSize(200, 50);
@@ -76,7 +83,7 @@ public class GameStage extends Stage {
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     super.touchDown(event, x, y, pointer, button);
                     currentRoom = rooms[iCopy];
-                    gameCache.setValue(CURRENT_ROOM_TYPE, currentRoom.name());
+                    cacheService.setValue(CURRENT_ROOM_TYPE, currentRoom.name());
                     return false;
                 }
             });
@@ -109,9 +116,8 @@ public class GameStage extends Stage {
                 throw e;
             }
         } finally {
-            setBudget(Float.parseFloat((String) gameCache.getValue(CURRENT_BUDGET)));
+            setBudget(cacheService.getFloat(CURRENT_BUDGET));
             setRoomsStat();
-            updateRoomInfoWindow();
         }
     }
 
@@ -172,23 +178,23 @@ public class GameStage extends Stage {
             builder.append("\n");
         }
         builder.append("Incomes: ");
-        builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES))));
+        builder.append(Math.round(cacheService.getFloat(TOTAL_INCOMES)));
         builder.append(" $/m");
         builder.append("\n");
         builder.append("Costs: ");
-        builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS))));
+        builder.append(Math.round(cacheService.getFloat(TOTAL_COSTS)));
         builder.append(" $/m");
         builder.append("\n");
         builder.append("Salaries: ");
-        builder.append(Math.round(Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))));
+        builder.append(Math.round(cacheService.getFloat(TOTAL_SALARIES)));
         builder.append(" $/m");
         this.officeStatLabel.setText(builder.toString());
         this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
     }
 
-    private void updateRoomInfoWindow() {
+    public void updateRoomInfoWindow() {
         Cell currentCell = null;
-        String id = (String) gameCache.getValue(CURRENT_ROOM);
+        String id = cacheService.getValue(CURRENT_ROOM);
         for (Actor a : map.getGrid().getChildren().items) {
             if (a instanceof Cell) {
                 if (((Cell) a).getRoom() != null &&
@@ -209,8 +215,8 @@ public class GameStage extends Stage {
                 }
                 String name = currentRoom.getType().name().charAt(0) +
                         currentRoom.getType().name().substring(1).toLowerCase();
+                roomInfo.reset();
                 roomInfo.getTitleLabel().setText(name + " #" + currentRoom.getNumber());
-                roomInfo.clearChildren();
                 Label roomInfoLabel = new Label("Price: " + Math.round(currentRoom.getPrice()) + "$\n"
                         + "Cost: " + Math.round(currentRoom.getCost()) + "$/m\n" + "Employees: "
                         + currentRoom.getStaff().size, skin);
@@ -226,9 +232,9 @@ public class GameStage extends Stage {
                                 && currentCellCopy.getRoom().getType() == Room.Type.HALL) {
                             addException(new GameException(GameException.Code.E300));
                         } else {
-                            gameCache.setValue(TOTAL_COSTS, Float.parseFloat((String) gameCache.getValue(TOTAL_COSTS)) - currentCellCopy.getRoom().getCost());
+                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoom().getCost());
                             if (currentRoom instanceof OfficeRoom) {
-                                gameCache.setValue(TOTAL_INCOMES, Float.parseFloat((String) gameCache.getValue(TOTAL_INCOMES)) - 1000.0f);
+                                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 1000.0f);
                             }
                             if (currentStaffTypeCopy != null) {
                                 setEmployeesAmountByType(currentStaffTypeCopy,
@@ -246,18 +252,17 @@ public class GameStage extends Stage {
                         return false;
                     }
                 });
-                roomInfo.add(roomInfoLabel).center().expand();
+                roomInfo.add(roomInfoLabel).expand().pad(20).center();
                 roomInfo.row();
-                roomInfo.add(destroy).center().expand();
-                roomInfo.setSize(roomInfo.getPrefWidth(), roomInfo.getPrefHeight());
-                roomInfo.setPosition(Gdx.graphics.getWidth() - roomInfo.getWidth() - 20, budget.getY() - 20 - roomInfo.getHeight());
+                roomInfo.add(destroy).expand().padLeft(20).padRight(20).padBottom(20).center();
+                roomInfo.setSize(MathUtils.clamp(roomInfo.getWidth(), roomInfo.getPrefWidth() + 50, roomInfo.getPrefWidth() + 200), roomInfo.getPrefHeight());
                 roomInfo.setVisible(true);
             }
         }
     }
 
     private void createToolPane() {
-        this.officeStatLabel = new Label("Rooms:", skin);
+        this.officeStatLabel = new Label("", skin);
         this.officeStatWindow = new Window("Office", skin);
         TextButton hideOfficeStatWindow = new TextButton("x", skin);
         hideOfficeStatWindow.addListener(new InputListener() {
@@ -269,15 +274,15 @@ public class GameStage extends Stage {
             }
         });
         this.officeStatWindow.setMovable(true);
-        this.officeStatWindow.setResizable(true);
-        this.officeStatWindow.add(this.officeStatLabel).center().expand();
+        this.officeStatWindow.setResizable(false);
+        setRoomsStat();
+        this.officeStatWindow.add(this.officeStatLabel).center().pad(20).expand();
         this.officeStatWindow.getTitleTable().add(hideOfficeStatWindow).right();
         this.officeStatWindow.setVisible(false);
-        setRoomsStat();
         this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
         this.officeStatWindow.setPosition(this.budget.getX(), this.budget.getY() - 20 - this.officeStatWindow.getHeight());
         this.roomInfo = new Window("Room Info", skin);
-        TextButton hideRoomInfo = new TextButton("x", skin);
+        this.hideRoomInfo = new TextButton("x", skin);
         hideRoomInfo.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -287,9 +292,10 @@ public class GameStage extends Stage {
             }
         });
         this.roomInfo.setMovable(true);
-        this.roomInfo.setResizable(true);
+        this.roomInfo.setResizable(false);
         this.roomInfo.getTitleTable().add(hideRoomInfo).right();
         this.roomInfo.setVisible(false);
+        this.roomInfo.setSize(this.roomInfo.getPrefWidth() + hideRoomInfo.getWidth(), this.roomInfo.getPrefHeight());
         this.roomInfo.setPosition(Gdx.graphics.getWidth() - this.roomInfo.getWidth() - 20, this.budget.getY() - 20 - this.roomInfo.getHeight());
         this.toolPane = new Window("Office Manager 2D", skin);
         this.toolPane.setSize(Gdx.graphics.getWidth(), 150f);
@@ -335,13 +341,13 @@ public class GameStage extends Stage {
     private long getRoomsAmountByType(Room.Type type) {
         switch (type) {
             case OFFICE:
-                return Long.parseLong((String) gameCache.getValue(OFFICES_AMOUNT));
+                return cacheService.getLong(OFFICES_AMOUNT);
             case HALL:
-                return Long.parseLong((String) gameCache.getValue(HALLS_AMOUNT));
+                return cacheService.getLong(HALLS_AMOUNT);
             case SECURITY:
-                return Long.parseLong((String) gameCache.getValue(SECURITY_AMOUNT));
+                return cacheService.getLong(SECURITY_AMOUNT);
             case CLEANING:
-                return Long.parseLong((String) gameCache.getValue(CLEANING_AMOUNT));
+                return cacheService.getLong(CLEANING_AMOUNT);
             default:
                 return -1L;
         }
@@ -350,16 +356,16 @@ public class GameStage extends Stage {
     private void setRoomsAmountByType(Room.Type type, long amount) {
         switch (type) {
             case OFFICE:
-                gameCache.setValue(OFFICES_AMOUNT, amount);
+                cacheService.setLong(OFFICES_AMOUNT, amount);
                 break;
             case HALL:
-                gameCache.setValue(HALLS_AMOUNT, amount);
+                cacheService.setLong(HALLS_AMOUNT, amount);
                 break;
             case SECURITY:
-                gameCache.setValue(SECURITY_AMOUNT, amount);
+                cacheService.setLong(SECURITY_AMOUNT, amount);
                 break;
             case CLEANING:
-                gameCache.setValue(CLEANING_AMOUNT, amount);
+                cacheService.setLong(CLEANING_AMOUNT, amount);
                 break;
             default:
                 break;
@@ -400,7 +406,7 @@ public class GameStage extends Stage {
         this.notification.setMovable(false);
         this.notification.setResizable(false);
         this.notification.setName("user_info");
-        this.notification.addAction(sequence(delay(4f), hide()));
+        this.notification.addAction(sequence(delay(4f), fadeOut(4f)));
         this.notification.getTitleLabel().setText(e.getCode().getType().getTitle());
         this.notification.add(new Label(e.getCode().getMessage(), skin)).center().expand();
         this.notification.setSize(this.notification.getPrefWidth(), this.notification.getPrefHeight());

@@ -29,14 +29,16 @@ public class CachedEventListener implements AsyncTask<Boolean> {
     }
 
     public synchronized void post() {
-        result = executor.submit(new CacheEventTask());
-        isConsumed = false;
-        isPosted = true;
+        if (isConsumed) {
+            result = executor.submit(new CacheEventTask());
+            isConsumed = false;
+            isPosted = true;
+        }
     }
 
     public synchronized Map<String, ?> consume() {
         isConsumed = true;
-        if (result != null && result.isDone()) {
+        if (result != null && result.isDone() && isPosted) {
             isPosted = false;
             return result.get();
         } else {
