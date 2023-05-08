@@ -106,7 +106,6 @@ public class Grid extends Group implements Disposable {
                     float cost = 0.0f;
                     AtomicReference<Float> salaries = new AtomicReference<>(0.0f);
                     nextType = getCurrentRoomType();
-                    String nextStaffType = null;
                     if (nextType == null) {
                         return false;
                     }
@@ -121,7 +120,7 @@ public class Grid extends Group implements Disposable {
                     if (budget >= price) {
                         switch (nextType) {
                             case HALL: {
-                                nextRoom = new HallRoom(new RoomInfo(Array.with(), 100f, 20f, new TimeLineDate(15L, 1L, 1L), Room.Type.HALL),
+                                nextRoom = new HallRoom(new RoomInfo(Array.with(), 100f, 20f, new TimeLineDate(12L, 1L, 1L), Room.Type.HALL),
                                         cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
                                 price = nextRoom.getRoomInfo().getPrice();
                                 cost += nextRoom.getRoomInfo().getCost();
@@ -130,11 +129,10 @@ public class Grid extends Group implements Disposable {
                             case OFFICE: {
                                 Array<Staff> workers = Array.with(IntStream.range(0, 15).boxed()
                                         .map(i -> new WorkerStaff()).toArray(WorkerStaff[]::new));
-                                nextRoom = new OfficeRoom(new RoomInfo(workers, 550f, 50f, new TimeLineDate(18L, 1L, 1L), Room.Type.OFFICE),
+                                nextRoom = new OfficeRoom(new RoomInfo(workers, 550f, 50f, new TimeLineDate(15L, 1L, 1L), Room.Type.OFFICE),
                                         cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
                                 price = nextRoom.getRoomInfo().getPrice();
                                 cost += nextRoom.getRoomInfo().getCost();
-                                nextStaffType = TOTAL_WORKERS;
                                 break;
                             }
                             case SECURITY: {
@@ -145,11 +143,10 @@ public class Grid extends Group implements Disposable {
                                             return s;
                                         })
                                         .toArray(SecurityStaff[]::new));
-                                nextRoom = new SecurityRoom(new RoomInfo(security, 910f, 100f, new TimeLineDate(30L, 1L ,1L), Room.Type.SECURITY),
+                                nextRoom = new SecurityRoom(new RoomInfo(security, 910f, 100f, new TimeLineDate(25L, 1L ,1L), Room.Type.SECURITY),
                                         cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
                                 price = nextRoom.getRoomInfo().getPrice();
                                 cost += nextRoom.getRoomInfo().getCost();
-                                nextStaffType = TOTAL_SECURITY_STAFF;
                                 break;
                             }
                             case CLEANING: {
@@ -160,23 +157,15 @@ public class Grid extends Group implements Disposable {
                                             return s;
                                         })
                                         .toArray(CleaningStaff[]::new));
-                                nextRoom = new CleaningRoom(new RoomInfo(cleaning, 430f, 45f, new TimeLineDate(20L, 1L, 1L), Room.Type.CLEANING),
+                                nextRoom = new CleaningRoom(new RoomInfo(cleaning, 430f, 45f, new TimeLineDate(18L, 1L, 1L), Room.Type.CLEANING),
                                         cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
                                 price = nextRoom.getRoomInfo().getPrice();
                                 cost += nextRoom.getRoomInfo().getCost();
-                                nextStaffType = TOTAL_CLEANING_STAFF;
                                 break;
                             }
                         }
                         cacheService.setFloat(CURRENT_BUDGET, budget - price);
-                        cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES) + salaries.get());
                         cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) + cost);
-                        if (nextRoom instanceof OfficeRoom) {
-                            cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * nextRoom.getRoomInfo().getStaff().size);
-                        }
-                        if (nextStaffType != null) {
-                            cacheService.setLong(nextStaffType, cacheService.getLong(nextStaffType) + nextRoom.getRoomInfo().getStaff().size);
-                        }
                         setRoomsAmountByType(nextRoom.getType(), getRoomsAmountByType(nextRoom.getType()) + 1L);
                         cell.setRoomModel(new RoomBuildingModel(roomBuildService.submit(nextRoom), nextRoom.getRoomInfo()));
                         currentId = nextRoom.getRoomInfo().getId();

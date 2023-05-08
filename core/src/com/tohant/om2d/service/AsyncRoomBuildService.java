@@ -38,8 +38,14 @@ public class AsyncRoomBuildService {
     public synchronized AsyncResult<Room> submit(Room room) {
         TimeLineTask<Room> task = new TimeLineTask<>(room.getRoomInfo().getId(), 500L, room,
                 (d) -> d.compareTo(room.getRoomInfo().getBuildTime()) >= 0, () -> {
+            String nextStaffType = room.getType() == Room.Type.SECURITY ? TOTAL_SECURITY_STAFF
+                    : room.getType() == Room.Type.CLEANING ? TOTAL_CLEANING_STAFF
+                    : room.getType() == Room.Type.OFFICE ? TOTAL_WORKERS : null;
+            if (nextStaffType != null) {
+                cacheService.setLong(nextStaffType, cacheService.getLong(nextStaffType) + room.getRoomInfo().getStaff().size);
+            }
             if (room instanceof OfficeRoom) {
-                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 1000.0f);
+                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * room.getRoomInfo().getStaff().size);
             }
             if (!room.getRoomInfo().getStaff().isEmpty() && room.getRoomInfo().getStaff().get(0).getType() != null) {
                 Staff employee = room.getRoomInfo().getStaff().get(0);
@@ -48,7 +54,7 @@ public class AsyncRoomBuildService {
                 setEmployeesAmountByType(type,
                         getEmployeesAmountByType(type) - room.getRoomInfo().getStaff().size);
                 cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
-                        - room.getRoomInfo().getStaff().size * salary);
+                        + room.getRoomInfo().getStaff().size * salary);
             }
         });
         this.tasks.add(task);

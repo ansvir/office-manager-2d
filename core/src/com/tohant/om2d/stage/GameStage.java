@@ -252,7 +252,7 @@ public class GameStage extends Stage {
                         } else {
                             cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoomModel().getRoomInfo().getCost());
                             if (currentRoomInfo.getType() == Room.Type.OFFICE) {
-                                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 1000.0f);
+                                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 100.0f * currentRoomInfo.getStaff().size);
                             }
                             if (currentStaffTypeCopy != null) {
                                 setEmployeesAmountByType(currentStaffTypeCopy,
