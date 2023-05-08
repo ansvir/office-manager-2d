@@ -41,6 +41,8 @@ public class GameScreen implements Screen {
     private CacheProxy gameCache;
     private CachedEventListener eventListener;
     private CacheService cacheService;
+    private boolean isPayDay;
+    private boolean isPaid;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -61,6 +63,7 @@ public class GameScreen implements Screen {
         gameStage = new GameStage(time, viewport, batch);
         multiplexer = new InputMultiplexer(gameStage);
         Gdx.input.setInputProcessor(multiplexer);
+        isPaid = true;
     }
 
     @Override
@@ -107,7 +110,7 @@ public class GameScreen implements Screen {
 
     private void processTimeLine() {
         if (!timeString.isDone()) {
-            time = timeline.get();
+            time = timeline.getDate();
             gameCache.setValue(CURRENT_TIME, time);
             gameStage.setTime(time);
         } else {
@@ -117,17 +120,20 @@ public class GameScreen implements Screen {
     }
 
     private void updateBudget() {
-        Map<String, ?> cacheSnapshot = eventListener.consume();
-        if (cacheSnapshot != null) {
+        if (this.timeline.getCurrentDay() == 1L && !isPayDay && !isPaid) {
+            Map<String, ?> cacheSnapshot = eventListener.consume();
             CacheSnapshotService snapshotService = new CacheSnapshotService(cacheSnapshot);
-            boolean isPayday = snapshotService.getBoolean(IS_PAYDAY);
-            if (isPayday) {
-                float budget = snapshotService.getFloat(CURRENT_BUDGET);
-                float salaries = calculateSalaries(snapshotService);
-                float costs = calculateCosts(snapshotService);
-                float incomes = calculateIncomes(snapshotService);
-                gameCache.setValue(CURRENT_BUDGET, budget - costs - salaries + incomes);
-            }
+            float budget = snapshotService.getFloat(CURRENT_BUDGET);
+            float salaries = calculateSalaries(snapshotService);
+            float costs = calculateCosts(snapshotService);
+            float incomes = calculateIncomes(snapshotService);
+            gameCache.setValue(CURRENT_BUDGET, budget - costs - salaries + incomes);
+            isPayDay = true;
+            isPaid = true;
+        } else {
+            isPayDay = false;
+            isPaid = false;
+            eventListener.post();
         }
     }
 

@@ -29,11 +29,19 @@ public class CachedEventListener implements AsyncTask<Boolean> {
     }
 
     public synchronized void post() {
-        if (isConsumed) {
+        if (result == null) {
             result = executor.submit(new CacheEventTask());
-            isConsumed = false;
-            isPosted = true;
+        } else {
+            if (!isConsumed) {
+                consume();
+                if (result.isDone()) {
+                    result.get();
+                    result = executor.submit(new CacheEventTask());
+                }
+            }
         }
+        isConsumed = false;
+        isPosted = true;
     }
 
     public synchronized Map<String, ?> consume() {
@@ -59,6 +67,10 @@ public class CachedEventListener implements AsyncTask<Boolean> {
             }
         }
         return true;
+    }
+
+    public boolean isConsumed() {
+        return isConsumed;
     }
 
 }

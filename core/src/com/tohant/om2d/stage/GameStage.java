@@ -213,10 +213,10 @@ public class GameStage extends Stage {
                 String name = currentRoom.getType().name().charAt(0) +
                         currentRoom.getType().name().substring(1).toLowerCase();
                 roomInfo.reset();
-                roomInfo.getTitleLabel().setText(name + " #" + currentRoom.getNumber());
-                Label roomInfoLabel = new Label("Price: " + Math.round(currentRoom.getPrice()) + "$\n"
-                        + "Cost: " + Math.round(currentRoom.getCost()) + "$/m\n" + "Employees: "
-                        + currentRoom.getStaff().size, skin);
+                roomInfo.getTitleLabel().setText(name + " #" + currentRoom.getRoomInfo().getNumber());
+                Label roomInfoLabel = new Label("Price: " + Math.round(currentRoom.getRoomInfo().getPrice()) + "$\n"
+                        + "Cost: " + Math.round(currentRoom.getRoomInfo().getCost()) + "$/m\n" + "Employees: "
+                        + currentRoom.getRoomInfo().getStaff().size, skin);
                 TextButton destroy = new TextButton("Destroy", skin);
                 Cell currentCellCopy = currentCell;
                 Staff.Type currentStaffTypeCopy = currentStaffType;
@@ -229,16 +229,16 @@ public class GameStage extends Stage {
                                 && currentCellCopy.getRoom().getType() == Room.Type.HALL) {
                             addException(new GameException(GameException.Code.E300));
                         } else {
-                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoom().getCost());
+                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoom().getRoomInfo().getCost());
                             if (currentRoom instanceof OfficeRoom) {
                                 cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 1000.0f);
                             }
                             if (currentStaffTypeCopy != null) {
                                 setEmployeesAmountByType(currentStaffTypeCopy,
-                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getStaff().size);
+                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getRoomInfo().getStaff().size);
                             }
                             gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
-                                    - currentRoom.getStaff().size * currentStaffTypeSalaryCopy);
+                                    - currentRoom.getRoomInfo().getStaff().size * currentStaffTypeSalaryCopy);
                             setRoomsAmountByType(currentCellCopy.getRoom().getType(),
                                     getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
                             gameCache.setValue(CURRENT_ROOM, null);

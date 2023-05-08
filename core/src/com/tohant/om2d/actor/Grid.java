@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.tohant.om2d.actor.man.CleaningStaff;
 import com.tohant.om2d.actor.man.SecurityStaff;
 import com.tohant.om2d.actor.man.Staff;
@@ -16,6 +17,7 @@ import com.tohant.om2d.actor.man.WorkerStaff;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.exception.GameException.Code;
+import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.storage.CacheProxy;
@@ -36,6 +38,7 @@ public class Grid extends Group implements Disposable {
     private CacheProxy gameCache;
     private CacheService cacheService;
     private int cellsWidth, cellsHeight;
+    private AsyncExecutor asyncExecutor;
 
     public Grid(int x, int y, int cellsWidth, int cellsHeight, int cellSize) {
         this.cellsWidth = cellsWidth;
@@ -45,6 +48,7 @@ public class Grid extends Group implements Disposable {
         this.cellSize = cellSize;
         gameCache = new CacheProxy();
         cacheService = new CacheService(gameCache);
+        asyncExecutor = new AsyncExecutor(cellsWidth * cellsHeight);
         Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
         Color borderColor = Color.GRAY;
         borderColor.a = 0.5f;
@@ -111,19 +115,19 @@ public class Grid extends Group implements Disposable {
                     }
                     switch (nextType) {
                         case HALL: {
-                            newRoom = new HallRoom(100f, 20f, cell.getX(), cell.getY(),
+                            newRoom = new HallRoom(new RoomInfo(Array.with(), 100f, 20f, 15L), cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
-                            price = newRoom.getPrice();
-                            cost += newRoom.getCost();
+                            price = newRoom.getRoomInfo().getPrice();
+                            cost += newRoom.getRoomInfo().getCost();
                             break;
                         }
                         case OFFICE: {
                             Array<Staff> workers = Array.with(IntStream.range(0, 15).boxed()
                                     .map(i -> new WorkerStaff()).toArray(WorkerStaff[]::new));
-                            newRoom = new OfficeRoom(workers, 550f, 50f, cell.getX(), cell.getY(),
+                            newRoom = new OfficeRoom(new RoomInfo(workers, 550f, 50f, 18L), cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
-                            price = newRoom.getPrice();
-                            cost += newRoom.getCost();
+                            price = newRoom.getRoomInfo().getPrice();
+                            cost += newRoom.getRoomInfo().getCost();
                             nextStaffType = TOTAL_WORKERS;
                             break;
                         }
@@ -135,10 +139,10 @@ public class Grid extends Group implements Disposable {
                                         return s;
                                     })
                                     .toArray(SecurityStaff[]::new));
-                            newRoom = new SecurityRoom(security, 910f, 100f, cell.getX(), cell.getY(),
+                            newRoom = new SecurityRoom(new RoomInfo(security, 910f, 100f, 30L), cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
-                            price = newRoom.getPrice();
-                            cost += newRoom.getCost();
+                            price = newRoom.getRoomInfo().getPrice();
+                            cost += newRoom.getRoomInfo().getCost();
                             nextStaffType = TOTAL_SECURITY_STAFF;
                             break;
                         }
@@ -150,10 +154,10 @@ public class Grid extends Group implements Disposable {
                                         return s;
                                     })
                                     .toArray(CleaningStaff[]::new));
-                            newRoom = new CleaningRoom(cleaning, 430f, 45f, cell.getX(), cell.getY(),
+                            newRoom = new CleaningRoom(new RoomInfo(cleaning, 430f, 45f, 20L), cell.getX(), cell.getY(),
                                     cell.getWidth(), cell.getHeight());
-                            price = newRoom.getPrice();
-                            cost += newRoom.getCost();
+                            price = newRoom.getRoomInfo().getPrice();
+                            cost += newRoom.getRoomInfo().getCost();
                             nextStaffType = TOTAL_CLEANING_STAFF;
                             break;
                         }
@@ -164,10 +168,10 @@ public class Grid extends Group implements Disposable {
                         cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES) + salaries.get());
                         cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) + cost);
                         if (newRoom instanceof OfficeRoom) {
-                            cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * newRoom.getStaff().size);
+                            cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * newRoom.getRoomInfo().getStaff().size);
                         }
                         if (nextStaffType != null) {
-                            cacheService.setLong(nextStaffType, cacheService.getLong(nextStaffType) + newRoom.getStaff().size);
+                            cacheService.setLong(nextStaffType, cacheService.getLong(nextStaffType) + newRoom.getRoomInfo().getStaff().size);
                         }
                         setRoomsAmountByType(newRoom.getType(), getRoomsAmountByType(newRoom.getType()) + 1L);
                         cell.setRoom(newRoom);

@@ -49,7 +49,7 @@ public class TimeLineTask implements AsyncTask<String> {
             stop = iterateAndGet();
         }
         this.isFinished = true;
-        return this.get();
+        return this.getDate();
     }
 
     private boolean iterateAndGet() {
@@ -69,18 +69,17 @@ public class TimeLineTask implements AsyncTask<String> {
             } else {
                 this.currentMonth++;
             }
-            gameCache.setBoolean(IS_PAYDAY, true);
+//            gameCache.setBoolean(IS_PAYDAY, true);
             this.currentDay = 1L;
-            eventListener.post();
-            gameCache.getFloatValue(TOTAL_INCOMES);
+//            eventListener.post();
         } else {
-            gameCache.setBoolean(IS_PAYDAY, false);
+//            gameCache.setBoolean(IS_PAYDAY, false);
             this.currentDay++;
         }
         return false;
     }
 
-    public String get() {
+    public String getDate() {
         StringBuilder result = new StringBuilder();
         if (this.currentDay < 10) {
             result.append("0");
@@ -107,6 +106,18 @@ public class TimeLineTask implements AsyncTask<String> {
 
     public void forceFinish() {
         this.isFinished = true;
+    }
+
+    public long getCurrentDay() {
+        return currentDay;
+    }
+
+    public long getCurrentMonth() {
+        return currentMonth;
+    }
+
+    public long getCurrentYear() {
+        return currentYear;
     }
 
 }

@@ -11,7 +11,7 @@ public class CacheEventTask implements AsyncTask<Map<String, ?>> {
     private Map<String, ?> cacheSnapshot;
 
     public CacheEventTask() {
-        this.cacheSnapshot = new HashMap<>(CacheImpl.getInstance().getGlobalCache().get());
+        this.cacheSnapshot = Map.copyOf(CacheImpl.getInstance().getGlobalCache().get());
     }
 
     @Override

@@ -1,45 +1,33 @@
 package com.tohant.om2d.actor.room;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
-import com.tohant.om2d.actor.man.Staff;
+import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.UUID;
 
 public abstract class Room extends Actor {
 
     private String id;
-    private String number;
-//    private Texture texture;
-    private float price;
-    private float cost;
-    private final Array<Staff> staff;
+    private RoomInfo roomInfo;
     private final AssetService assetService;
 
-    public Room(String id, Array<Staff> staff, float price, float cost, float x, float y, float width, float height) {
+    public Room(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
         this.id = id;
-        this.price = price;
-        this.cost = cost;
-        this.number = this.id.substring(0, 4);
-        this.staff = staff;
+        this.roomInfo = roomInfo;
+        this.roomInfo.setNumber(this.id.substring(0, 4));
         setPosition(x, y);
         setSize(width, height);
         this.assetService = AssetService.getInstance();
     }
 
-    public Room(Array<Staff> staff, float price, float cost, float x, float y, float width, float height) {
+    public Room(RoomInfo roomInfo, float x, float y, float width, float height) {
         this.id = UUID.randomUUID().toString();
-        this.price = price;
-        this.cost = cost;
-        this.number = this.id.substring(0, 4);
-        this.staff = staff;
+        this.roomInfo = roomInfo;
+        this.roomInfo.setNumber(this.id.substring(0, 4));
         setPosition(x, y);
         setSize(width, height);
         this.assetService = AssetService.getInstance();
@@ -53,28 +41,12 @@ public abstract class Room extends Actor {
         this.id = id;
     }
 
-    public float getPrice() {
-        return price;
+    public RoomInfo getRoomInfo() {
+        return roomInfo;
     }
 
-    public void setPrice(float price) {
-        this.price = price;
-    }
-
-    public float getCost() {
-        return cost;
-    }
-
-    public void setCost(float cost) {
-        this.cost = cost;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
+    public void setRoomInfo(RoomInfo roomInfo) {
+        this.roomInfo = roomInfo;
     }
 
     public abstract Type getType();
@@ -124,15 +96,6 @@ public abstract class Room extends Actor {
             texture = assetService.getCleaningRoomTexture();
         }
         batch.draw(texture, getX(), getY());
-    }
-
-//    @Override
-//    public void dispose() {
-//        texture.dispose();
-//    }
-
-    public Array<Staff> getStaff() {
-        return staff;
     }
 
 }
