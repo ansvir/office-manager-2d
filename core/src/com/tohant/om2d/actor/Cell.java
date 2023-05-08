@@ -2,14 +2,15 @@ package com.tohant.om2d.actor;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.utils.async.AsyncExecutor;
+import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 
 public class Cell extends Group {
 
-//    private final static int BORDER_BOLDNESS = 2;
-
-    private Room room;
+    private RoomBuildingModel roomModel;
     private boolean isEmpty;
     private boolean isActive;
     private final AssetService assetService;
@@ -17,7 +18,7 @@ public class Cell extends Group {
     public Cell(float x, float y, float width, float height, Room room) {
         setPosition(x, y);
         setSize(width, height);
-        this.room = room;
+        this.roomModel = new RoomBuildingModel(new AsyncExecutor(1).submit(() -> room), room.getRoomInfo());
         this.assetService = AssetService.getInstance();
     }
 
@@ -32,25 +33,37 @@ public class Cell extends Group {
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         if (!isEmpty) {
-            room.draw(batch, parentAlpha);
+            if (roomModel.getRoom().isDone()) {
+                roomModel.getRoom().get().draw(batch, parentAlpha);
+            } else {
+                batch.draw(assetService.getRoomConstructionTexture(), getX(), getY());
+            }
         }
         if (isActive && isEmpty) {
-            batch.draw(assetService.getActiveEmptyCell(), getX(), getY());
+            batch.draw(assetService.getActiveEmptyCellTexture(), getX(), getY());
         }
     }
 
-    public Room getRoom() {
-        return room;
+    public RoomBuildingModel getRoomModel() {
+        if (roomModel == null) {
+            return null;
+        } else {
+            return this.roomModel;
+        }
     }
 
-    public void setRoom(Room room) {
-        if (room == null) {
-            this.room = null;
+    public void setRoomModel(RoomBuildingModel model) {
+        if (model == null) {
+            this.roomModel = null;
             isEmpty = true;
         } else {
-            this.room = room;
+            this.roomModel = model;
             isEmpty = false;
         }
+    }
+
+    public boolean isBuilt() {
+        return this.roomModel.getRoom().isDone();
     }
 
     public boolean isEmpty() {
@@ -68,33 +81,5 @@ public class Cell extends Group {
     public void setActive(boolean active) {
         isActive = active;
     }
-
-
-//    private void setTexture() {
-//        Pixmap cellPixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
-//        Color bordersColor = Color.BLACK;
-//        bordersColor.a = 0.2f;
-//        cellPixmap.setColor(bordersColor);
-//        cellPixmap.fill();
-//        texture = new Texture(cellPixmap);
-//        cellPixmap.dispose();
-//    }
-//
-//    private void setTextureForNonEmpty() {
-//        Pixmap borders = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
-//        Color bordersColor = Color.BLACK;
-//        bordersColor.a = 0.5f;
-//        borders.setColor(bordersColor);
-//        for (int i = 0; i < BORDER_BOLDNESS - 1; i++) {
-//            borders.drawRectangle(i + 1, i + 1, (int) getWidth() - i - 1, (int) getHeight() - i - 1);
-//        }
-//        texture = new Texture(borders);
-//        borders.dispose();
-//    }
-
-//    @Override
-//    public void dispose() {
-//        this.texture.dispose();
-//    }
 
 }

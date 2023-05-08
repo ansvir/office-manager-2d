@@ -11,18 +11,20 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.man.Staff;
-import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.model.room.RoomInfo;
+import com.tohant.om2d.model.task.TimeLineTask;
+import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.storage.CacheProxy;
-import com.tohant.om2d.storage.CachedEventListener;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.badlogic.gdx.utils.Align.left;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.checkHallNextToRoomThatHasNoOtherHalls;
-import static com.tohant.om2d.service.ServiceUtil.nextToHalls;
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
@@ -39,21 +41,24 @@ public class GameStage extends Stage {
     private Window officeStatWindow;
     private Label officeStatLabel;
     private Window roomInfo;
+    private Label roomInfoLabel;
     private TextButton hideRoomInfo;
     private Skin skin;
     private Window notification;
     private Array<GameException> exceptions;
+    private AsyncRoomBuildService roomBuildService;
 
     public GameStage(String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
         Grid grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - ((GRID_WIDTH * CELL_SIZE) / 2)),
-                ((int) ((Gdx.graphics.getHeight() / 2f) - ((GRID_HEIGHT * CELL_SIZE)/ 2))),
-                GRID_WIDTH, GRID_HEIGHT,  CELL_SIZE);
+                ((int) ((Gdx.graphics.getHeight() / 2f) - ((GRID_HEIGHT * CELL_SIZE) / 2))),
+                GRID_WIDTH, GRID_HEIGHT, CELL_SIZE);
         map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
         addActor(map);
         skin = getDefaultSkin();
         gameCache = new CacheProxy();
-        cacheService = new CacheService(gameCache);
+        cacheService = CacheService.getInstance();
+        roomBuildService = AsyncRoomBuildService.getInstance();
         this.exceptions = new Array<>();
         this.budget = new Label("", skin);
         this.budget.setPosition(20, Gdx.graphics.getHeight() - 60);
@@ -90,6 +95,7 @@ public class GameStage extends Stage {
         addActor(this.budget);
         addActor(this.time);
         addActor(this.toolPane);
+        this.roomInfoLabel = new Label("", skin);
     }
 
     @Override
@@ -115,6 +121,7 @@ public class GameStage extends Stage {
         } finally {
             setBudget(cacheService.getFloat(CURRENT_BUDGET));
             setRoomsStat();
+            updateRoomInfoLabel();
         }
     }
 
@@ -191,32 +198,46 @@ public class GameStage extends Stage {
 
     public void updateRoomInfoWindow() {
         Cell currentCell = null;
-        String id = cacheService.getValue(CURRENT_ROOM);
+        String currentId = cacheService.getValue(CURRENT_ROOM);
         for (Actor a : map.getGrid().getChildren().items) {
             if (a instanceof Cell) {
-                if (((Cell) a).getRoom() != null &&
-                        ((Cell) a).getRoom().getId().equals(id)) {
+                if (((Cell) a).getRoomModel() != null
+                        && ((Cell) a).getRoomModel().getRoomInfo().getId().equals(currentId)) {
                     currentCell = ((Cell) a);
                 }
             }
         }
         if (currentCell != null) {
-            if (currentCell.getRoom() != null) {
-                Room currentRoom = currentCell.getRoom();
+            if (currentCell.getRoomModel() != null) {
+                RoomInfo currentRoomInfo = currentCell.getRoomModel().getRoomInfo();
                 Staff.Type currentStaffType = null;
                 float currentStaffTypeSalary = 0.0f;
-                switch (currentRoom.getType()) {
-                    case SECURITY: currentStaffType = Staff.Type.SECURITY; currentStaffTypeSalary = 1200.0f; break;
-                    case OFFICE: currentStaffType = Staff.Type.WORKER; break;
-                    case CLEANING: currentStaffType = Staff.Type.CLEANING; currentStaffTypeSalary = 500.0f; break;
+                switch (currentRoomInfo.getType()) {
+                    case SECURITY:
+                        currentStaffType = Staff.Type.SECURITY;
+                        currentStaffTypeSalary = 1200.0f;
+                        break;
+                    case OFFICE:
+                        currentStaffType = Staff.Type.WORKER;
+                        break;
+                    case CLEANING:
+                        currentStaffType = Staff.Type.CLEANING;
+                        currentStaffTypeSalary = 500.0f;
+                        break;
                 }
-                String name = currentRoom.getType().name().charAt(0) +
-                        currentRoom.getType().name().substring(1).toLowerCase();
+                String name = currentRoomInfo.getType().name().charAt(0) +
+                        currentRoomInfo.getType().name().substring(1).toLowerCase();
                 roomInfo.reset();
-                roomInfo.getTitleLabel().setText(name + " #" + currentRoom.getRoomInfo().getNumber());
-                Label roomInfoLabel = new Label("Price: " + Math.round(currentRoom.getRoomInfo().getPrice()) + "$\n"
-                        + "Cost: " + Math.round(currentRoom.getRoomInfo().getCost()) + "$/m\n" + "Employees: "
-                        + currentRoom.getRoomInfo().getStaff().size, skin);
+                if (!currentCell.isBuilt() && !currentCell.isEmpty()) {
+                    roomInfo.getTitleLabel().setText("Construction");
+                    this.roomInfoLabel.setText("Building " + currentCell.getRoomModel().getRoomInfo().getType()
+                            .name().toLowerCase() + " room...");
+                } else {
+                    roomInfo.getTitleLabel().setText(name + " #" + currentRoomInfo.getNumber());
+                    this.roomInfoLabel.setText("Price: " + Math.round(currentRoomInfo.getPrice()) + "$\n"
+                            + "Cost: " + Math.round(currentRoomInfo.getCost()) + "$/m\n" + "Employees: "
+                            + currentRoomInfo.getStaff().size);
+                }
                 TextButton destroy = new TextButton("Destroy", skin);
                 Cell currentCellCopy = currentCell;
                 Staff.Type currentStaffTypeCopy = currentStaffType;
@@ -226,30 +247,30 @@ public class GameStage extends Stage {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         super.touchDown(event, x, y, pointer, button);
                         if (checkHallNextToRoomThatHasNoOtherHalls(currentCellCopy, map.getGrid().getChildren())
-                                && currentCellCopy.getRoom().getType() == Room.Type.HALL) {
+                                && currentCellCopy.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
                             addException(new GameException(GameException.Code.E300));
                         } else {
-                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoom().getRoomInfo().getCost());
-                            if (currentRoom instanceof OfficeRoom) {
+                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoomModel().getRoomInfo().getCost());
+                            if (currentRoomInfo.getType() == Room.Type.OFFICE) {
                                 cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 1000.0f);
                             }
                             if (currentStaffTypeCopy != null) {
                                 setEmployeesAmountByType(currentStaffTypeCopy,
-                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoom.getRoomInfo().getStaff().size);
+                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoomInfo.getStaff().size);
                             }
                             gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
-                                    - currentRoom.getRoomInfo().getStaff().size * currentStaffTypeSalaryCopy);
-                            setRoomsAmountByType(currentCellCopy.getRoom().getType(),
-                                    getRoomsAmountByType(currentCellCopy.getRoom().getType()) - 1L);
+                                    - currentRoomInfo.getStaff().size * currentStaffTypeSalaryCopy);
+                            setRoomsAmountByType(currentCellCopy.getRoomModel().getRoomInfo().getType(),
+                                    getRoomsAmountByType(currentCellCopy.getRoomModel().getRoomInfo().getType()) - 1L);
                             gameCache.setValue(CURRENT_ROOM, null);
-                            currentCellCopy.setRoom(null);
+                            currentCellCopy.setRoomModel(null);
                             roomInfo.setVisible(false);
                             return true;
                         }
                         return false;
                     }
                 });
-                roomInfo.add(roomInfoLabel).expand().pad(20).center();
+                roomInfo.add(this.roomInfoLabel).expand().pad(20).center();
                 roomInfo.row();
                 roomInfo.add(destroy).expand().padLeft(20).padRight(20).padBottom(20).center();
                 roomInfo.setSize(MathUtils.clamp(roomInfo.getWidth(), roomInfo.getPrefWidth() + 50, roomInfo.getPrefWidth() + 200), roomInfo.getPrefHeight());
@@ -371,11 +392,16 @@ public class GameStage extends Stage {
 
     private long getEmployeesAmountByType(Staff.Type type) {
         switch (type) {
-            case SECURITY: return Long.parseLong((String) gameCache.getValue(TOTAL_SECURITY_STAFF));
-            case WORKER: return Long.parseLong((String) gameCache.getValue(TOTAL_WORKERS));
-            case CLEANING: return Long.parseLong((String) gameCache.getValue(TOTAL_CLEANING_STAFF));
-            case ADMINISTRATION: return Long.parseLong((String) gameCache.getValue(TOTAL_ADMIN_STAFF));
-            default: return -1L;
+            case SECURITY:
+                return Long.parseLong((String) gameCache.getValue(TOTAL_SECURITY_STAFF));
+            case WORKER:
+                return Long.parseLong((String) gameCache.getValue(TOTAL_WORKERS));
+            case CLEANING:
+                return Long.parseLong((String) gameCache.getValue(TOTAL_CLEANING_STAFF));
+            case ADMINISTRATION:
+                return Long.parseLong((String) gameCache.getValue(TOTAL_ADMIN_STAFF));
+            default:
+                return -1L;
         }
     }
 
@@ -423,6 +449,37 @@ public class GameStage extends Stage {
 
     public void addException(GameException e) {
         this.exceptions.add(e);
+    }
+
+    private void updateRoomInfoLabel() {
+        if (this.roomInfoLabel != null) {
+            String id = cacheService.getValue(CURRENT_ROOM);
+            if (id != null) {
+                AtomicReference<TimeLineTask<Room>> roomBuildingTimeline = new AtomicReference<>();
+                roomBuildService.getTasks().forEach(t -> {
+                    if (t.getId().equals(id)) {
+                        roomBuildingTimeline.set(t);
+                    }
+                });
+                if (roomBuildingTimeline.get() != null) {
+                    map.getGrid().getChildren().forEach(c -> {
+                        if (!((Cell) c).isEmpty() && !((Cell) c).isBuilt()
+                                && ((Cell) c).getRoomModel().getRoomInfo().getId().equals(id)) {
+                            long days = roomBuildingTimeline.get().getDate().getDays();
+                            days = ((Cell) c).getRoomModel().getRoomInfo().getBuildTime().getDays() - days;
+                            long months = roomBuildingTimeline.get().getDate().getMonth();
+                            months = months == 1L ? 0 : ((Cell) c).getRoomModel().getRoomInfo().getBuildTime().getMonth() - months;
+                            long years = roomBuildingTimeline.get().getDate().getYears();
+                            years = years == 1L ? 0 : ((Cell) c).getRoomModel().getRoomInfo().getBuildTime().getYears() - years;
+                            this.roomInfoLabel.setText("Building " + ((Cell) c).getRoomModel().getRoomInfo().getType()
+                                    .name().toLowerCase() + " room...\nTime left: " + days + " d. " + months + " m." + years + " y.");
+                        }
+                    });
+                } else {
+                    updateRoomInfoWindow();
+                }
+            }
+        }
     }
 
 }

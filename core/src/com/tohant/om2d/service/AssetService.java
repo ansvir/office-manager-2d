@@ -18,6 +18,7 @@ public class AssetService implements Disposable {
     private final Texture SECURITY_ROOM;
     private final Texture OFFICE_ROOM;
     private final Texture CLEANING_ROOM;
+    private final Texture ROOM_CONSTRUCTION;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -25,6 +26,7 @@ public class AssetService implements Disposable {
         this.SECURITY_ROOM = createSecurityRoomTexture();
         this.OFFICE_ROOM = createOfficeRoomTexture();
         this.CLEANING_ROOM = createCleaningRoomTexture();
+        this.ROOM_CONSTRUCTION = createRoomConstructionTexture();
     }
 
     public static AssetService getInstance() {
@@ -71,7 +73,11 @@ public class AssetService implements Disposable {
         return result;
     }
 
-    public Texture getActiveEmptyCell() {
+    private Texture createRoomConstructionTexture() {
+        return AssetsUtil.resizeTexture("build.png", CELL_SIZE, CELL_SIZE);
+    }
+
+    public Texture getActiveEmptyCellTexture() {
         return ACTIVE_EMPTY_CELL;
     }
 
@@ -89,6 +95,10 @@ public class AssetService implements Disposable {
 
     public Texture getCleaningRoomTexture() {
         return CLEANING_ROOM;
+    }
+
+    public Texture getRoomConstructionTexture() {
+        return ROOM_CONSTRUCTION;
     }
 
     @Override

@@ -1,55 +1,57 @@
 package com.tohant.om2d.model.task;
 
 import com.badlogic.gdx.utils.async.AsyncTask;
-import com.tohant.om2d.storage.CacheImpl;
-import com.tohant.om2d.storage.CachedEventListener;
 
-import static com.tohant.om2d.storage.CacheImpl.*;
+import java.util.UUID;
+import java.util.function.Predicate;
 
-public class TimeLineTask implements AsyncTask<String> {
+public class TimeLineTask<T> implements AsyncTask<T> {
 
-    private long currentDay;
-    private long currentMonth;
-    private long currentYear;
+    private final String id;
+    private TimeLineDate date;
     private final long waitTime;
     private long prevTime;
     private long time;
     private boolean isFinished;
-    private CacheImpl gameCache;
-    private CachedEventListener eventListener;
+    private final T result;
+    private Predicate<TimeLineDate> stopCondition;
+    private Runnable successCallback;
 
-    public TimeLineTask(long waitTime) {
-        this.currentDay = 1L;
-        this.currentMonth = 1L;
-        this.currentYear = 1L;
+    public TimeLineTask(long waitTime, T result) {
+        this.id = UUID.randomUUID().toString();
+        this.date = new TimeLineDate(1L, 1L ,1L);
         this.prevTime = System.currentTimeMillis();
         this.time = this.prevTime;
         this.waitTime = waitTime;
-        this.isFinished = false;
-        this.gameCache = CacheImpl.getInstance();
-        this.eventListener = CachedEventListener.getInstance();
+        this.result = result;
+        this.stopCondition = (z) -> false;
+        this.successCallback = () -> {};
     }
 
-    public TimeLineTask(long currentDay, long currentMonth, long currentYear, long waitTime) {
-        this.currentDay = currentDay;
-        this.currentMonth = currentMonth;
-        this.currentYear = currentYear;
+    public TimeLineTask(String id, long waitTime, T result, Predicate<TimeLineDate> stopCondition, Runnable successCallback) {
+        this.id = id;
+        this.date = new TimeLineDate(1L, 1L ,1L);
         this.prevTime = System.currentTimeMillis();
         this.time = this.prevTime;
         this.waitTime = waitTime;
-        this.isFinished = false;
-        this.gameCache = CacheImpl.getInstance();
-        this.eventListener = CachedEventListener.getInstance();
+        this.result = result;
+        this.stopCondition = stopCondition;
+        this.successCallback = successCallback;
     }
 
     @Override
-    public String call() {
+    public T call() {
         boolean stop = false;
-        while (!stop || this.isFinished) {
+        while (!stop && !this.isFinished) {
+            if (this.stopCondition != null) {
+                if (this.stopCondition.test(this.date)) {
+                    successCallback.run();
+                    forceFinish();
+                }
+            }
             stop = iterateAndGet();
         }
-        this.isFinished = true;
-        return this.getDate();
+        return this.result;
     }
 
     private boolean iterateAndGet() {
@@ -62,41 +64,47 @@ public class TimeLineTask implements AsyncTask<String> {
     }
 
     private synchronized boolean next() {
-        if (this.currentDay >= 30L) {
-            if (this.currentMonth >= 12L) {
-                this.currentYear++;
-                this.currentMonth = 1L;
+        long currentDay = this.date.getDays();
+        long currentMonth = this.date.getMonth();
+        long currentYear = this.date.getYears();
+        if (currentDay >= 30L) {
+            if (currentMonth >= 12L) {
+                currentYear++;
+                currentMonth = 1L;
             } else {
-                this.currentMonth++;
+                currentMonth++;
             }
-//            gameCache.setBoolean(IS_PAYDAY, true);
-            this.currentDay = 1L;
-//            eventListener.post();
+            currentDay = 1L;
         } else {
-//            gameCache.setBoolean(IS_PAYDAY, false);
-            this.currentDay++;
+            currentDay++;
         }
+        this.date.setDays(currentDay);
+        this.date.setMonth(currentMonth);
+        this.date.setYears(currentYear);
         return false;
     }
 
-    public String getDate() {
+    public String getDateString() {
+        long currentDay = this.date.getDays();
+        long currentMonth = this.date.getMonth();
+        long currentYear = this.date.getYears();
         StringBuilder result = new StringBuilder();
-        if (this.currentDay < 10) {
+        if (currentDay < 10) {
             result.append("0");
         }
-        result.append(this.currentDay);
+        result.append(currentDay);
         result.append("/");
-        if (this.currentMonth < 10) {
+        if (currentMonth < 10) {
             result.append("0");
         }
-        result.append(this.currentMonth);
+        result.append(currentMonth);
         result.append("/");
-        if (this.currentYear < 1000) {
+        if (currentYear < 1000) {
             for (long i = 100; i > 0; i /= 10L) {
                 result.append("0");
             }
         }
-        result.append(this.currentYear);
+        result.append(currentYear);
         return result.toString();
     }
 
@@ -108,16 +116,12 @@ public class TimeLineTask implements AsyncTask<String> {
         this.isFinished = true;
     }
 
-    public long getCurrentDay() {
-        return currentDay;
+    public TimeLineDate getDate() {
+        return date;
     }
 
-    public long getCurrentMonth() {
-        return currentMonth;
-    }
-
-    public long getCurrentYear() {
-        return currentYear;
+    public String getId() {
+        return id;
     }
 
 }

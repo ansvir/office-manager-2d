@@ -8,10 +8,6 @@ public class HallRoom extends Room {
 
     private final Type TYPE = Type.HALL;
 
-    public HallRoom(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
-        super(id, roomInfo, x, y, width, height);
-    }
-
     public HallRoom(RoomInfo roomInfo, float x, float y, float width, float height) {
         super(roomInfo, x, y, width, height);
     }

@@ -7,38 +7,15 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.service.AssetService;
 
-import java.util.UUID;
-
 public abstract class Room extends Actor {
-
-    private String id;
     private RoomInfo roomInfo;
     private final AssetService assetService;
 
-    public Room(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
-        this.id = id;
-        this.roomInfo = roomInfo;
-        this.roomInfo.setNumber(this.id.substring(0, 4));
-        setPosition(x, y);
-        setSize(width, height);
-        this.assetService = AssetService.getInstance();
-    }
-
     public Room(RoomInfo roomInfo, float x, float y, float width, float height) {
-        this.id = UUID.randomUUID().toString();
         this.roomInfo = roomInfo;
-        this.roomInfo.setNumber(this.id.substring(0, 4));
         setPosition(x, y);
         setSize(width, height);
         this.assetService = AssetService.getInstance();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public RoomInfo getRoomInfo() {

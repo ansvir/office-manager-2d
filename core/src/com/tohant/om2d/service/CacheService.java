@@ -5,9 +5,17 @@ import com.tohant.om2d.storage.CacheProxy;
 public class CacheService {
 
     private CacheProxy cacheProxy;
+    private static CacheService instance;
 
-    public CacheService(CacheProxy cacheProxy) {
+    private CacheService(CacheProxy cacheProxy) {
         this.cacheProxy = cacheProxy;
+    }
+
+    public static CacheService getInstance() {
+        if (instance == null) {
+            instance = new CacheService(new CacheProxy());
+        }
+        return instance;
     }
 
     public void setValue(String key, String value) {

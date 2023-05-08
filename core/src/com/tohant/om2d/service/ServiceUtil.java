@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.HallRoom;
+import com.tohant.om2d.actor.room.Room;
 
 public class ServiceUtil {
 
@@ -17,7 +18,7 @@ public class ServiceUtil {
                 Vector2 currCoords = getCellCoordinates(currCell);
                 if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
                         (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty() && currCell.getRoom() instanceof HallRoom) {
+                    if (!currCell.isEmpty() && currCell.isBuilt() && currCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
                         points++;
                     }
                 }
@@ -35,7 +36,8 @@ public class ServiceUtil {
                 Vector2 currCoords = getCellCoordinates(currCell);
                 if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
                         (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty() && !(currCell.getRoom() instanceof HallRoom)) {
+                    if (!currCell.isEmpty() && currCell.isBuilt()
+                            && !(currCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL)) {
                         if (nextToHalls(currCell, children) <= 1) {
                             points++;
                         }
@@ -57,7 +59,7 @@ public class ServiceUtil {
         for (int i = 0; i < children.size; i++) {
             Actor a = children.get(i);
             if (a instanceof Cell) {
-                if (((Cell) a).getRoom() == null && ((Cell) a).isEmpty()) {
+                if (((Cell) a).getRoomModel() != null && !((Cell) a).isEmpty()) {
                     result = false;
                     break;
                 }

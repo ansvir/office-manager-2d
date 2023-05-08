@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.service.CacheSnapshotService;
@@ -34,15 +35,13 @@ public class GameScreen implements Screen {
     private Viewport viewport;
     private OrthographicCamera camera;
     private InputMultiplexer multiplexer;
-    private TimeLineTask timeline;
+    private TimeLineTask<Boolean> timeline;
     private AsyncExecutor asyncExecutor;
-    private AsyncResult<String> timeString;
+    private AsyncResult<Boolean> timeString;
     private String time;
     private CacheProxy gameCache;
     private CachedEventListener eventListener;
-    private CacheService cacheService;
     private boolean isPayDay;
-    private boolean isPaid;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -58,12 +57,10 @@ public class GameScreen implements Screen {
         timeString = asyncExecutor.submit(timeline);
         time = "01/01/0001";
         gameCache = new CacheProxy();
-        cacheService = new CacheService(gameCache);
         eventListener = CachedEventListener.getInstance();
         gameStage = new GameStage(time, viewport, batch);
         multiplexer = new InputMultiplexer(gameStage);
         Gdx.input.setInputProcessor(multiplexer);
-        isPaid = true;
     }
 
     @Override
@@ -110,17 +107,18 @@ public class GameScreen implements Screen {
 
     private void processTimeLine() {
         if (!timeString.isDone()) {
-            time = timeline.getDate();
+            time = timeline.getDateString();
             gameCache.setValue(CURRENT_TIME, time);
             gameStage.setTime(time);
         } else {
-            timeline = new TimeLineTask(500L);
+            timeline = new TimeLineTask<>(500L, true);
             timeString = asyncExecutor.submit(timeline);
         }
     }
 
     private void updateBudget() {
-        if (this.timeline.getCurrentDay() == 1L && !isPayDay && !isPaid) {
+        if (this.timeline.getDate().getDays() == 1
+                && !this.timeline.getDate().equals(new TimeLineDate(1L ,1L ,1L)) && !isPayDay) {
             Map<String, ?> cacheSnapshot = eventListener.consume();
             CacheSnapshotService snapshotService = new CacheSnapshotService(cacheSnapshot);
             float budget = snapshotService.getFloat(CURRENT_BUDGET);
@@ -129,10 +127,8 @@ public class GameScreen implements Screen {
             float incomes = calculateIncomes(snapshotService);
             gameCache.setValue(CURRENT_BUDGET, budget - costs - salaries + incomes);
             isPayDay = true;
-            isPaid = true;
         } else {
             isPayDay = false;
-            isPaid = false;
             eventListener.post();
         }
     }
