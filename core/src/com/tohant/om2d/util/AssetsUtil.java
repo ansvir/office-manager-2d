@@ -8,9 +8,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class AssetsUtil {
 
+    private static final String PLAIN_J_ATLAS = "skins/plain-j/plain-james.atlas";
+    private static final String PLAIN_J_SKIN = "skins/plain-j/plain-james.json";
+    private static final String NEON_UI_ATLAS = "skins/neon-ui/neon-ui.atlas";
+    private static final String NEON_UI_JSON = "skins/neon-ui/neon-ui.json";
+    private static final String ORANGE_ATLAS = "skins/orange/uiskin.atlas";
+    private static final String ORANGE_JSON = "skins/orange/uiskin.json";
+
     public static Skin getDefaultSkin() {
-        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("skins/plain-j/plain-james.atlas"));
-        return new Skin(Gdx.files.internal("skins/plain-j/plain-james.json"), atlas);
+        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal(ORANGE_ATLAS));
+        return new Skin(Gdx.files.internal(ORANGE_JSON), atlas);
     }
 
     public static Pixmap resizePixmap(Pixmap pixmap, float width, float height) {
