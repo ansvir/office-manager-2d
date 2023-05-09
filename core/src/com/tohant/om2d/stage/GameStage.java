@@ -215,14 +215,14 @@ public class GameStage extends Stage {
                 switch (currentRoomInfo.getType()) {
                     case SECURITY:
                         currentStaffType = Staff.Type.SECURITY;
-                        currentStaffTypeSalary = 1200.0f;
+                        currentStaffTypeSalary = Staff.Type.SECURITY.getSalary();
                         break;
                     case OFFICE:
                         currentStaffType = Staff.Type.WORKER;
                         break;
                     case CLEANING:
                         currentStaffType = Staff.Type.CLEANING;
-                        currentStaffTypeSalary = 500.0f;
+                        currentStaffTypeSalary = Staff.Type.CLEANING.getSalary();
                         break;
                 }
                 String name = currentRoomInfo.getType().name().charAt(0) +
