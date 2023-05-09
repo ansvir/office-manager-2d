@@ -3,9 +3,13 @@ package com.tohant.om2d.service;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.util.AssetsUtil;
+
+import java.util.Objects;
 
 import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
 
@@ -22,6 +26,11 @@ public class AssetService implements Disposable {
     private final Texture GRASS1;
     private final Texture GRASS2;
     private Texture background;
+    private final TextureRegion VR_ROAD;
+    private final TextureRegion VL_ROAD;
+    private final TextureRegion HU_ROAD;
+    private final TextureRegion HD_ROAD;
+    private final TextureRegion EMPTY_ROAD;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -32,6 +41,11 @@ public class AssetService implements Disposable {
         this.ROOM_CONSTRUCTION = createRoomConstructionTexture();
         this.GRASS1 = createGrass1Texture();
         this.GRASS2 = createGrass2Texture();
+        this.VR_ROAD = createVRRoadTexture();
+        this.VL_ROAD = createVLRoadTexture();
+        this.HD_ROAD = createHDRoadTexture();
+        this.HU_ROAD = createHURoadTexture();
+        this.EMPTY_ROAD = createEmptyRoadTexture();
     }
 
     public static AssetService getInstance() {
@@ -90,6 +104,30 @@ public class AssetService implements Disposable {
         return AssetsUtil.resizeTexture("grass2.png", CELL_SIZE, CELL_SIZE);
     }
 
+    private TextureRegion createVRRoadTexture() {
+        return new TextureRegion(AssetsUtil.resizeTexture("road.png", CELL_SIZE, CELL_SIZE));
+    }
+
+    private TextureRegion createVLRoadTexture() {
+        TextureRegion texture = new TextureRegion(Objects.requireNonNullElseGet(VR_ROAD, this::createVRRoadTexture));
+        texture.flip(true, false);
+        return texture;
+    }
+
+    private TextureRegion createHURoadTexture() {
+        TextureRegion texture = new TextureRegion(Objects.requireNonNullElseGet(HD_ROAD, this::createHDRoadTexture));
+        texture.flip(false, true);
+        return texture;
+    }
+
+    private TextureRegion createHDRoadTexture() {
+        return new TextureRegion(AssetsUtil.resizeTexture("road.png", CELL_SIZE, CELL_SIZE));
+    }
+
+    private TextureRegion createEmptyRoadTexture() {
+        return new TextureRegion(AssetsUtil.resizeTexture("empty_road.png", CELL_SIZE, CELL_SIZE));
+    }
+
     public Texture getActiveEmptyCellTexture() {
         return ACTIVE_EMPTY_CELL;
     }
@@ -128,6 +166,26 @@ public class AssetService implements Disposable {
 
     public void setBackground(Texture background) {
         this.background = background;
+    }
+
+    public TextureRegion getVRRoadTexture() {
+        return VR_ROAD;
+    }
+
+    public TextureRegion getVLRoadTexture() {
+        return VL_ROAD;
+    }
+
+    public TextureRegion getHURoadTexture() {
+        return HU_ROAD;
+    }
+
+    public TextureRegion getHDRoadTexture() {
+        return HD_ROAD;
+    }
+
+    public TextureRegion getEmptyRoadTexture() {
+        return EMPTY_ROAD;
     }
 
     @Override
