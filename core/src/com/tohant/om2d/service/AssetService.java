@@ -19,6 +19,9 @@ public class AssetService implements Disposable {
     private final Texture OFFICE_ROOM;
     private final Texture CLEANING_ROOM;
     private final Texture ROOM_CONSTRUCTION;
+    private final Texture GRASS1;
+    private final Texture GRASS2;
+    private Texture background;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -27,6 +30,8 @@ public class AssetService implements Disposable {
         this.OFFICE_ROOM = createOfficeRoomTexture();
         this.CLEANING_ROOM = createCleaningRoomTexture();
         this.ROOM_CONSTRUCTION = createRoomConstructionTexture();
+        this.GRASS1 = createGrass1Texture();
+        this.GRASS2 = createGrass2Texture();
     }
 
     public static AssetService getInstance() {
@@ -77,6 +82,14 @@ public class AssetService implements Disposable {
         return AssetsUtil.resizeTexture("build.png", CELL_SIZE, CELL_SIZE);
     }
 
+    private Texture createGrass1Texture() {
+        return AssetsUtil.resizeTexture("grass.png", CELL_SIZE, CELL_SIZE);
+    }
+
+    private Texture createGrass2Texture() {
+        return AssetsUtil.resizeTexture("grass2.png", CELL_SIZE, CELL_SIZE);
+    }
+
     public Texture getActiveEmptyCellTexture() {
         return ACTIVE_EMPTY_CELL;
     }
@@ -101,6 +114,22 @@ public class AssetService implements Disposable {
         return ROOM_CONSTRUCTION;
     }
 
+    public Texture getGrass1Texture() {
+        return GRASS1;
+    }
+
+    public Texture getGrass2Texture() {
+        return GRASS2;
+    }
+
+    public Texture getBackground() {
+        return background;
+    }
+
+    public void setBackground(Texture background) {
+        this.background = background;
+    }
+
     @Override
     public void dispose() {
         this.ACTIVE_EMPTY_CELL.dispose();
@@ -108,6 +137,12 @@ public class AssetService implements Disposable {
         this.SECURITY_ROOM.dispose();
         this.CLEANING_ROOM.dispose();
         this.OFFICE_ROOM.dispose();
+        this.ROOM_CONSTRUCTION.dispose();
+        this.GRASS1.dispose();
+        this.GRASS2.dispose();
+        if (this.background != null) {
+            this.background.dispose();
+        }
     }
 
 }

@@ -41,10 +41,10 @@ public class GameStage extends Stage {
     private Label time;
     private Window toolPane;
     private IModal officeStatModal;
-    private Label officeStatLabel;
+//    private Label officeStatLabel;
     private IModal roomInfoModal;
-    private Label roomInfoLabel;
-    private TextButton hideRoomInfo;
+    private final Label roomInfoLabel;
+//    private TextButton hideRoomInfo;
     private Skin skin;
     private Window notification;
     private Array<GameException> exceptions;
@@ -52,10 +52,7 @@ public class GameStage extends Stage {
 
     public GameStage(String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
-        Grid grid = new Grid((int) ((Gdx.graphics.getWidth() / 2f) - ((GRID_WIDTH * CELL_SIZE) / 2)),
-                ((int) ((Gdx.graphics.getHeight() / 2f) - ((GRID_HEIGHT * CELL_SIZE) / 2))),
-                GRID_WIDTH, GRID_HEIGHT, CELL_SIZE);
-        map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), grid);
+        map = new Map(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         addActor(map);
         skin = getDefaultSkin();
         gameCache = new CacheProxy();
