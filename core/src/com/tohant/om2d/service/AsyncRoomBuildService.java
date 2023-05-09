@@ -6,13 +6,12 @@ import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
-import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
-import com.tohant.om2d.storage.CacheProxy;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.service.ServiceUtil.getEmployeesAmountByType;
+import static com.tohant.om2d.service.ServiceUtil.setEmployeesAmountByType;
 import static com.tohant.om2d.storage.CacheImpl.*;
-import static com.tohant.om2d.storage.CacheImpl.TOTAL_ADMIN_STAFF;
 
 public class AsyncRoomBuildService {
 
@@ -58,35 +57,6 @@ public class AsyncRoomBuildService {
         });
         this.tasks.add(task);
         return asyncExecutor.submit(task);
-    }
-
-    private long getEmployeesAmountByType(Staff.Type type) {
-        switch (type) {
-            case SECURITY: return cacheService.getLong(TOTAL_SECURITY_STAFF);
-            case WORKER: return cacheService.getLong(TOTAL_WORKERS);
-            case CLEANING: return cacheService.getLong(TOTAL_CLEANING_STAFF);
-            case ADMINISTRATION: return cacheService.getLong(TOTAL_ADMIN_STAFF);
-            default: return -1L;
-        }
-    }
-
-    private void setEmployeesAmountByType(Staff.Type type, long amount) {
-        switch (type) {
-            case SECURITY:
-                cacheService.setLong(TOTAL_SECURITY_STAFF, amount);
-                break;
-            case CLEANING:
-                cacheService.setLong(TOTAL_CLEANING_STAFF, amount);
-                break;
-            case WORKER:
-                cacheService.setLong(TOTAL_WORKERS, amount);
-                break;
-            case ADMINISTRATION:
-                cacheService.setLong(TOTAL_ADMIN_STAFF, amount);
-                break;
-            default:
-                break;
-        }
     }
 
     public Array<TimeLineTask<Room>> getTasks() {

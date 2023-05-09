@@ -4,10 +4,15 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
-import com.tohant.om2d.actor.room.HallRoom;
+import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 
+import static com.tohant.om2d.storage.CacheImpl.*;
+import static com.tohant.om2d.storage.CacheImpl.TOTAL_ADMIN_STAFF;
+
 public class ServiceUtil {
+    
+    private static final CacheService CACHE_SERVICE = CacheService.getInstance(); 
 
     public static int nextToHalls(Cell cell, Array<Actor> children) {
         Vector2 coords = getCellCoordinates(cell);
@@ -67,5 +72,69 @@ public class ServiceUtil {
         }
         return result;
     }
+
+    public static long getEmployeesAmountByType(Staff.Type type) {
+        switch (type) {
+            case SECURITY: return CACHE_SERVICE.getLong(TOTAL_SECURITY_STAFF);
+            case WORKER: return CACHE_SERVICE.getLong(TOTAL_WORKERS);
+            case CLEANING: return CACHE_SERVICE.getLong(TOTAL_CLEANING_STAFF);
+            case ADMINISTRATION: return CACHE_SERVICE.getLong(TOTAL_ADMIN_STAFF);
+            default: return -1L;
+        }
+    }
+
+    public static void setEmployeesAmountByType(Staff.Type type, long amount) {
+        switch (type) {
+            case SECURITY:
+                CACHE_SERVICE.setLong(TOTAL_SECURITY_STAFF, amount);
+                break;
+            case CLEANING:
+                CACHE_SERVICE.setLong(TOTAL_CLEANING_STAFF, amount);
+                break;
+            case WORKER:
+                CACHE_SERVICE.setLong(TOTAL_WORKERS, amount);
+                break;
+            case ADMINISTRATION:
+                CACHE_SERVICE.setLong(TOTAL_ADMIN_STAFF, amount);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static long getRoomsAmountByType(Room.Type type) {
+        switch (type) {
+            case OFFICE:
+                return CACHE_SERVICE.getLong(OFFICES_AMOUNT);
+            case HALL:
+                return CACHE_SERVICE.getLong(HALLS_AMOUNT);
+            case SECURITY:
+                return CACHE_SERVICE.getLong(SECURITY_AMOUNT);
+            case CLEANING:
+                return CACHE_SERVICE.getLong(CLEANING_AMOUNT);
+            default:
+                return -1L;
+        }
+    }
+
+    public static void setRoomsAmountByType(Room.Type type, long amount) {
+        switch (type) {
+            case OFFICE:
+                CACHE_SERVICE.setLong(OFFICES_AMOUNT, amount);
+                break;
+            case HALL:
+                CACHE_SERVICE.setLong(HALLS_AMOUNT, amount);
+                break;
+            case SECURITY:
+                CACHE_SERVICE.setLong(SECURITY_AMOUNT, amount);
+                break;
+            case CLEANING:
+                CACHE_SERVICE.setLong(CLEANING_AMOUNT, amount);
+                break;
+            default:
+                break;
+        }
+    }
+    
 
 }

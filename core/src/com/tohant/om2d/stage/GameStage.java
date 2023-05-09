@@ -3,7 +3,7 @@ package com.tohant.om2d.stage;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Array;
@@ -12,8 +12,10 @@ import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.actor.ui.modal.DefaultModal;
+import com.tohant.om2d.actor.ui.modal.IModal;
+import com.tohant.om2d.actor.ui.modal.ModalData;
 import com.tohant.om2d.exception.GameException;
-import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.CacheService;
@@ -24,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.badlogic.gdx.utils.Align.left;
 import static com.tohant.om2d.actor.constant.Constant.*;
-import static com.tohant.om2d.service.ServiceUtil.checkHallNextToRoomThatHasNoOtherHalls;
+import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.storage.CacheImpl.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
@@ -38,9 +40,9 @@ public class GameStage extends Stage {
     private CacheService cacheService;
     private Label time;
     private Window toolPane;
-    private Window officeStatWindow;
+    private IModal officeStatModal;
     private Label officeStatLabel;
-    private Window roomInfo;
+    private IModal roomInfoModal;
     private Label roomInfoLabel;
     private TextButton hideRoomInfo;
     private Skin skin;
@@ -192,8 +194,9 @@ public class GameStage extends Stage {
         builder.append("Salaries: ");
         builder.append(Math.round(cacheService.getFloat(TOTAL_SALARIES)));
         builder.append(" $/m");
-        this.officeStatLabel.setText(builder.toString());
-        this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
+        this.officeStatModal.updateContentText(builder.toString());
+//        this.officeStatLabel.setText(builder.toString());
+//        this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
     }
 
     public void updateRoomInfoWindow() {
@@ -208,113 +211,118 @@ public class GameStage extends Stage {
             }
         }
         if (currentCell != null) {
-            if (currentCell.getRoomModel() != null) {
-                RoomInfo currentRoomInfo = currentCell.getRoomModel().getRoomInfo();
-                Staff.Type currentStaffType = null;
-                float currentStaffTypeSalary = 0.0f;
-                switch (currentRoomInfo.getType()) {
-                    case SECURITY:
-                        currentStaffType = Staff.Type.SECURITY;
-                        currentStaffTypeSalary = Staff.Type.SECURITY.getSalary();
-                        break;
-                    case OFFICE:
-                        currentStaffType = Staff.Type.WORKER;
-                        break;
-                    case CLEANING:
-                        currentStaffType = Staff.Type.CLEANING;
-                        currentStaffTypeSalary = Staff.Type.CLEANING.getSalary();
-                        break;
-                }
-                String name = currentRoomInfo.getType().name().charAt(0) +
-                        currentRoomInfo.getType().name().substring(1).toLowerCase();
-                roomInfo.reset();
-                if (!currentCell.isBuilt() && !currentCell.isEmpty()) {
-                    roomInfo.getTitleLabel().setText("Construction");
-                    this.roomInfoLabel.setText("Building " + currentCell.getRoomModel().getRoomInfo().getType()
-                            .name().toLowerCase() + " room...");
-                } else {
-                    roomInfo.getTitleLabel().setText(name + " #" + currentRoomInfo.getNumber());
-                    this.roomInfoLabel.setText("Price: " + Math.round(currentRoomInfo.getPrice()) + "$\n"
-                            + "Cost: " + Math.round(currentRoomInfo.getCost()) + "$/m\n" + "Employees: "
-                            + currentRoomInfo.getStaff().size);
-                }
-                TextButton destroy = new TextButton("Destroy", skin);
-                Cell currentCellCopy = currentCell;
-                Staff.Type currentStaffTypeCopy = currentStaffType;
-                float currentStaffTypeSalaryCopy = currentStaffTypeSalary;
-                destroy.addListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        super.touchDown(event, x, y, pointer, button);
-                        if (checkHallNextToRoomThatHasNoOtherHalls(currentCellCopy, map.getGrid().getChildren())
-                                && currentCellCopy.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
-                            addException(new GameException(GameException.Code.E300));
-                        } else {
-                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoomModel().getRoomInfo().getCost());
-                            if (currentRoomInfo.getType() == Room.Type.OFFICE) {
-                                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 100.0f * currentRoomInfo.getStaff().size);
-                            }
-                            if (currentStaffTypeCopy != null) {
-                                setEmployeesAmountByType(currentStaffTypeCopy,
-                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoomInfo.getStaff().size);
-                            }
-                            gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
-                                    - currentRoomInfo.getStaff().size * currentStaffTypeSalaryCopy);
-                            setRoomsAmountByType(currentCellCopy.getRoomModel().getRoomInfo().getType(),
-                                    getRoomsAmountByType(currentCellCopy.getRoomModel().getRoomInfo().getType()) - 1L);
-                            gameCache.setValue(CURRENT_ROOM, null);
-                            currentCellCopy.setRoomModel(null);
-                            roomInfo.setVisible(false);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                roomInfo.add(this.roomInfoLabel).expand().pad(20).center();
-                roomInfo.row();
-                roomInfo.add(destroy).expand().padLeft(20).padRight(20).padBottom(20).center();
-                roomInfo.setSize(MathUtils.clamp(roomInfo.getWidth(), roomInfo.getPrefWidth() + 50, roomInfo.getPrefWidth() + 200), roomInfo.getPrefHeight());
-                roomInfo.setVisible(true);
+//            if (currentCell.getRoomModel() != null) {
+//                RoomInfo currentRoomInfo = currentCell.getRoomModel().getRoomInfo();
+//                Staff.Type currentStaffType = null;
+//                float currentStaffTypeSalary = 0.0f;
+//                switch (currentRoomInfo.getType()) {
+//                    case SECURITY:
+//                        currentStaffType = Staff.Type.SECURITY;
+//                        currentStaffTypeSalary = Staff.Type.SECURITY.getSalary();
+//                        break;
+//                    case OFFICE:
+//                        currentStaffType = Staff.Type.WORKER;
+//                        break;
+//                    case CLEANING:
+//                        currentStaffType = Staff.Type.CLEANING;
+//                        currentStaffTypeSalary = Staff.Type.CLEANING.getSalary();
+//                        break;
+//                }
+            TextButton destroy = getDestroyButton(currentCell);
+            String title;
+            String text;
+            if (!currentCell.isBuilt() && !currentCell.isEmpty()) {
+                title = "Construction";
+                text = "Building " + currentCell.getRoomModel().getRoomInfo().getType()
+                        .name().toLowerCase() + " room...";
+            } else {
+                title = currentCell.getRoomModel().getRoomInfo().getType().name().charAt(0) +
+                        currentCell.getRoomModel().getRoomInfo().getType().name().substring(1).toLowerCase()
+                        + " #" + currentCell.getRoomModel().getRoomInfo().getNumber();
+                text = "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
+                        + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m\n" + "Employees: "
+                        + currentCell.getRoomModel().getRoomInfo().getStaff().size;
             }
+            this.roomInfoModal.setModalData(new ModalData(title, text, Array.with(destroy)));
+//                TextButton destroy = new TextButton("Destroy", skin);
+//                Cell currentCellCopy = currentCell;
+//                Staff.Type currentStaffTypeCopy = currentStaffType;
+//                float currentStaffTypeSalaryCopy = currentStaffTypeSalary;
+//                destroy.addListener(new InputListener() {
+//                    @Override
+//                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+//                        super.touchDown(event, x, y, pointer, button);
+//                        if (checkHallNextToRoomThatHasNoOtherHalls(currentCellCopy, map.getGrid().getChildren())
+//                                && currentCellCopy.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
+//                            addException(new GameException(GameException.Code.E300));
+//                        } else {
+//                            cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCellCopy.getRoomModel().getRoomInfo().getCost());
+//                            if (currentRoomInfo.getType() == Room.Type.OFFICE) {
+//                                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 100.0f * currentRoomInfo.getStaff().size);
+//                            }
+//                            if (currentStaffTypeCopy != null) {
+//                                setEmployeesAmountByType(currentStaffTypeCopy,
+//                                        getEmployeesAmountByType(currentStaffTypeCopy) - currentRoomInfo.getStaff().size);
+//                            }
+//                            gameCache.setValue(TOTAL_SALARIES, Float.parseFloat((String) gameCache.getValue(TOTAL_SALARIES))
+//                                    - currentRoomInfo.getStaff().size * currentStaffTypeSalaryCopy);
+//                            setRoomsAmountByType(currentCellCopy.getRoomModel().getRoomInfo().getType(),
+//                                    getRoomsAmountByType(currentCellCopy.getRoomModel().getRoomInfo().getType()) - 1L);
+//                            gameCache.setValue(CURRENT_ROOM, null);
+//                            currentCellCopy.setRoomModel(null);
+//                            roomInfoModal.setVisible(false);
+//                            return true;
+//                        }
+//                        return false;
+//                    }
+//                });
+//                roomInfoModal.add(this.roomInfoLabel).expand().pad(20).center();
+//                roomInfoModal.row();
+//                roomInfoModal.add(destroy).expand().padLeft(20).padRight(20).padBottom(20).center();
+//                roomInfoModal.setSize(MathUtils.clamp(roomInfoModal.getWidth(), roomInfoModal.getPrefWidth() + 50, roomInfoModal.getPrefWidth() + 200), roomInfoModal.getPrefHeight());
+            roomInfoModal.getThis().setVisible(true);
         }
     }
 
     private void createToolPane() {
-        this.officeStatLabel = new Label("", skin);
-        this.officeStatWindow = new Window("Office", skin);
-        TextButton hideOfficeStatWindow = new TextButton("x", skin);
-        hideOfficeStatWindow.addListener(new InputListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                super.touchDown(event, x, y, pointer, button);
-                officeStatWindow.setVisible(false);
-                return false;
-            }
-        });
-        this.officeStatWindow.setMovable(true);
-        this.officeStatWindow.setResizable(false);
+//        this.officeStatLabel = new Label("", skin);
+//        this.officeStatWindow = new Window("Office", skin);
+        this.officeStatModal = new DefaultModal(new ModalData("Statistics", "", Array.with(),
+                new Vector2(this.budget.getX(), this.budget.getY() - DEFAULT_PAD)));
+//        TextButton hideOfficeStatWindow = new TextButton("x", skin);
+//        hideOfficeStatWindow.addListener(new InputListener() {
+//            @Override
+//            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+//                super.touchDown(event, x, y, pointer, button);
+//                officeStatModal.setVisible(false);
+//                return false;
+//            }
+//        });
+//        this.officeStatModal.setMovable(true);
+//        this.officeStatModal.setResizable(false);
         setRoomsStat();
-        this.officeStatWindow.add(this.officeStatLabel).center().pad(20).expand();
-        this.officeStatWindow.getTitleTable().add(hideOfficeStatWindow).right();
-        this.officeStatWindow.setVisible(false);
-        this.officeStatWindow.setSize(this.officeStatWindow.getPrefWidth(), this.officeStatWindow.getPrefHeight());
-        this.officeStatWindow.setPosition(this.budget.getX(), this.budget.getY() - 20 - this.officeStatWindow.getHeight());
-        this.roomInfo = new Window("Room Info", skin);
-        this.hideRoomInfo = new TextButton("x", skin);
-        hideRoomInfo.addListener(new InputListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                super.touchDown(event, x, y, pointer, button);
-                roomInfo.setVisible(false);
-                return false;
-            }
-        });
-        this.roomInfo.setMovable(true);
-        this.roomInfo.setResizable(false);
-        this.roomInfo.getTitleTable().add(hideRoomInfo).right();
-        this.roomInfo.setVisible(false);
-        this.roomInfo.setSize(this.roomInfo.getPrefWidth() + hideRoomInfo.getWidth(), this.roomInfo.getPrefHeight());
-        this.roomInfo.setPosition(Gdx.graphics.getWidth() - this.roomInfo.getWidth() - 20, this.budget.getY() - 20 - this.roomInfo.getHeight());
+//        this.officeStatModal.add(this.officeStatLabel).center().pad(20).expand();
+//        this.officeStatModal.getTitleTable().add(hideOfficeStatWindow).right();
+//        this.officeStatModal.setVisible(false);
+//        this.officeStatModal.setSize(this.officeStatModal.getPrefWidth(), this.officeStatModal.getPrefHeight());
+        this.roomInfoModal = new DefaultModal(new ModalData("Room Info", "", Array.with(getDestroyButton(null)),
+                new Vector2(Gdx.graphics.getWidth() - DEFAULT_PAD, this.budget.getY() - DEFAULT_PAD)));
+//        this.roomInfoModal = new Window("Room Info", skin);
+//        this.hideRoomInfo = new TextButton("x", skin);
+//        hideRoomInfo.addListener(new InputListener() {
+//            @Override
+//            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+//                super.touchDown(event, x, y, pointer, button);
+//                roomInfoModal.setVisible(false);
+//                return false;
+//            }
+//        });
+//        this.roomInfoModal.setMovable(true);
+//        this.roomInfoModal.setResizable(false);
+//        this.roomInfoModal.getTitleTable().add(hideRoomInfo).right();
+//        this.roomInfoModal.setVisible(false);
+//        this.roomInfoModal.setSize(this.roomInfoModal.getPrefWidth() + hideRoomInfo.getWidth(), this.roomInfoModal.getPrefHeight());
+//        this.roomInfoModal.setPosition(Gdx.graphics.getWidth() - this.roomInfoModal.getWidth() - 20, this.budget.getY() - 20 - this.roomInfoModal.getHeight());
         this.toolPane = new Window("Office Manager 2D", skin);
         this.toolPane.setSize(Gdx.graphics.getWidth(), 150f);
         this.toolPane.setPosition(0, 0);
@@ -337,12 +345,12 @@ public class GameStage extends Stage {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
-                officeStatWindow.setVisible(!officeStatWindow.isVisible());
+                officeStatModal.toggle();
                 return false;
             }
         });
-        addActor(this.officeStatWindow);
-        addActor(this.roomInfo);
+        addActor(this.officeStatModal.getThis());
+        addActor(this.roomInfoModal.getThis());
         this.toolPane.add(officeButton);
         this.toolPane.getTitleTable().add(hide).right();
     }
@@ -354,74 +362,6 @@ public class GameStage extends Stage {
     @Override
     public void dispose() {
         skin.dispose();
-    }
-
-    private long getRoomsAmountByType(Room.Type type) {
-        switch (type) {
-            case OFFICE:
-                return cacheService.getLong(OFFICES_AMOUNT);
-            case HALL:
-                return cacheService.getLong(HALLS_AMOUNT);
-            case SECURITY:
-                return cacheService.getLong(SECURITY_AMOUNT);
-            case CLEANING:
-                return cacheService.getLong(CLEANING_AMOUNT);
-            default:
-                return -1L;
-        }
-    }
-
-    private void setRoomsAmountByType(Room.Type type, long amount) {
-        switch (type) {
-            case OFFICE:
-                cacheService.setLong(OFFICES_AMOUNT, amount);
-                break;
-            case HALL:
-                cacheService.setLong(HALLS_AMOUNT, amount);
-                break;
-            case SECURITY:
-                cacheService.setLong(SECURITY_AMOUNT, amount);
-                break;
-            case CLEANING:
-                cacheService.setLong(CLEANING_AMOUNT, amount);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private long getEmployeesAmountByType(Staff.Type type) {
-        switch (type) {
-            case SECURITY:
-                return Long.parseLong((String) gameCache.getValue(TOTAL_SECURITY_STAFF));
-            case WORKER:
-                return Long.parseLong((String) gameCache.getValue(TOTAL_WORKERS));
-            case CLEANING:
-                return Long.parseLong((String) gameCache.getValue(TOTAL_CLEANING_STAFF));
-            case ADMINISTRATION:
-                return Long.parseLong((String) gameCache.getValue(TOTAL_ADMIN_STAFF));
-            default:
-                return -1L;
-        }
-    }
-
-    private void setEmployeesAmountByType(Staff.Type type, long amount) {
-        switch (type) {
-            case SECURITY:
-                gameCache.setValue(TOTAL_SECURITY_STAFF, amount);
-                break;
-            case CLEANING:
-                gameCache.setValue(TOTAL_CLEANING_STAFF, amount);
-                break;
-            case WORKER:
-                gameCache.setValue(TOTAL_WORKERS, amount);
-                break;
-            case ADMINISTRATION:
-                gameCache.setValue(TOTAL_ADMIN_STAFF, amount);
-                break;
-            default:
-                break;
-        }
     }
 
     private void createNotification(GameException e) {
@@ -461,7 +401,7 @@ public class GameStage extends Stage {
                         roomBuildingTimeline.set(t);
                     }
                 });
-                if (roomBuildingTimeline.get() != null) {
+                if (roomBuildingTimeline.get() != null && !roomBuildingTimeline.get().isFinished()) {
                     map.getGrid().getChildren().forEach(c -> {
                         if (!((Cell) c).isEmpty() && !((Cell) c).isBuilt()
                                 && ((Cell) c).getRoomModel().getRoomInfo().getId().equals(id)) {
@@ -471,8 +411,8 @@ public class GameStage extends Stage {
                             months = months == 1L ? 0 : ((Cell) c).getRoomModel().getRoomInfo().getBuildTime().getMonth() - months;
                             long years = roomBuildingTimeline.get().getDate().getYears();
                             years = years == 1L ? 0 : ((Cell) c).getRoomModel().getRoomInfo().getBuildTime().getYears() - years;
-                            this.roomInfoLabel.setText("Building " + ((Cell) c).getRoomModel().getRoomInfo().getType()
-                                    .name().toLowerCase() + " room...\nTime left: " + days + " d. " + months + " m." + years + " y.");
+                            this.roomInfoModal.updateContentText("Building " + ((Cell) c).getRoomModel().getRoomInfo().getType()
+                                    .name().toLowerCase() + " room...\n\nTime left: " + days + " d. " + months + " m." + years + " y.");
                         }
                     });
                 } else {
@@ -480,6 +420,61 @@ public class GameStage extends Stage {
                 }
             }
         }
+    }
+
+    private TextButton getDestroyButton(Cell cell) {
+        TextButton destroy = new TextButton("Destroy", skin);
+        final Cell currentCell = cell;
+        destroy.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchDown(event, x, y, pointer, button);
+                if (currentCell != null) {
+                    Staff.Type currentStaffType = null;
+                    float currentStaffTypeSalary = 0.0f;
+                    switch (currentCell.getRoomModel().getRoomInfo().getType()) {
+                        case SECURITY:
+                            currentStaffType = Staff.Type.SECURITY;
+                            currentStaffTypeSalary = Staff.Type.SECURITY.getSalary();
+                            break;
+                        case OFFICE:
+                            currentStaffType = Staff.Type.WORKER;
+                            break;
+                        case CLEANING:
+                            currentStaffType = Staff.Type.CLEANING;
+                            currentStaffTypeSalary = Staff.Type.CLEANING.getSalary();
+                            break;
+                    }
+                    if (checkHallNextToRoomThatHasNoOtherHalls(currentCell, map.getGrid().getChildren())
+                            && currentCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
+                        addException(new GameException(GameException.Code.E300));
+                    } else {
+                        cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) - currentCell.getRoomModel().getRoomInfo().getCost());
+                        if (currentCell.getRoomModel().getRoomInfo().getType() == Room.Type.OFFICE) {
+                            cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) - 100.0f
+                                    * currentCell.getRoomModel().getRoomInfo().getStaff().size);
+                        }
+                        if (currentStaffType != null) {
+                            setEmployeesAmountByType(currentStaffType,
+                                    getEmployeesAmountByType(currentStaffType)
+                                            - currentCell.getRoomModel().getRoomInfo().getStaff().size);
+                        }
+                        cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
+                                - currentCell.getRoomModel().getRoomInfo().getStaff().size * currentStaffTypeSalary);
+                        setRoomsAmountByType(currentCell.getRoomModel().getRoomInfo().getType(),
+                                getRoomsAmountByType(currentCell.getRoomModel().getRoomInfo().getType()) - 1L);
+                        gameCache.setValue(CURRENT_ROOM, null);
+                        currentCell.setRoomModel(null);
+                        roomInfoModal.getThis().setVisible(false);
+                        return true;
+                    }
+                } else {
+                    destroy.setDisabled(true);
+                }
+                return false;
+            }
+        });
+        return destroy;
     }
 
 }

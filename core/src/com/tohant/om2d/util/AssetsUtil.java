@@ -14,10 +14,11 @@ public class AssetsUtil {
     private static final String NEON_UI_JSON = "skins/neon-ui/neon-ui.json";
     private static final String ORANGE_ATLAS = "skins/orange/uiskin.atlas";
     private static final String ORANGE_JSON = "skins/orange/uiskin.json";
+    private static final TextureAtlas ATLAS = new TextureAtlas(Gdx.files.internal(ORANGE_ATLAS));
+    private static final Skin SKIN = new Skin(Gdx.files.internal(ORANGE_JSON), ATLAS);
 
     public static Skin getDefaultSkin() {
-        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal(ORANGE_ATLAS));
-        return new Skin(Gdx.files.internal(ORANGE_JSON), atlas);
+        return SKIN;
     }
 
     public static Pixmap resizePixmap(Pixmap pixmap, float width, float height) {
