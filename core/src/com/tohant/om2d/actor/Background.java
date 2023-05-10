@@ -12,7 +12,6 @@ import com.tohant.om2d.actor.environment.Car;
 import com.tohant.om2d.actor.environment.CarPath;
 import com.tohant.om2d.actor.environment.Road;
 import com.tohant.om2d.model.RoadType;
-import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
 
@@ -99,7 +98,7 @@ public class Background extends Group {
     private void createRoads() {
         int width = Math.round(getWidth() / CELL_SIZE);
         int height = Math.round(getHeight() / CELL_SIZE);
-        int roadOneStartPos = width / 10;
+        int roadOneStartPos = width / 5;
         roads.clear();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {

@@ -12,6 +12,7 @@ import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.actor.ui.dropdown.HorizontalDropdown;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.actor.ui.modal.IModal;
 import com.tohant.om2d.actor.ui.modal.ModalData;
@@ -49,6 +50,7 @@ public class GameStage extends Stage {
     private Window notification;
     private Array<GameException> exceptions;
     private AsyncRoomBuildService roomBuildService;
+    private HorizontalDropdown roomsMenu;
 
     public GameStage(String time, Viewport viewport, Batch batch) {
         super(viewport, batch);
@@ -75,9 +77,9 @@ public class GameStage extends Stage {
         float buttonHeight = 60f;
         for (int i = 0, j = (int) toolPane.getHeight() + 40; i < rooms.length; i++, j += buttonHeight + 20) {
             TextButton room = new TextButton(rooms[i].name(), skin);
-            room.setSize(buttonWidth, buttonHeight);
-            room.setX(Gdx.graphics.getWidth() - (buttonWidth + 20));
-            room.setY(j);
+//            room.setSize(buttonWidth, buttonHeight);
+//            room.setX(Gdx.graphics.getWidth() - (buttonWidth + 20));
+//            room.setY(j);
             int iCopy = i;
             room.addListener(new InputListener() {
                 @Override
@@ -88,12 +90,14 @@ public class GameStage extends Stage {
                     return false;
                 }
             });
-            addActor(room);
             roomsButtons.add(room);
         }
+        this.roomsMenu = new HorizontalDropdown(Gdx.graphics.getWidth() - DEFAULT_PAD * 6.5f,
+                toolPane.getHeight() + buttonHeight * roomsButtons.size, roomsButtons, skin);
         addActor(this.budget);
         addActor(this.time);
         addActor(this.toolPane);
+        addActor(this.roomsMenu);
         this.roomInfoLabel = new Label("", skin);
     }
 
@@ -149,6 +153,11 @@ public class GameStage extends Stage {
     }
 
     public void setBudget(float budget) {
+        if (budget < 0) {
+            this.budget.setColor(Color.RED);
+        } else {
+            this.budget.setColor(Color.GREEN);
+        }
         this.budget.setText(Math.round(budget) + " $");
     }
 
