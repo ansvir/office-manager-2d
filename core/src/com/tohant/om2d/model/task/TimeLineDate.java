@@ -14,6 +14,12 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         this.years = years;
     }
 
+    public TimeLineDate(TimeLineDate date) {
+        this.days = date.getDays();
+        this.month = date.getMonth();
+        this.years = date.getYears();
+    }
+
     public long getDays() {
         return days;
     }
@@ -58,6 +64,10 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         long second = o.days + (o.month == 1L ? 0L : o.month * 30L)
                 + (o.years == 1L ? 0L : o.years * 12L * 30L);
         return Long.compare(first, second);
+    }
+
+    public long getDateMillis() {
+        return 1000L * 60L * 60L * 24L * this.days * this.month * this.years;
     }
 
 }

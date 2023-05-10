@@ -6,9 +6,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
+import com.tohant.om2d.actor.environment.Car;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.util.AssetsUtil;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
@@ -31,6 +34,7 @@ public class AssetService implements Disposable {
     private final TextureRegion HU_ROAD;
     private final TextureRegion HD_ROAD;
     private final TextureRegion EMPTY_ROAD;
+    private final Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> CARS_TEXTURES;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -46,6 +50,7 @@ public class AssetService implements Disposable {
         this.HD_ROAD = createHDRoadTexture();
         this.HU_ROAD = createHURoadTexture();
         this.EMPTY_ROAD = createEmptyRoadTexture();
+        this.CARS_TEXTURES = createCarsTextures();
     }
 
     public static AssetService getInstance() {
@@ -121,11 +126,31 @@ public class AssetService implements Disposable {
     }
 
     private TextureRegion createHDRoadTexture() {
-        return new TextureRegion(AssetsUtil.resizeTexture("road.png", CELL_SIZE, CELL_SIZE));
+        return new TextureRegion(AssetsUtil.resizeTexture("road_h.png", CELL_SIZE, CELL_SIZE));
     }
 
     private TextureRegion createEmptyRoadTexture() {
         return new TextureRegion(AssetsUtil.resizeTexture("empty_road.png", CELL_SIZE, CELL_SIZE));
+    }
+
+    private Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> createCarsTextures() {
+        Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> regions = new HashMap<>();
+        for (Car.Type t : Car.Type.values()) {
+            Texture bottomTexture = new Texture(t.getPathV());
+            TextureRegion bottom = new TextureRegion(bottomTexture);
+            Texture topTexture = new Texture(t.getPathV());
+            TextureRegion top = new TextureRegion(topTexture);
+            top.flip(false, true);
+            Texture leftTexture = new Texture(t.getPathH());
+            TextureRegion left = new TextureRegion(leftTexture);
+            left.flip(true, false);
+            Texture rightTexture = new Texture(t.getPathH());
+            TextureRegion right = new TextureRegion(rightTexture);
+            Map<Car.Type.Direction, TextureRegion> directions = Map.of(Car.Type.Direction.LEFT, left,
+                    Car.Type.Direction.RIGHT, right, Car.Type.Direction.TOP, top, Car.Type.Direction.BOTTOM, bottom);
+            regions.put(t, directions);
+        }
+        return regions;
     }
 
     public Texture getActiveEmptyCellTexture() {
@@ -186,6 +211,14 @@ public class AssetService implements Disposable {
 
     public TextureRegion getEmptyRoadTexture() {
         return EMPTY_ROAD;
+    }
+
+    public Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> getCarsTextures() {
+        return CARS_TEXTURES;
+    }
+
+    public TextureRegion getCarByTypeAndDirection(Car.Type type, Car.Type.Direction direction) {
+        return CARS_TEXTURES.get(type).get(direction);
     }
 
     @Override

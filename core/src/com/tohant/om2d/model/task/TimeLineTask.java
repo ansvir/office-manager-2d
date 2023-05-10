@@ -8,14 +8,15 @@ import java.util.function.Predicate;
 public class TimeLineTask<T> implements AsyncTask<T> {
 
     private final String id;
-    private TimeLineDate date;
+    private final TimeLineDate date;
     private final long waitTime;
     private long prevTime;
     private long time;
     private boolean isFinished;
     private final T result;
-    private Predicate<TimeLineDate> stopCondition;
-    private Runnable successCallback;
+    private final Predicate<TimeLineDate> stopCondition;
+    private final Runnable successCallback;
+    private volatile boolean isUpdated;
 
     public TimeLineTask(long waitTime, T result) {
         this.id = UUID.randomUUID().toString();
@@ -54,11 +55,12 @@ public class TimeLineTask<T> implements AsyncTask<T> {
         return this.result;
     }
 
-    private boolean iterateAndGet() {
+    private synchronized boolean iterateAndGet() {
         if (this.prevTime - this.time >= this.waitTime) {
             this.time = this.prevTime;
             return next();
         }
+        isUpdated = false;
         this.prevTime = System.currentTimeMillis();
         return false;
     }
@@ -76,6 +78,7 @@ public class TimeLineTask<T> implements AsyncTask<T> {
             }
             currentDay = 1L;
         } else {
+            isUpdated = true;
             currentDay++;
         }
         this.date.setDays(currentDay);
@@ -122,6 +125,22 @@ public class TimeLineTask<T> implements AsyncTask<T> {
 
     public String getId() {
         return id;
+    }
+
+    public long getPrevTime() {
+        return this.prevTime;
+    }
+
+    public long getTime() {
+        return this.time;
+    }
+
+    public long getWaitTime() {
+        return waitTime;
+    }
+
+    public synchronized boolean isUpdated() {
+        return isUpdated;
     }
 
 }

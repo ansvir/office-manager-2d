@@ -4,13 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.async.AsyncExecutor;
+import com.tohant.om2d.actor.environment.Car;
+import com.tohant.om2d.actor.environment.CarPath;
+import com.tohant.om2d.actor.environment.Road;
 import com.tohant.om2d.model.RoadType;
+import com.tohant.om2d.model.task.TimeLineDate;
+import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
 
@@ -18,18 +24,32 @@ public class Background extends Group {
 
     private final AssetService assetService;
     private final Array<Road> roads;
+    private final Array<Car> cars;
+    private final TimeLineTask<Boolean> backgroundTimeline;
+    private final AsyncExecutor executor;
+    private float timePassed;
 
     public Background(int x, int y, int width, int height) {
         setSize(width + Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH), height + Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT));
         setPosition(x, y);
         this.assetService = AssetService.getInstance();
         roads = new Array<>();
+        cars = new Array<>();
         createRoads();
+        backgroundTimeline = new TimeLineTask<>(DAY_WAIT_TIME_MILLIS / 2L, true);
+        executor = new AsyncExecutor(1);
+        executor.submit(backgroundTimeline);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
+        if (timePassed * 1000L >= (float) DAY_WAIT_TIME_MILLIS / 2L) {
+            timePassed = 0.0f;
+        } else {
+            timePassed += Gdx.graphics.getDeltaTime();
+        }
+        updateCars();
         Texture bg = assetService.getBackground();
         if (bg == null) {
             bg = createBackground();
@@ -38,6 +58,9 @@ public class Background extends Group {
         batch.draw(bg, getX(), getY());
         for (int i = 0; i < roads.size; i++) {
             roads.get(i).draw(batch, parentAlpha);
+        }
+        for (int i = 0; i < cars.size; i++) {
+            cars.get(i).draw(batch, parentAlpha);
         }
     }
 
@@ -76,29 +99,84 @@ public class Background extends Group {
     private void createRoads() {
         int width = Math.round(getWidth() / CELL_SIZE);
         int height = Math.round(getHeight() / CELL_SIZE);
+        int roadOneStartPos = width / 10;
         roads.clear();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                if (i == 5) {
+                if (i == roadOneStartPos) {
                     Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
                     roads.add(road);
                     addActor(road);
                 }
-                if (i == 6) {
+                if (i == roadOneStartPos + 1) {
                     Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.RIGHT);
                     roads.add(road);
                     addActor(road);
                 }
-                if (i == 7) {
+                if (i == roadOneStartPos + 2) {
                     Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.LEFT);
                     roads.add(road);
                     addActor(road);
                 }
-                if (i == 8) {
+                if (i == roadOneStartPos + 3) {
                     Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
                     roads.add(road);
                     addActor(road);
                 }
+            }
+        }
+    }
+
+    private synchronized void updateCars() {
+        Array<Car> carsToRemove = new Array<>();
+        for (int i = 0; i < cars.size; i++) {
+            if (cars.get(i).getX() <= getX() || cars.get(i).getY() <= getY()
+                    || cars.get(i).getX() == getWidth() || cars.get(i).getY() == getHeight()) {
+                carsToRemove.add(cars.get(i));
+            }
+        }
+        if (!cars.isEmpty()) {
+            cars.removeAll(carsToRemove, false);
+            getChildren().removeAll(carsToRemove, false);
+        }
+        trySpawnCar();
+        getChildren().forEach(c -> {
+            if (c instanceof Car) {
+                if (((Car) c).getDirection() == Car.Type.Direction.BOTTOM && c.getY() > -c.getHeight()) {
+                    c.setY(c.getY() - 5);
+                } else if (((Car) c).getDirection() == Car.Type.Direction.TOP) {
+                    c.setY(c.getY() + 5);
+                }
+            }
+        });
+    }
+
+    private synchronized void trySpawnCar() {
+        if (timePassed * 1000L >= backgroundTimeline.getWaitTime() && (backgroundTimeline.getDate().getDays() == 7
+                || backgroundTimeline.getDate().getDays() == 25)) {
+            AtomicReference<CarPath> nextCar = new AtomicReference<>();
+            roads.forEach(r -> {
+                if (r.getType() == RoadType.RIGHT) {
+                    nextCar.set(new CarPath((int) r.getX(), (int) getHeight(), (int) r.getX(), (int) getY()));
+                }
+            });
+            if (nextCar.get() != null) {
+                Car car = new Car(Car.Type.RED, Car.Type.Direction.BOTTOM, nextCar.get());
+                cars.add(car);
+                addActor(car);
+            }
+        } else if (timePassed * 1000L >= backgroundTimeline.getWaitTime() && (backgroundTimeline.getDate().getDays() == 20
+                || backgroundTimeline.getDate().getDays() == 3)) {
+            AtomicReference<CarPath> nextCar = new AtomicReference<>();
+            roads.forEach(r -> {
+                if (r.getType() == RoadType.LEFT) {
+                    nextCar.set(new CarPath((int) r.getX(), (int) getY(), (int) r.getX(), (int) getHeight()));
+                }
+            });
+            if (nextCar.get() != null) {
+                Car car = new Car(Car.Type.RED, Car.Type.Direction.TOP, nextCar.get());
+                cars.add(car);
+                addActor(car);
             }
         }
     }
