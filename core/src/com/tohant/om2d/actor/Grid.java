@@ -41,6 +41,7 @@ public class Grid extends Group implements Disposable {
     private CacheService cacheService;
     private int cellsWidth, cellsHeight;
     private AsyncRoomBuildService roomBuildService;
+    private boolean isGridVisible;
 
     public Grid(int x, int y, int cellsWidth, int cellsHeight, int cellSize) {
         this.cellsWidth = cellsWidth;
@@ -70,8 +71,10 @@ public class Grid extends Group implements Disposable {
                 addActor(cell);
             }
         }
-        texture = new Texture(pixmap);
+//        this.pixmap = pixmap;
+        this.texture = new Texture(pixmap);
         pixmap.dispose();
+        isGridVisible = true;
     }
 
     public float getCellSize() {
@@ -85,7 +88,9 @@ public class Grid extends Group implements Disposable {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        batch.draw(texture, getX(), getY(), cellsWidth * cellSize, cellsHeight * cellSize);
+        if (isGridVisible) {
+            batch.draw(texture, getX(), getY(), cellsWidth * cellSize, cellsHeight * cellSize);
+        }
     }
 
     @Override
@@ -211,6 +216,14 @@ public class Grid extends Group implements Disposable {
             case CLEANING: cacheService.setLong(CLEANING_AMOUNT, amount); break;
             default: break;
         }
+    }
+
+    public void setIsGridVisible(boolean isVisible) {
+        this.isGridVisible = isVisible;
+    }
+
+    public boolean isGridVisible() {
+        return isGridVisible;
     }
 
 }

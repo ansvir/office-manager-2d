@@ -51,6 +51,7 @@ public class GameStage extends Stage {
     private AsyncRoomBuildService roomBuildService;
     private HorizontalDropdown roomsMenu;
     private TextButton destroy;
+    private TextButton gridButton;
     private float deltaTimestamp;
 
     public GameStage(String time, Viewport viewport, Batch batch) {
@@ -91,10 +92,12 @@ public class GameStage extends Stage {
         }
         createDestroyButton();
         createToolPane();
-        this.roomsMenu = new HorizontalDropdown(Gdx.graphics.getWidth() - DEFAULT_PAD * 6.5f,
+        this.roomsMenu = new HorizontalDropdown(Gdx.graphics.getWidth() - DEFAULT_PAD * 7.45f,
                 toolPane.getHeight() + DEFAULT_PAD * 2 * roomsButtons.size, roomsButtons, skin);
+        createGridButton();
         addActor(this.toolPane);
         addActor(this.roomsMenu);
+        addActor(this.gridButton);
         addActor(this.budget);
         addActor(this.time);
     }
@@ -407,7 +410,6 @@ public class GameStage extends Stage {
         if (this.roomInfoModal != null) {
                 Cell currentCell = null;
                 String currentId = cacheService.getValue(CURRENT_ROOM);
-                System.out.println(currentId);
                 if (currentId != null) {
                     for (Actor a : map.getGrid().getChildren().items) {
                         if (a instanceof Cell) {
@@ -548,6 +550,20 @@ public class GameStage extends Stage {
 
     public IModal getRoomInfoModal() {
         return roomInfoModal;
+    }
+
+    private void createGridButton() {
+        this.gridButton = new TextButton("#", skin);
+        this.gridButton.setPosition(Gdx.graphics.getWidth() - this.gridButton.getWidth() - DEFAULT_PAD,
+                this.roomsMenu.getY() - this.gridButton.getHeight() - DEFAULT_PAD * 0.25f);
+        this.gridButton.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchDown(event, x, y, pointer, button);
+                map.getGrid().setIsGridVisible(!map.getGrid().isGridVisible());
+                return false;
+            }
+        });
     }
 
 }
