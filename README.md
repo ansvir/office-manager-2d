@@ -7,8 +7,10 @@ This is initial version of my project OM2D. Currently supported features you can
 1) Build 4 types of rooms in office.
 2) View your office information
 3) Monitor prices for your rooms
-4) Time passes while playing: days, months and years 
-5) 2 textures were recently added for 2 rooms
+4) Turn on and turn off the grid
+5) Time passes while playing: days, months and years 
+6) There are textures for environment objects and for 2 rooms
+7) Updated UI
 
 ### Project stack:
 
@@ -23,3 +25,9 @@ Here you can view the screenshot from current version:
 
 ### For contribution
 Please create new branch with issue name and create pull request to master when finished
+
+### Textures, fonts and skins owners:
+1) UI skin - Orange by Raymond "Raeleus" Buckley
+2) Grass - MiniWorldSprites by Shade and octoshrimpy
+3) Font - Upheaval by Brian Kent
+4) Road, car, rooms, other - mine
