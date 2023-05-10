@@ -3,9 +3,10 @@ package com.tohant.om2d.model.task;
 import com.badlogic.gdx.utils.async.AsyncTask;
 
 import java.util.UUID;
+import java.util.concurrent.*;
 import java.util.function.Predicate;
 
-public class TimeLineTask<T> implements AsyncTask<T> {
+public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T> {
 
     private final String id;
     private final TimeLineDate date;
@@ -16,7 +17,6 @@ public class TimeLineTask<T> implements AsyncTask<T> {
     private final T result;
     private final Predicate<TimeLineDate> stopCondition;
     private final Runnable successCallback;
-    private volatile boolean isUpdated;
 
     public TimeLineTask(long waitTime, T result) {
         this.id = UUID.randomUUID().toString();
@@ -41,13 +41,14 @@ public class TimeLineTask<T> implements AsyncTask<T> {
     }
 
     @Override
-    public T call() {
+    public T get() {
         boolean stop = false;
         while (!stop && !this.isFinished) {
             if (this.stopCondition != null) {
                 if (this.stopCondition.test(this.date)) {
                     successCallback.run();
                     forceFinish();
+                    break;
                 }
             }
             stop = iterateAndGet();
@@ -60,7 +61,6 @@ public class TimeLineTask<T> implements AsyncTask<T> {
             this.time = this.prevTime;
             return next();
         }
-        isUpdated = false;
         this.prevTime = System.currentTimeMillis();
         return false;
     }
@@ -78,7 +78,6 @@ public class TimeLineTask<T> implements AsyncTask<T> {
             }
             currentDay = 1L;
         } else {
-            isUpdated = true;
             currentDay++;
         }
         this.date.setDays(currentDay);
@@ -112,11 +111,11 @@ public class TimeLineTask<T> implements AsyncTask<T> {
     }
 
     public boolean isFinished() {
-        return isFinished;
+        return isCancelled();
     }
 
     public void forceFinish() {
-        this.isFinished = true;
+        cancel(true);
     }
 
     public TimeLineDate getDate() {
@@ -139,8 +138,29 @@ public class TimeLineTask<T> implements AsyncTask<T> {
         return waitTime;
     }
 
-    public synchronized boolean isUpdated() {
-        return isUpdated;
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        this.isFinished = true;
+        return true;
     }
 
+    @Override
+    public boolean isCancelled() {
+        return this.isFinished;
+    }
+
+    @Override
+    public boolean isDone() {
+        return this.isFinished;
+    }
+
+    @Override
+    public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return get();
+    }
+
+    @Override
+    public T call() throws Exception {
+        return get();
+    }
 }

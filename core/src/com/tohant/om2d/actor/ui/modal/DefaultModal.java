@@ -22,17 +22,20 @@ public class DefaultModal extends Window implements IModal {
 
     public DefaultModal(ModalData modalData) {
         super(modalData.getTitle(), getDefaultSkin());
-        super.getTitleTable().getCells().get(0).padLeft(DEFAULT_PAD);
+        super.getTitleTable().getCells().get(0).pad(DEFAULT_PAD);
         this.skin = getDefaultSkin();
-        super.getTitleTable().add(getCloseButton()).right();
+        TextButton closeButton = getCloseButton();
+        super.getTitleTable().add(closeButton).right();
         super.setVisible(false);
         super.setResizable(false);
         super.setMovable(true);
-        super.setSize(super.getPrefWidth(), super.getPrefHeight());
-        if (modalData.getPosition().x + this.getWidth() > Gdx.graphics.getWidth()) {
-            super.setPosition(modalData.getPosition().x - this.getWidth(), modalData.getPosition().y - super.getPrefHeight());
-        } else {
-            super.setPosition(modalData.getPosition().x, modalData.getPosition().y - super.getPrefHeight());
+        super.setSize(getPrefWidth(), getPrefHeight());
+        if (modalData.getPosition() != null) {
+            if (modalData.getPosition().x + this.getWidth() > Gdx.graphics.getWidth()) {
+                super.setPosition(modalData.getPosition().x - this.getWidth(), modalData.getPosition().y - super.getPrefHeight());
+            } else if (modalData.getPosition().y + this.getHeight() > Gdx.graphics.getHeight()) {
+                super.setPosition(modalData.getPosition().x, modalData.getPosition().y - super.getPrefHeight());
+            }
         }
         Label text = new Label(modalData.getText(), skin);
         text.setName(CONTENT_NAME);
@@ -84,7 +87,6 @@ public class DefaultModal extends Window implements IModal {
                 return false;
             }
         });
-        closeButton.setScale(0.5f);
         return closeButton;
     }
 

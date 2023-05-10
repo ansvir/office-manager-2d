@@ -1,24 +1,25 @@
 package com.tohant.om2d.model.task;
 
-import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.room.RoomInfo;
 
+import java.util.concurrent.CompletableFuture;
+
 public class RoomBuildingModel {
 
-    private AsyncResult<Room> room;
+    private CompletableFuture<Room> room;
     private RoomInfo roomInfo;
 
-    public RoomBuildingModel(AsyncResult<Room> room, RoomInfo roomInfo) {
+    public RoomBuildingModel(CompletableFuture<Room> room, RoomInfo roomInfo) {
         this.room = room;
         this.roomInfo = roomInfo;
     }
 
-    public AsyncResult<Room> getRoom() {
+    public CompletableFuture<Room> getRoom() {
         return room;
     }
 
-    public void setRoom(AsyncResult<Room> room) {
+    public void setRoom(CompletableFuture<Room> room) {
         this.room = room;
     }
 

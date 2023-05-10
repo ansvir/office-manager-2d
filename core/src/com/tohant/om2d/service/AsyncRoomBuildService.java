@@ -8,6 +8,9 @@ import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.task.TimeLineTask;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.getEmployeesAmountByType;
 import static com.tohant.om2d.service.ServiceUtil.setEmployeesAmountByType;
@@ -33,7 +36,7 @@ public class AsyncRoomBuildService {
         return instance;
     }
 
-    public synchronized AsyncResult<Room> submit(Room room) {
+    public synchronized CompletableFuture<Room> submit(Room room) {
         TimeLineTask<Room> task = new TimeLineTask<>(room.getRoomInfo().getId(), DAY_WAIT_TIME_MILLIS, room,
                 (d) -> d.compareTo(room.getRoomInfo().getBuildTime()) >= 0, () -> {
             String staffTypeString = room.getType() == Room.Type.SECURITY ? TOTAL_SECURITY_STAFF
@@ -56,10 +59,12 @@ public class AsyncRoomBuildService {
             }
         });
         this.tasks.add(task);
-        return asyncExecutor.submit(task);
+        asyncExecutor.submit(task);
+        return task;
     }
 
     public Array<TimeLineTask<Room>> getTasks() {
         return tasks;
     }
+
 }

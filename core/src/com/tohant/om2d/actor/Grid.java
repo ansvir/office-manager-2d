@@ -99,16 +99,12 @@ public class Grid extends Group implements Disposable {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
                 Room nextRoom = null;
-                Room.Type nextType;
-                String currentId = null;
-                if (cell.isEmpty()) {
+                Room.Type nextType = getCurrentRoomType();
+                String currentId;
+                if (cell.isEmpty() && nextType != null) {
                     float price = 0.0f;
                     float cost = 0.0f;
                     AtomicReference<Float> salaries = new AtomicReference<>(0.0f);
-                    nextType = getCurrentRoomType();
-                    if (nextType == null) {
-                        return false;
-                    }
                     if (checkNoCellOnGrid(getChildren()) && nextType != Room.Type.HALL) {
                         ((GameStage) getStage()).addException(new GameException(Code.E200));
                         return false;
@@ -143,7 +139,7 @@ public class Grid extends Group implements Disposable {
                                             return s;
                                         })
                                         .toArray(SecurityStaff[]::new));
-                                nextRoom = new SecurityRoom(new RoomInfo(security, 910f, 100f, new TimeLineDate(25L, 1L ,1L), Room.Type.SECURITY),
+                                nextRoom = new SecurityRoom(new RoomInfo(security, 910f, 100f, new TimeLineDate(25L, 1L, 1L), Room.Type.SECURITY),
                                         cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
                                 price = nextRoom.getRoomInfo().getPrice();
                                 cost += nextRoom.getRoomInfo().getCost();
@@ -169,12 +165,20 @@ public class Grid extends Group implements Disposable {
                         setRoomsAmountByType(nextRoom.getType(), getRoomsAmountByType(nextRoom.getType()) + 1L);
                         cell.setRoomModel(new RoomBuildingModel(roomBuildService.submit(nextRoom), nextRoom.getRoomInfo()));
                         currentId = nextRoom.getRoomInfo().getId();
+                        ((GameStage) getStage()).getRoomInfoModal().getThis().setVisible(true);
+                        cacheService.setValue(CURRENT_ROOM, currentId);
+                        return false;
                     }
-                } else {
+                } else if (!cell.isEmpty()) {
                     currentId = cell.getRoomModel().getRoomInfo().getId();
+                    ((GameStage) getStage()).getRoomInfoModal().getThis().setVisible(true);
+                    cacheService.setValue(CURRENT_ROOM, currentId);
+                    return false;
+                } else {
+                    ((GameStage) getStage()).getRoomInfoModal().getThis().setVisible(false);
+                    cacheService.setValue(CURRENT_ROOM, null);
+                    return false;
                 }
-                gameCache.setValue(CURRENT_ROOM, currentId);
-                ((GameStage) getStage()).updateRoomInfoWindow();
                 return true;
             }
         });

@@ -24,6 +24,12 @@ public class ModalData {
         this.actors = actors;
     }
 
+    public ModalData(String title, String text) {
+        this.title = title;
+        this.text = text;
+        this.actors = new Array<>();
+    }
+
     public String getTitle() {
         return title;
     }

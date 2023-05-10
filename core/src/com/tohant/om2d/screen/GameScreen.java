@@ -23,6 +23,8 @@ import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import static com.tohant.om2d.storage.CacheImpl.*;
 
@@ -36,9 +38,8 @@ public class GameScreen implements Screen {
     private OrthographicCamera camera;
     private InputMultiplexer multiplexer;
     private TimeLineTask<Boolean> timeline;
-    private AsyncExecutor asyncExecutor;
-    private AsyncResult<Boolean> timeString;
     private String time;
+    private AsyncExecutor executor;
     private CacheProxy gameCache;
     private CachedEventListener eventListener;
     private boolean isPayDay;
@@ -53,14 +54,13 @@ public class GameScreen implements Screen {
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
         viewport.setCamera(camera);
-        asyncExecutor = new AsyncExecutor(1);
-        timeString = asyncExecutor.submit(timeline);
         time = "01/01/0001";
         gameCache = new CacheProxy();
         eventListener = CachedEventListener.getInstance();
         gameStage = new GameStage(time, viewport, batch);
         multiplexer = new InputMultiplexer(gameStage);
         Gdx.input.setInputProcessor(multiplexer);
+        executor = new AsyncExecutor(1);
     }
 
     @Override
@@ -98,7 +98,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        asyncExecutor.dispose();
         gameStage.dispose();
         batch.dispose();
         timeline.forceFinish();
@@ -106,13 +105,13 @@ public class GameScreen implements Screen {
     }
 
     private void processTimeLine() {
-        if (!timeString.isDone()) {
+        if (timeline != null && !timeline.isDone()) {
             time = timeline.getDateString();
             gameCache.setValue(CURRENT_TIME, time);
             gameStage.setTime(time);
         } else {
             timeline = new TimeLineTask<>(500L, true);
-            timeString = asyncExecutor.submit(timeline);
+            executor.submit(timeline);
         }
     }
 
