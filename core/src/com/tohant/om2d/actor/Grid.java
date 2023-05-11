@@ -9,10 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import com.tohant.om2d.actor.man.CleaningStaff;
-import com.tohant.om2d.actor.man.SecurityStaff;
-import com.tohant.om2d.actor.man.Staff;
-import com.tohant.om2d.actor.man.WorkerStaff;
+import com.tohant.om2d.actor.man.*;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.exception.GameException.Code;
@@ -53,7 +50,7 @@ public class Grid extends Group implements Disposable {
         cacheService = CacheService.getInstance();
         roomBuildService = AsyncRoomBuildService.getInstance();
         Pixmap pixmap = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
-        Color borderColor = Color.GRAY;
+        Color borderColor = new Color(Color.GRAY);
         borderColor.a = 0.5f;
         pixmap.setColor(borderColor);
         pixmap.drawRectangle(1, 1, (int) getWidth() - 1, (int) getHeight() - 1);
@@ -164,11 +161,26 @@ public class Grid extends Group implements Disposable {
                                 cost += nextRoom.getRoomInfo().getCost();
                                 break;
                             }
+                            case CAFFE: {
+                                Array<Staff> caffe = Array.with(IntStream.range(0, 1).boxed()
+                                        .map(i -> new CaffeStaff(Staff.Type.CAFFE.getSalary()))
+                                        .map(s -> {
+                                            salaries.updateAndGet(v -> v + s.getSalary());
+                                            return s;
+                                        })
+                                        .toArray(CaffeStaff[]::new));
+                                nextRoom = new CaffeRoom(new RoomInfo(caffe, Room.Type.CAFFE.getPrice(),
+                                        Room.Type.CAFFE.getCost(), new TimeLineDate(19L, 1L, 1L), Room.Type.CAFFE),
+                                        cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
+                                price = nextRoom.getRoomInfo().getPrice();
+                                cost += nextRoom.getRoomInfo().getCost();
+                                break;
+                            }
                         }
                         cacheService.setFloat(CURRENT_BUDGET, budget - price);
                         cacheService.setFloat(TOTAL_COSTS, cacheService.getFloat(TOTAL_COSTS) + cost);
                         setRoomsAmountByType(nextRoom.getType(), getRoomsAmountByType(nextRoom.getType()) + 1L);
-                        cell.setRoomModel(new RoomBuildingModel(roomBuildService.submit(nextRoom), nextRoom.getRoomInfo()));
+                        cell.setRoomModel(new RoomBuildingModel(roomBuildService.submitBuild(nextRoom), nextRoom.getRoomInfo()));
                         currentId = nextRoom.getRoomInfo().getId();
                         ((GameStage) getStage()).getRoomInfoModal().getThis().setVisible(true);
                         cacheService.setValue(CURRENT_ROOM, currentId);
@@ -204,6 +216,7 @@ public class Grid extends Group implements Disposable {
             case HALL: return cacheService.getLong(HALLS_AMOUNT);
             case SECURITY: return cacheService.getLong(SECURITY_AMOUNT);
             case CLEANING: return cacheService.getLong(CLEANING_AMOUNT);
+            case CAFFE: return cacheService.getLong(CAFFE_AMOUNT);
             default: return -1L;
         }
     }
@@ -214,6 +227,7 @@ public class Grid extends Group implements Disposable {
             case HALL: cacheService.setLong(HALLS_AMOUNT, amount); break;
             case SECURITY: cacheService.setLong(SECURITY_AMOUNT, amount); break;
             case CLEANING: cacheService.setLong(CLEANING_AMOUNT, amount); break;
+            case CAFFE: cacheService.setLong(CAFFE_AMOUNT, amount); break;
             default: break;
         }
     }

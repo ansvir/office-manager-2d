@@ -14,6 +14,7 @@ public class CacheImpl implements Cache {
     public static final String HALLS_AMOUNT = "HALLS_AM";
     public static final String SECURITY_AMOUNT = "SECURITY_AM";
     public static final String CLEANING_AMOUNT = "CLEANING_AM";
+    public static final String CAFFE_AMOUNT = "CAFFE_AM";
     public static final String IS_PAYDAY = "IS_PAYDAY";
     public static final String CURRENT_ROOM = "CURR_ROOM";
     public static final String TOTAL_COSTS = "TOTAL_COSTS";
@@ -23,6 +24,7 @@ public class CacheImpl implements Cache {
     public static final String TOTAL_ADMIN_STAFF = "TOTAL_ADMIN_STAFF";
     public static final String TOTAL_CLEANING_STAFF = "TOTAL_CLEANING_STAFF";
     public static final String TOTAL_WORKERS = "TOTAL_WORKERS";
+    public static final String TOTAL_CAFFE_STAFF = "TOTAL_CAFFE_STAFF";
 
     private final Preferences globalCache;
     private static CacheImpl cache;

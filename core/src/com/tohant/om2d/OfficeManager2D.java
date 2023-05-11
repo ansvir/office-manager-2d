@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.screen.GameScreen;
+import com.tohant.om2d.screen.MenuScreen;
 import com.tohant.om2d.storage.CacheImpl;
 import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
@@ -19,7 +20,7 @@ public class OfficeManager2D extends Game {
 	public void create () {
 		executor = new AsyncExecutor(1);
 		result = executor.submit(CachedEventListener.getInstance());
-		setScreen(new GameScreen(this));
+		setScreen(new MenuScreen(this));
 	}
 
 	@Override

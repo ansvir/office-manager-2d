@@ -137,13 +137,15 @@ public class GameScreen implements Screen {
         float securityCost = snapshotService.getLong(SECURITY_AMOUNT) * Room.Type.SECURITY.getCost();
         float officeCost = snapshotService.getLong(OFFICES_AMOUNT) * Room.Type.OFFICE.getCost();
         float hallCost = snapshotService.getLong(HALLS_AMOUNT) * Room.Type.HALL.getCost();
-        return cleaningCost + securityCost + officeCost + hallCost;
+        float caffeCost = snapshotService.getLong(CAFFE_AMOUNT) * Room.Type.CAFFE.getCost();
+        return cleaningCost + securityCost + officeCost + hallCost + caffeCost;
     }
 
     private float calculateSalaries(CacheSnapshotService snapshotService) {
         float securitySalaries = snapshotService.getLong(TOTAL_SECURITY_STAFF) * Staff.Type.SECURITY.getSalary();
         float cleaningSalaries = snapshotService.getLong(TOTAL_CLEANING_STAFF) * Staff.Type.CLEANING.getSalary();
-        return securitySalaries + cleaningSalaries;
+        float caffeSalaries = snapshotService.getLong(TOTAL_CAFFE_STAFF) * Staff.Type.CAFFE.getSalary();
+        return securitySalaries + cleaningSalaries + caffeSalaries;
     }
 
     private float calculateIncomes(CacheSnapshotService snapshotService) {

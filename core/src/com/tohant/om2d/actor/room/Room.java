@@ -8,6 +8,7 @@ import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.service.AssetService;
 
 public abstract class Room extends Actor {
+
     private RoomInfo roomInfo;
     private final AssetService assetService;
 
@@ -32,15 +33,16 @@ public abstract class Room extends Actor {
         HALL(Color.GREEN, 100.0f, 20.0f),
         OFFICE(Color.RED, 550.0f, 50.0f),
         SECURITY(Color.BLUE, 910.0f, 100.0f),
-        CLEANING(Color.YELLOW, 430.0f, 45.0f);
+        CLEANING(Color.YELLOW, 430.0f, 45.0f),
+        CAFFE(Color.BLUE, 840.0f, 85.0f);
 
         private final Color color;
         private final float price;
         private final float cost;
 
         Type(Color color, float price, float cost) {
-            this.color = color;
-            color.a = 0.5f;
+            this.color = new Color(color);
+            this.color.a = 0.5f;
             this.price = price;
             this.cost = cost;
         }
@@ -69,8 +71,10 @@ public abstract class Room extends Actor {
             texture = assetService.getSecurityRoomTexture();
         } else if (getType() == Type.OFFICE) {
             texture = assetService.getOfficeRoomTexture();
-        } else {
+        } else if (getType() == Type.CLEANING) {
             texture = assetService.getCleaningRoomTexture();
+        } else {
+            texture = assetService.getCaffeRoomTexture();
         }
         batch.draw(texture, getX(), getY());
     }

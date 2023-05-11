@@ -54,6 +54,7 @@ public class CacheProxy implements Cache {
             c.setValue(HALLS_AMOUNT, 0L);
             c.setValue(SECURITY_AMOUNT, 0L);
             c.setValue(CLEANING_AMOUNT, 0L);
+            c.setValue(CAFFE_AMOUNT, 0L);
             c.setValue(IS_PAYDAY, false);
             c.setValue(CURRENT_ROOM, null);
             c.setValue(TOTAL_COSTS, 0.0f);
@@ -63,6 +64,7 @@ public class CacheProxy implements Cache {
             c.setValue(TOTAL_ADMIN_STAFF, 0L);
             c.setValue(TOTAL_CLEANING_STAFF, 0L);
             c.setValue(TOTAL_SECURITY_STAFF, 0L);
+            c.setValue(TOTAL_CAFFE_STAFF, 0L);
         };
     }
 

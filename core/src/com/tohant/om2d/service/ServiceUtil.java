@@ -79,6 +79,7 @@ public class ServiceUtil {
             case WORKER: return CACHE_SERVICE.getLong(TOTAL_WORKERS);
             case CLEANING: return CACHE_SERVICE.getLong(TOTAL_CLEANING_STAFF);
             case ADMINISTRATION: return CACHE_SERVICE.getLong(TOTAL_ADMIN_STAFF);
+            case CAFFE: return CACHE_SERVICE.getLong(TOTAL_CAFFE_STAFF);
             default: return -1L;
         }
     }
@@ -97,6 +98,9 @@ public class ServiceUtil {
             case ADMINISTRATION:
                 CACHE_SERVICE.setLong(TOTAL_ADMIN_STAFF, amount);
                 break;
+            case CAFFE:
+                CACHE_SERVICE.setLong(TOTAL_CAFFE_STAFF, amount);
+                break;
             default:
                 break;
         }
@@ -112,6 +116,8 @@ public class ServiceUtil {
                 return CACHE_SERVICE.getLong(SECURITY_AMOUNT);
             case CLEANING:
                 return CACHE_SERVICE.getLong(CLEANING_AMOUNT);
+            case CAFFE:
+                return CACHE_SERVICE.getLong(CAFFE_AMOUNT);
             default:
                 return -1L;
         }
@@ -130,6 +136,9 @@ public class ServiceUtil {
                 break;
             case CLEANING:
                 CACHE_SERVICE.setLong(CLEANING_AMOUNT, amount);
+                break;
+            case CAFFE:
+                CACHE_SERVICE.setLong(CAFFE_AMOUNT, amount);
                 break;
             default:
                 break;

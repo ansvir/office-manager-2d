@@ -2,11 +2,11 @@ package com.tohant.om2d.actor.room;
 
 import com.tohant.om2d.model.room.RoomInfo;
 
-public class CleaningRoom extends Room {
+public class CaffeRoom extends Room {
 
-    private static final Room.Type TYPE = Room.Type.CLEANING;
+    private final Room.Type TYPE = Type.CAFFE;
 
-    public CleaningRoom(RoomInfo roomInfo, float x, float y, float width, float height) {
+    public CaffeRoom(RoomInfo roomInfo, float x, float y, float width, float height) {
         super(roomInfo, x, y, width, height);
     }
 

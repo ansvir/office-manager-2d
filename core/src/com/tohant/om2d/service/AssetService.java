@@ -25,6 +25,7 @@ public class AssetService implements Disposable {
     private final Texture SECURITY_ROOM;
     private final Texture OFFICE_ROOM;
     private final Texture CLEANING_ROOM;
+    private final Texture CAFFE_ROOM;
     private final Texture ROOM_CONSTRUCTION;
     private final Texture GRASS1;
     private final Texture GRASS2;
@@ -42,6 +43,7 @@ public class AssetService implements Disposable {
         this.SECURITY_ROOM = createSecurityRoomTexture();
         this.OFFICE_ROOM = createOfficeRoomTexture();
         this.CLEANING_ROOM = createCleaningRoomTexture();
+        this.CAFFE_ROOM = createCaffeRoomTexture();
         this.ROOM_CONSTRUCTION = createRoomConstructionTexture();
         this.GRASS1 = createGrass1Texture();
         this.GRASS2 = createGrass2Texture();
@@ -82,7 +84,7 @@ public class AssetService implements Disposable {
     private Texture createOfficeRoomTexture() {
         Pixmap pixmap = new Pixmap(CELL_SIZE, CELL_SIZE, Pixmap.Format.RGBA8888);
         pixmap.setColor(Room.Type.OFFICE.getColor());
-        pixmap.fillRectangle(1, 1, pixmap.getWidth() - 1, pixmap.getHeight() - 1);
+        pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
         Texture result = new Texture(pixmap);
         pixmap.dispose();
         return result;
@@ -91,7 +93,16 @@ public class AssetService implements Disposable {
     private Texture createCleaningRoomTexture() {
         Pixmap pixmap = new Pixmap(CELL_SIZE, CELL_SIZE, Pixmap.Format.RGBA8888);
         pixmap.setColor(Room.Type.CLEANING.getColor());
-        pixmap.fillRectangle(1, 1, pixmap.getWidth() - 1, pixmap.getHeight() - 1);
+        pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
+        Texture result = new Texture(pixmap);
+        pixmap.dispose();
+        return result;
+    }
+
+    private Texture createCaffeRoomTexture() {
+        Pixmap pixmap = new Pixmap(CELL_SIZE, CELL_SIZE, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Room.Type.CAFFE.getColor());
+        pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
         Texture result = new Texture(pixmap);
         pixmap.dispose();
         return result;
@@ -171,6 +182,10 @@ public class AssetService implements Disposable {
 
     public Texture getCleaningRoomTexture() {
         return CLEANING_ROOM;
+    }
+
+    public Texture getCaffeRoomTexture() {
+        return CAFFE_ROOM;
     }
 
     public Texture getRoomConstructionTexture() {

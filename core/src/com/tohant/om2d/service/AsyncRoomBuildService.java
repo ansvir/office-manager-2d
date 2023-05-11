@@ -2,14 +2,12 @@ package com.tohant.om2d.service;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
-import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.task.TimeLineTask;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.getEmployeesAmountByType;
@@ -21,7 +19,7 @@ public class AsyncRoomBuildService {
     private static AsyncRoomBuildService instance;
     private final AsyncExecutor asyncExecutor;
     private final CacheService cacheService;
-    private Array<TimeLineTask<Room>> tasks;
+    private final Array<TimeLineTask<Room>> tasks;
 
     private AsyncRoomBuildService() {
         asyncExecutor = new AsyncExecutor(GRID_WIDTH * GRID_HEIGHT);
@@ -36,12 +34,13 @@ public class AsyncRoomBuildService {
         return instance;
     }
 
-    public synchronized CompletableFuture<Room> submit(Room room) {
+    public synchronized CompletableFuture<Room> submitBuild(Room room) {
         TimeLineTask<Room> task = new TimeLineTask<>(room.getRoomInfo().getId(), DAY_WAIT_TIME_MILLIS, room,
                 (d) -> d.compareTo(room.getRoomInfo().getBuildTime()) >= 0, () -> {
             String staffTypeString = room.getType() == Room.Type.SECURITY ? TOTAL_SECURITY_STAFF
                     : room.getType() == Room.Type.CLEANING ? TOTAL_CLEANING_STAFF
-                    : room.getType() == Room.Type.OFFICE ? TOTAL_WORKERS : null;
+                    : room.getType() == Room.Type.OFFICE ? TOTAL_WORKERS
+                    : room.getType() == Room.Type.CAFFE ? TOTAL_CAFFE_STAFF : null;
             if (room instanceof OfficeRoom) {
                 cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * room.getRoomInfo().getStaff().size);
             }
@@ -49,6 +48,7 @@ public class AsyncRoomBuildService {
             if (staffTypeString != null) {
                 staffType = staffTypeString.equals(TOTAL_SECURITY_STAFF) ? Staff.Type.SECURITY
                         : staffTypeString.equals(TOTAL_CLEANING_STAFF) ? Staff.Type.CLEANING
+                        : staffTypeString.equals(TOTAL_CAFFE_STAFF) ? Staff.Type.CAFFE
                         : Staff.Type.WORKER;
             }
             if (staffType != null) {
@@ -62,6 +62,16 @@ public class AsyncRoomBuildService {
         asyncExecutor.submit(task);
         return task;
     }
+
+    /*
+    public synchronized CompletableFuture<Room> submitDestroy(Room room) {
+        TimeLineTask<Room> task = new TimeLineTask<>(room.getRoomInfo().getId(), DAY_WAIT_TIME_MILLIS, room,
+                (d) -> d.getDays() >= 1, () -> {});
+        this.tasks.add(task);
+        asyncExecutor.submit(task);
+        return task;
+    }
+     */
 
     public Array<TimeLineTask<Room>> getTasks() {
         return tasks;

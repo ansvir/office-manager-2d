@@ -33,7 +33,11 @@ public abstract class Staff extends Actor {
     public abstract Type getType();
 
     public enum Type {
-        SECURITY(1200.0f), WORKER(0.0f), CLEANING(500.0f), ADMINISTRATION(1500.0f);
+        SECURITY(1200.0f),
+        WORKER(0.0f),
+        CLEANING(500.0f),
+        ADMINISTRATION(1500.0f),
+        CAFFE(850.0f);
 
         private final float salary;
 
