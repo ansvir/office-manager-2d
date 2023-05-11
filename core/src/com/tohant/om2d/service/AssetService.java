@@ -1,9 +1,10 @@
 package com.tohant.om2d.service;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 import com.tohant.om2d.actor.environment.Car;
@@ -36,6 +37,8 @@ public class AssetService implements Disposable {
     private final TextureRegion HD_ROAD;
     private final TextureRegion EMPTY_ROAD;
     private final Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> CARS_TEXTURES;
+    private final Cursor DEFAULT_CURSOR;
+    private final Pixmap DEFAULT_CURSOR_PIXMAP;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -53,6 +56,8 @@ public class AssetService implements Disposable {
         this.HU_ROAD = createHURoadTexture();
         this.EMPTY_ROAD = createEmptyRoadTexture();
         this.CARS_TEXTURES = createCarsTextures();
+        this.DEFAULT_CURSOR_PIXMAP = new Pixmap(Gdx.files.internal("cursor.png"));
+        this.DEFAULT_CURSOR = createDefaultCursor();
     }
 
     public static AssetService getInstance() {
@@ -164,6 +169,10 @@ public class AssetService implements Disposable {
         return regions;
     }
 
+    private Cursor createDefaultCursor() {
+        return Gdx.graphics.newCursor(DEFAULT_CURSOR_PIXMAP, 0, 0);
+    }
+
     public Texture getActiveEmptyCellTexture() {
         return ACTIVE_EMPTY_CELL;
     }
@@ -226,6 +235,10 @@ public class AssetService implements Disposable {
 
     public TextureRegion getEmptyRoadTexture() {
         return EMPTY_ROAD;
+    }
+
+    public Cursor getDefaultCursor() {
+        return DEFAULT_CURSOR;
     }
 
     public Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> getCarsTextures() {

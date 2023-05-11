@@ -530,8 +530,10 @@ public class GameStage extends Stage {
                                         getEmployeesAmountByType(currentStaffType)
                                                 - currentCell.get().getRoomModel().getRoomInfo().getStaff().size);
                             }
-                            cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
-                                    - currentCell.get().getRoomModel().getRoomInfo().getStaff().size * currentStaffTypeSalary);
+                            if (currentCell.get().getRoomModel().getRoom().isDone()) {
+                                cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
+                                        - currentCell.get().getRoomModel().getRoomInfo().getStaff().size * currentStaffTypeSalary);
+                            }
                             setRoomsAmountByType(currentCell.get().getRoomModel().getRoomInfo().getType(),
                                     getRoomsAmountByType(currentCell.get().getRoomModel().getRoomInfo().getType()) - 1L);
                             cacheService.setValue(CURRENT_ROOM, null);
@@ -556,6 +558,7 @@ public class GameStage extends Stage {
         this.gridButton = new TextButton("#", skin);
         this.gridButton.setPosition(Gdx.graphics.getWidth() - this.gridButton.getWidth() - DEFAULT_PAD,
                 this.roomsMenu.getY() - this.gridButton.getHeight() - DEFAULT_PAD * 0.25f);
+        this.gridButton.getLabel().setFontScale(1.5f);
         this.gridButton.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {

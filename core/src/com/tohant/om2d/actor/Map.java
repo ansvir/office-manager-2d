@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.tohant.om2d.service.AssetService;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
 
@@ -17,6 +18,7 @@ public class Map extends Group {
     private Grid grid;
     private Background background;
     private float startX, startY;
+    private final AssetService assetService;
 
     public Map(float x, float y, float width, float height) {
         setSize(width, height);
@@ -24,6 +26,7 @@ public class Map extends Group {
         this.grid = new Grid(Math.round(background.getWidth() / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),
                 Math.round(background.getHeight() / 2f - (GRID_HEIGHT * CELL_SIZE) / 2f),
                 GRID_WIDTH, GRID_HEIGHT, CELL_SIZE);
+        this.assetService = AssetService.getInstance();
         setPosition(Math.round(x - this.grid.getX() + (Gdx.graphics.getWidth() / 2f) - (grid.getWidth() / 2f)),
                 Math.round(y - this.grid.getY() + (Gdx.graphics.getHeight() / 2f) - (grid.getHeight() / 2f)));
         addActor(background);
@@ -41,7 +44,7 @@ public class Map extends Group {
                         current.setActive(cell.contains(mouse));
                     }
                 });
-                Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+                Gdx.graphics.setCursor(assetService.getDefaultCursor());
                 return false;
             }
 
