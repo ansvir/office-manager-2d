@@ -27,6 +27,7 @@ public class AssetService implements Disposable {
     private final Texture OFFICE_ROOM;
     private final Texture CLEANING_ROOM;
     private final Texture CAFFE_ROOM;
+    private final Texture ELEVATOR_ROOM;
     private final Texture ROOM_CONSTRUCTION;
     private final Texture GRASS1;
     private final Texture GRASS2;
@@ -47,6 +48,7 @@ public class AssetService implements Disposable {
         this.OFFICE_ROOM = createOfficeRoomTexture();
         this.CLEANING_ROOM = createCleaningRoomTexture();
         this.CAFFE_ROOM = createCaffeRoomTexture();
+        this.ELEVATOR_ROOM = craeteElevatorRoomTexture();
         this.ROOM_CONSTRUCTION = createRoomConstructionTexture();
         this.GRASS1 = createGrass1Texture();
         this.GRASS2 = createGrass2Texture();
@@ -107,6 +109,15 @@ public class AssetService implements Disposable {
     private Texture createCaffeRoomTexture() {
         Pixmap pixmap = new Pixmap(CELL_SIZE, CELL_SIZE, Pixmap.Format.RGBA8888);
         pixmap.setColor(Room.Type.CAFFE.getColor());
+        pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
+        Texture result = new Texture(pixmap);
+        pixmap.dispose();
+        return result;
+    }
+
+    private Texture craeteElevatorRoomTexture() {
+        Pixmap pixmap = new Pixmap(CELL_SIZE, CELL_SIZE, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Room.Type.ELEVATOR.getColor());
         pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
         Texture result = new Texture(pixmap);
         pixmap.dispose();
@@ -197,6 +208,10 @@ public class AssetService implements Disposable {
         return CAFFE_ROOM;
     }
 
+    public Texture getElevatorRoomTexture() {
+        return ELEVATOR_ROOM;
+    }
+
     public Texture getRoomConstructionTexture() {
         return ROOM_CONSTRUCTION;
     }
@@ -256,6 +271,8 @@ public class AssetService implements Disposable {
         this.SECURITY_ROOM.dispose();
         this.CLEANING_ROOM.dispose();
         this.OFFICE_ROOM.dispose();
+        this.CAFFE_ROOM.dispose();
+        this.ELEVATOR_ROOM.dispose();
         this.ROOM_CONSTRUCTION.dispose();
         this.GRASS1.dispose();
         this.GRASS2.dispose();

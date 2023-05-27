@@ -12,10 +12,11 @@ public class Road extends Actor {
 
     private RoadType type;
 
-    public Road(float x, float y, RoadType type) {
+    public Road(String id, float x, float y, RoadType type) {
+        setName(id);
         this.type = type;
         setPosition(x, y);
-        this.setSize(TEXTURE_SIZE, TEXTURE_SIZE);
+        setSize(TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
     public RoadType getType() {

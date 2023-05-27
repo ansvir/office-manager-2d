@@ -5,8 +5,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Disposable;
 
-public class AssetsUtil {
+public class AssetsUtil implements Disposable {
 
     private static final String PLAIN_J_ATLAS = "skins/plain-j/plain-james.atlas";
     private static final String PLAIN_J_SKIN = "skins/plain-j/plain-james.json";
@@ -48,6 +49,12 @@ public class AssetsUtil {
         newPixmap.drawPixmap(pixmap, 0, 0, pixmap.getWidth(), pixmap.getHeight(), 0, 0, (int) width, (int) height);
         pixmap.dispose();
         return new Texture(newPixmap);
+    }
+
+    @Override
+    public void dispose() {
+        SKIN.dispose();
+        ATLAS.dispose();
     }
 
 }

@@ -6,8 +6,8 @@ public class CleaningStaff extends Staff {
 
     private static final Type TYPE = CLEANING;
 
-    public CleaningStaff(float salary) {
-        super(salary);
+    public CleaningStaff(String id, float salary) {
+        super(id, salary);
     }
 
     @Override

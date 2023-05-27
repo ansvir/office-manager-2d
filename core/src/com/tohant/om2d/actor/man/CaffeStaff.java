@@ -4,8 +4,8 @@ public class CaffeStaff extends Staff {
 
     private final Type TYPE = Type.CAFFE;
 
-    public CaffeStaff(float salary) {
-        super(salary);
+    public CaffeStaff(String id, float salary) {
+        super(id, salary);
     }
 
     @Override

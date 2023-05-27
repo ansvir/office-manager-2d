@@ -10,37 +10,47 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.tohant.om2d.service.AssetService;
+import com.tohant.om2d.service.RuntimeCacheService;
+import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class Map extends Group {
 
-    private Grid grid;
-    private Background background;
     private float startX, startY;
     private final AssetService assetService;
+    private final RuntimeCacheService runtimeCacheService;
 
-    public Map(float x, float y, float width, float height) {
-        setSize(width, height);
-        this.background = new Background((int) x, (int) y, (int) width, (int) height);
-        this.grid = new Grid(Math.round(background.getWidth() / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),
-                Math.round(background.getHeight() / 2f - (GRID_HEIGHT * CELL_SIZE) / 2f),
-                GRID_WIDTH, GRID_HEIGHT, CELL_SIZE);
+    public Map(String id) {
+        setName(id);
+        this.runtimeCacheService = RuntimeCacheService.getInstance();
+        this.runtimeCacheService.setLong(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);
+        this.runtimeCacheService.setLong(CURRENT_OFFICE_CELLS_HEIGHT, GRID_HEIGHT);
+//        this.background = new Background((int) x, (int) y, (int) width, (int) height);
+//        this.office = new Office(Math.round(background.getWidth() / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),
+//                Math.round(background.getHeight() / 2f - (GRID_HEIGHT * CELL_SIZE) / 2f), GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
+//        Grid grid = new Grid(0, 0, GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, 0);
+//        this.office.addActor(grid);
+//        this.office.setCurrentLevelNumber(0);
         this.assetService = AssetService.getInstance();
-        setPosition(Math.round(x - this.grid.getX() + (Gdx.graphics.getWidth() / 2f) - (grid.getWidth() / 2f)),
-                Math.round(y - this.grid.getY() + (Gdx.graphics.getHeight() / 2f) - (grid.getHeight() / 2f)));
-        addActor(background);
-        addActor(grid);
+//        setPosition(Math.round(x - office.getX() + (Gdx.graphics.getWidth() / 2f) - (office.getWidth() / 2f)),
+//                Math.round(y - office.getY() + (Gdx.graphics.getHeight() / 2f) - (office.getHeight() / 2f)));
         addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 super.mouseMoved(event, x, y);
+                UiActorService uiActorService = UiActorService.getInstance();
+                Office office = (Office) uiActorService.getActorById(OFFICE.name());
+                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#" + runtimeCacheService.getLong(CURRENT_LEVEL));
                 grid.getChildren().forEach(c -> {
                     if (c instanceof Cell) {
                         Cell current = (Cell) c;
                         Rectangle cell = new Rectangle(current.getX(), current.getY(), current.getWidth(), current.getHeight());
                         Vector3 newCoords = event.getStage().getCamera().project(new Vector3(x, y, 0));
-                        Vector2 mouse = new Vector2(newCoords.x - grid.getX(), newCoords.y - grid.getY());
+                        Vector2 mouse = new Vector2(newCoords.x - office.getX(), newCoords.y - office.getY());
                         current.setActive(cell.contains(mouse));
                     }
                 });
@@ -59,15 +69,13 @@ public class Map extends Group {
             @Override
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 super.touchDragged(event, x, y, pointer);
+                UiActorService uiActorService = UiActorService.getInstance();
+                Office office = (Office) uiActorService.getActorById(OFFICE.name());
                 Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
-                setPosition(Math.round(MathUtils.clamp(MathUtils.lerp(getX(),  startX - x, 0.05f), - getWidth() + grid.getWidth(), 0)),
-                        Math.round(MathUtils.clamp(MathUtils.lerp(getY(), startY - y, 0.05f), - getHeight() + grid.getHeight(), 0)));
+                setPosition(Math.round(MathUtils.clamp(MathUtils.lerp(getX(),  startX - x, 0.05f), - getWidth() + office.getWidth(), 0)),
+                        Math.round(MathUtils.clamp(MathUtils.lerp(getY(), startY - y, 0.05f), - getHeight() + office.getHeight(), 0)));
             }
         });
-    }
-
-    public Grid getGrid() {
-        return grid;
     }
 
 }

@@ -12,21 +12,10 @@ public abstract class Staff extends Actor {
     private final String fullName;
     private float salary;
 
-    public Staff(float salary) {
+    public Staff(String id, float salary) {
+        setName(id);
         this.id = UUID.randomUUID().toString();
         this.fullName = DEFAULT_NAME;
-        this.salary = salary;
-    }
-
-    public Staff(String id, float salary) {
-        this.id = id;
-        this.fullName = DEFAULT_NAME;
-        this.salary = salary;
-    }
-
-    public Staff(String id, String fullName, float salary) {
-        this.id = id;
-        this.fullName = fullName;
         this.salary = salary;
     }
 

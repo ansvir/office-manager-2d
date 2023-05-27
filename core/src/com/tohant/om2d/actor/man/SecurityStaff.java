@@ -6,8 +6,8 @@ public class SecurityStaff extends Staff {
 
     private static final Staff.Type TYPE = SECURITY;
 
-    public SecurityStaff(float salary) {
-        super(salary);
+    public SecurityStaff(String id, float salary) {
+        super(id, salary);
     }
 
     @Override

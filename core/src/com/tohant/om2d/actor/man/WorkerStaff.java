@@ -6,8 +6,8 @@ public class WorkerStaff extends Staff {
 
     private static final Type TYPE = WORKER;
 
-    public WorkerStaff() {
-        super(0.0f);
+    public WorkerStaff(String id) {
+        super(id, 0.0f);
     }
 
     @Override

@@ -2,21 +2,17 @@ package com.tohant.om2d.actor.environment;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.service.AssetService;
-
-import java.util.UUID;
 
 public class Car extends Actor {
 
-    private final String id;
     private final Type type;
     private final CarPath path;
     private final Type.Direction direction;
     private final AssetService assetService;
 
-    public Car(Car.Type type, Type.Direction direction, CarPath path) {
-        this.id = UUID.randomUUID().toString();
+    public Car(String id, Car.Type type, Type.Direction direction, CarPath path) {
+        setName(id);
         setPosition(path.getxStart(), path.getyStart());
         this.type = type;
         this.path = path;
@@ -64,10 +60,6 @@ public class Car extends Actor {
 
     public Type.Direction getDirection() {
         return direction;
-    }
-
-    public String getId() {
-        return id;
     }
 
 }

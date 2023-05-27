@@ -27,7 +27,7 @@ public class OfficeManager2D extends Game {
 		result = executor.submit(CachedEventListener.getInstance());
 		assetService = AssetService.getInstance();
 		Gdx.graphics.setCursor(assetService.getDefaultCursor());
-		setScreen(new MenuScreen(this));
+		setScreen(new GameScreen(this));
 	}
 
 	@Override

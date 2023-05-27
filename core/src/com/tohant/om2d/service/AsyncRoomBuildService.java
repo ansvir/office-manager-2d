@@ -18,12 +18,12 @@ public class AsyncRoomBuildService {
 
     private static AsyncRoomBuildService instance;
     private final AsyncExecutor asyncExecutor;
-    private final CacheService cacheService;
+    private final RuntimeCacheService cacheService;
     private final Array<TimeLineTask<Room>> tasks;
 
     private AsyncRoomBuildService() {
         asyncExecutor = new AsyncExecutor(GRID_WIDTH * GRID_HEIGHT);
-        cacheService = CacheService.getInstance();
+        cacheService = RuntimeCacheService.getInstance();
         this.tasks = Array.with();
     }
 

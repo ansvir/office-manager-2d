@@ -2,6 +2,29 @@ package com.tohant.om2d.storage;
 
 public interface Cache {
 
+    String CURRENT_LEVEL = "CURR_LVL";
+    String CURRENT_OFFICE_CELLS_WIDTH = "CURR_OFFICE_CELLS_WIDTH";
+    String CURRENT_OFFICE_CELLS_HEIGHT = "CURR_OFFICE_CELLS_HEIGHT";
+    String CURRENT_ROOM_TYPE = "CURR_ROOM_TYPE";
+    String CURRENT_BUDGET = "CURR_BUDGET";
+    String CURRENT_TIME = "CURR_TIME";
+    String OFFICES_AMOUNT = "OFFICES_AM";
+    String HALLS_AMOUNT = "HALLS_AM";
+    String SECURITY_AMOUNT = "SECURITY_AM";
+    String CLEANING_AMOUNT = "CLEANING_AM";
+    String CAFFE_AMOUNT = "CAFFE_AM";
+    String ELEVATOR_AMOUNT = "ELEVATOR_AM";
+    String IS_PAYDAY = "IS_PAYDAY";
+    String CURRENT_ROOM = "CURR_ROOM";
+    String TOTAL_COSTS = "TOTAL_COSTS";
+    String TOTAL_SALARIES = "TOTAL_SALAR";
+    String TOTAL_INCOMES = "TOTAL_INC";
+    String TOTAL_SECURITY_STAFF = "TOTAL_SEC_STAFF";
+    String TOTAL_ADMIN_STAFF = "TOTAL_ADMIN_STAFF";
+    String TOTAL_CLEANING_STAFF = "TOTAL_CLEANING_STAFF";
+    String TOTAL_WORKERS = "TOTAL_WORKERS";
+    String TOTAL_CAFFE_STAFF = "TOTAL_CAFFE_STAFF";
+
     void setValue(String key, Object value);
 
     Object getValue(String key);

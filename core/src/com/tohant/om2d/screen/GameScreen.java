@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
@@ -18,6 +19,7 @@ import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.service.CacheSnapshotService;
+import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
@@ -42,6 +44,7 @@ public class GameScreen implements Screen {
     private AsyncExecutor executor;
     private CacheProxy gameCache;
     private CachedEventListener eventListener;
+    private UiActorService uiActorService;
     private boolean isPayDay;
 
     public GameScreen(Game game) {
@@ -54,10 +57,13 @@ public class GameScreen implements Screen {
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
         viewport.setCamera(camera);
-        time = "01/01/0001";
         gameCache = new CacheProxy();
         eventListener = CachedEventListener.getInstance();
-        gameStage = new GameStage(time, viewport, batch);
+        uiActorService = UiActorService.getInstance();
+        gameStage = new GameStage(viewport, batch);
+        for (Actor a : uiActorService.getUiActors()) {
+            gameStage.addActor(a);
+        }
         multiplexer = new InputMultiplexer(gameStage);
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
@@ -138,7 +144,8 @@ public class GameScreen implements Screen {
         float officeCost = snapshotService.getLong(OFFICES_AMOUNT) * Room.Type.OFFICE.getCost();
         float hallCost = snapshotService.getLong(HALLS_AMOUNT) * Room.Type.HALL.getCost();
         float caffeCost = snapshotService.getLong(CAFFE_AMOUNT) * Room.Type.CAFFE.getCost();
-        return cleaningCost + securityCost + officeCost + hallCost + caffeCost;
+        float elevatorCost = snapshotService.getLong(ELEVATOR_AMOUNT) * Room.Type.ELEVATOR.getCost();
+        return cleaningCost + securityCost + officeCost + hallCost + caffeCost + elevatorCost;
     }
 
     private float calculateSalaries(CacheSnapshotService snapshotService) {

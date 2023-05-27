@@ -6,8 +6,8 @@ public class CaffeRoom extends Room {
 
     private final Room.Type TYPE = Type.CAFFE;
 
-    public CaffeRoom(RoomInfo roomInfo, float x, float y, float width, float height) {
-        super(roomInfo, x, y, width, height);
+    public CaffeRoom(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
+        super(id, roomInfo, x, y, width, height);
     }
 
     @Override

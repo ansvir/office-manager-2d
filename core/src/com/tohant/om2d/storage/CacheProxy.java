@@ -48,13 +48,14 @@ public class CacheProxy implements Cache {
     private Consumer<Cache> getDefaultInit() {
         return (c) -> {
             c.setValue(CURRENT_ROOM_TYPE, null);
-            c.setValue(CURRENT_BUDGET, 5000.0f);
+            c.setValue(CURRENT_BUDGET, 10000.0f);
             c.setValue(CURRENT_TIME, "01/01/0001");
             c.setValue(OFFICES_AMOUNT, 0L);
             c.setValue(HALLS_AMOUNT, 0L);
             c.setValue(SECURITY_AMOUNT, 0L);
             c.setValue(CLEANING_AMOUNT, 0L);
             c.setValue(CAFFE_AMOUNT, 0L);
+            c.setValue(ELEVATOR_AMOUNT, 0L);
             c.setValue(IS_PAYDAY, false);
             c.setValue(CURRENT_ROOM, null);
             c.setValue(TOTAL_COSTS, 0.0f);

@@ -3,7 +3,6 @@ package com.tohant.om2d.storage;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.badlogic.gdx.utils.async.AsyncTask;
-import com.tohant.om2d.model.Identifiable;
 import com.tohant.om2d.model.task.CacheEventTask;
 
 import java.util.Map;

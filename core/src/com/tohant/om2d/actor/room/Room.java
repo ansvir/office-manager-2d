@@ -12,7 +12,8 @@ public abstract class Room extends Actor {
     private RoomInfo roomInfo;
     private final AssetService assetService;
 
-    public Room(RoomInfo roomInfo, float x, float y, float width, float height) {
+    public Room(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
+        setName(id);
         this.roomInfo = roomInfo;
         setPosition(x, y);
         setSize(width, height);
@@ -34,7 +35,8 @@ public abstract class Room extends Actor {
         OFFICE(Color.RED, 550.0f, 50.0f),
         SECURITY(Color.BLUE, 910.0f, 100.0f),
         CLEANING(Color.YELLOW, 430.0f, 45.0f),
-        CAFFE(Color.BLUE, 840.0f, 85.0f);
+        CAFFE(Color.BLUE, 840.0f, 85.0f),
+        ELEVATOR(Color.ORANGE, 1000.0f, 105.0f);
 
         private final Color color;
         private final float price;
@@ -73,8 +75,10 @@ public abstract class Room extends Actor {
             texture = assetService.getOfficeRoomTexture();
         } else if (getType() == Type.CLEANING) {
             texture = assetService.getCleaningRoomTexture();
-        } else {
+        } else if (getType() == Type.CAFFE) {
             texture = assetService.getCaffeRoomTexture();
+        } else {
+            texture = assetService.getElevatorRoomTexture();
         }
         batch.draw(texture, getX(), getY());
     }

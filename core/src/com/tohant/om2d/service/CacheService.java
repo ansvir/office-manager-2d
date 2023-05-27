@@ -4,7 +4,7 @@ import com.tohant.om2d.storage.CacheProxy;
 
 public class CacheService {
 
-    private CacheProxy cacheProxy;
+    private final CacheProxy cacheProxy;
     private static CacheService instance;
 
     private CacheService(CacheProxy cacheProxy) {

@@ -12,7 +12,7 @@ import static com.tohant.om2d.storage.CacheImpl.TOTAL_ADMIN_STAFF;
 
 public class ServiceUtil {
     
-    private static final CacheService CACHE_SERVICE = CacheService.getInstance(); 
+    private static final RuntimeCacheService CACHE_SERVICE = RuntimeCacheService.getInstance();
 
     public static int nextToHalls(Cell cell, Array<Actor> children) {
         Vector2 coords = getCellCoordinates(cell);
@@ -54,8 +54,13 @@ public class ServiceUtil {
     }
 
     private static Vector2 getCellCoordinates(Cell cell) {
-        int cellX = Integer.parseInt(cell.getName().substring(cell.getName().indexOf("#") + 1, cell.getName().lastIndexOf("#")));
-        int cellY = Integer.parseInt(cell.getName().substring(cell.getName().lastIndexOf("#") + 1));
+        String indices = cell.getName().substring(cell.getName().indexOf("#") + 1);
+        String yZIndices = indices.substring(indices.indexOf("#") + 1);
+        String indexX = indices.substring(0, indices.indexOf("#"));
+        int cellX = Integer.parseInt(indexX);
+        String indexY = yZIndices.substring(0, yZIndices.indexOf("#"));
+        int cellY = Integer.parseInt(indexY);
+        int cellZ = Integer.parseInt(yZIndices.substring(yZIndices.indexOf("#") + 1));
         return new Vector2(cellX, cellY);
     }
 
@@ -118,6 +123,8 @@ public class ServiceUtil {
                 return CACHE_SERVICE.getLong(CLEANING_AMOUNT);
             case CAFFE:
                 return CACHE_SERVICE.getLong(CAFFE_AMOUNT);
+            case ELEVATOR:
+                return CACHE_SERVICE.getLong(ELEVATOR_AMOUNT);
             default:
                 return -1L;
         }
@@ -140,10 +147,20 @@ public class ServiceUtil {
             case CAFFE:
                 CACHE_SERVICE.setLong(CAFFE_AMOUNT, amount);
                 break;
+            case ELEVATOR:
+                CACHE_SERVICE.setLong(ELEVATOR_AMOUNT, amount);
             default:
                 break;
         }
     }
-    
+
+    public static Room.Type getCurrentRoomType() {
+        String value = CACHE_SERVICE.getValue(CURRENT_ROOM_TYPE);
+        if (value == null) {
+            return null;
+        } else {
+            return Room.Type.valueOf(value);
+        }
+    }
 
 }

@@ -6,8 +6,8 @@ public class AdministrationStaff extends Staff {
 
     private static final Type TYPE = ADMINISTRATION;
 
-    public AdministrationStaff(float salary) {
-        super(salary);
+    public AdministrationStaff(String id, float salary) {
+        super(id, salary);
     }
 
     @Override

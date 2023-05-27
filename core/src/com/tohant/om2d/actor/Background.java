@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
@@ -18,9 +19,13 @@ import com.tohant.om2d.service.AssetService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.actor.environment.Car.Type.Direction.BOTTOM;
+import static com.tohant.om2d.actor.environment.Car.Type.Direction.TOP;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CAR;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROAD;
 
 public class Background extends Group {
-
+    
     private final AssetService assetService;
     private final Array<Road> roads;
     private final Array<Car> cars;
@@ -28,9 +33,9 @@ public class Background extends Group {
     private final AsyncExecutor executor;
     private float timePassed;
 
-    public Background(int x, int y, int width, int height) {
-        setSize(width + Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH), height + Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT));
-        setPosition(x, y);
+    public Background(String id, float width, float height) {
+        setName(id);
+        setSize(width, height);
         this.assetService = AssetService.getInstance();
         roads = new Array<>();
         cars = new Array<>();
@@ -102,23 +107,24 @@ public class Background extends Group {
         roads.clear();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
+                String roadId = ROAD.name() + "#" + i + "#" + j;
                 if (i == roadOneStartPos) {
-                    Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
+                    Road road = new Road(roadId, i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
                     roads.add(road);
                     addActor(road);
                 }
                 if (i == roadOneStartPos + 1) {
-                    Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.RIGHT);
+                    Road road = new Road(roadId, i * CELL_SIZE, j * CELL_SIZE, RoadType.RIGHT);
                     roads.add(road);
                     addActor(road);
                 }
                 if (i == roadOneStartPos + 2) {
-                    Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.LEFT);
+                    Road road = new Road(roadId, i * CELL_SIZE, j * CELL_SIZE, RoadType.LEFT);
                     roads.add(road);
                     addActor(road);
                 }
                 if (i == roadOneStartPos + 3) {
-                    Road road = new Road(i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
+                    Road road = new Road(roadId, i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
                     roads.add(road);
                     addActor(road);
                 }
@@ -141,7 +147,7 @@ public class Background extends Group {
         trySpawnCar();
         getChildren().forEach(c -> {
             if (c instanceof Car) {
-                if (((Car) c).getDirection() == Car.Type.Direction.BOTTOM && c.getY() > -c.getHeight()) {
+                if (((Car) c).getDirection() == BOTTOM && c.getY() > -c.getHeight()) {
                     c.setY(c.getY() - 5);
                 } else if (((Car) c).getDirection() == Car.Type.Direction.TOP) {
                     c.setY(c.getY() + 5);
@@ -160,7 +166,7 @@ public class Background extends Group {
                 }
             });
             if (nextCar.get() != null) {
-                Car car = new Car(Car.Type.RED, Car.Type.Direction.BOTTOM, nextCar.get());
+                Car car = new Car(CAR.name() + "#" + BOTTOM.name(), Car.Type.RED, BOTTOM, nextCar.get());
                 cars.add(car);
                 addActor(car);
             }
@@ -173,10 +179,11 @@ public class Background extends Group {
                 }
             });
             if (nextCar.get() != null) {
-                Car car = new Car(Car.Type.RED, Car.Type.Direction.TOP, nextCar.get());
+                Car car = new Car(CAR.name() + "#" + TOP.name(), Car.Type.RED, Car.Type.Direction.TOP, nextCar.get());
                 cars.add(car);
                 addActor(car);
             }
         }
     }
+
 }
