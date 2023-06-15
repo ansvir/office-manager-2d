@@ -1,6 +1,7 @@
 package com.tohant.om2d.actor;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -38,44 +39,53 @@ public class Map extends Group {
         this.assetService = AssetService.getInstance();
 //        setPosition(Math.round(x - office.getX() + (Gdx.graphics.getWidth() / 2f) - (office.getWidth() / 2f)),
 //                Math.round(y - office.getY() + (Gdx.graphics.getHeight() / 2f) - (office.getHeight() / 2f)));
-        addListener(new InputListener() {
-            @Override
-            public boolean mouseMoved(InputEvent event, float x, float y) {
-                super.mouseMoved(event, x, y);
-                UiActorService uiActorService = UiActorService.getInstance();
-                Office office = (Office) uiActorService.getActorById(OFFICE.name());
-                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#" + runtimeCacheService.getLong(CURRENT_LEVEL));
-                grid.getChildren().forEach(c -> {
-                    if (c instanceof Cell) {
-                        Cell current = (Cell) c;
-                        Rectangle cell = new Rectangle(current.getX(), current.getY(), current.getWidth(), current.getHeight());
-                        Vector3 newCoords = event.getStage().getCamera().project(new Vector3(x, y, 0));
-                        Vector2 mouse = new Vector2(newCoords.x - office.getX(), newCoords.y - office.getY());
-                        current.setActive(cell.contains(mouse));
-                    }
-                });
-                Gdx.graphics.setCursor(assetService.getDefaultCursor());
-                return false;
-            }
-
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                super.touchDown(event, x, y, pointer, button);
-                startX = x;
-                startY = y;
-                return true;
-            }
-
-            @Override
-            public void touchDragged(InputEvent event, float x, float y, int pointer) {
-                super.touchDragged(event, x, y, pointer);
-                UiActorService uiActorService = UiActorService.getInstance();
-                Office office = (Office) uiActorService.getActorById(OFFICE.name());
-                Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
-                setPosition(Math.round(MathUtils.clamp(MathUtils.lerp(getX(),  startX - x, 0.05f), - getWidth() + office.getWidth(), 0)),
-                        Math.round(MathUtils.clamp(MathUtils.lerp(getY(), startY - y, 0.05f), - getHeight() + office.getHeight(), 0)));
-            }
-        });
+//        addListener(new InputListener() {
+//            @Override
+//            public boolean mouseMoved(InputEvent event, float x, float y) {
+//                super.mouseMoved(event, x, y);
+//                UiActorService uiActorService = UiActorService.getInstance();
+//                Office office = (Office) uiActorService.getActorById(OFFICE.name());
+//                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#" + runtimeCacheService.getLong(CURRENT_LEVEL));
+//                grid.getChildren().forEach(c -> {
+//                    if (c instanceof Cell) {
+//                        Cell current = (Cell) c;
+//                        Rectangle cell = new Rectangle(current.getX(), current.getY(), current.getWidth(), current.getHeight());
+//                        Vector3 newCoords = event.getStage().getCamera().project(new Vector3(x, y, 0));
+//                        Vector2 mouse = new Vector2(newCoords.x - office.getX(), newCoords.y - office.getY());
+//                        current.setActive(cell.contains(mouse));
+//                    }
+//                });
+//                Gdx.graphics.setCursor(assetService.getDefaultCursor());
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+//                super.touchDown(event, x, y, pointer, button);
+//                startX = x;
+//                startY = y;
+//                return true;
+//            }
+//
+//            @Override
+//            public void touchDragged(InputEvent event, float x, float y, int pointer) {
+//                super.touchDragged(event, x, y, pointer);
+////                UiActorService uiActorService = UiActorService.getInstance();
+////                Office office = (Office) uiActorService.getActorById(OFFICE.name());
+//                Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
+//                Camera camera = getStage().getCamera();
+//                Vector3 dragEnd = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+//                camera.unproject(dragEnd);
+//                float dragX = dragEnd.x - startX;
+//                float dragY = dragEnd.y - startY;
+//                camera.position.add(-dragX, -dragY, 0);
+//                camera.update();
+//                startX = dragEnd.x;
+//                startY = dragEnd.y;
+////                getStage().getCamera().position.x = Math.round(MathUtils.clamp(MathUtils.lerp(getX(),  startX - x, 0.05f), - getWidth() + office.getWidth(), 0));
+////                getStage().getCamera().position.y = Math.round(MathUtils.clamp(MathUtils.lerp(getY(), startY - y, 0.05f), - getHeight() + office.getHeight(), 0));
+//            }
+//        });
     }
 
 }

@@ -136,7 +136,7 @@ public class Background extends Group {
         Array<Car> carsToRemove = new Array<>();
         for (int i = 0; i < cars.size; i++) {
             if (cars.get(i).getX() <= getX() || cars.get(i).getY() <= getY()
-                    || cars.get(i).getX() == getWidth() || cars.get(i).getY() == getHeight()) {
+                    || cars.get(i).getX() >= getX() + getWidth() || cars.get(i).getY() >= getY() + getHeight()) {
                 carsToRemove.add(cars.get(i));
             }
         }

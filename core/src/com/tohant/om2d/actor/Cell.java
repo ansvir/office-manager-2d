@@ -1,12 +1,13 @@
 package com.tohant.om2d.actor;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.async.AsyncExecutor;
-import com.badlogic.gdx.utils.async.AsyncResult;
+import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.exception.GameException;
@@ -14,12 +15,14 @@ import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.AsyncRoomBuildService;
+import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.stage.GameStage;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
+import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class Cell extends Group {
@@ -34,23 +37,7 @@ public class Cell extends Group {
     private final Skin skin;
     private final AsyncRoomBuildService roomBuildService;
     private TimeLineTask<Room> buildTask;
-
-//    public Cell(String id, float x, float y, float width, float height, Room room) {
-//        super(id);
-//        this.actor = new Group();
-//        setPosition(x, y);
-//        setSize(width, height);
-//        this.roomModel = new RoomBuildingModel(CompletableFuture.supplyAsync(() -> room), room.getRoomInfo());
-//        this.assetService = AssetService.getInstance();
-//        this.skin = getDefaultSkin();
-//        this.buildStatus = new ProgressBar(0, room.getRoomInfo().getBuildTime().getDays(), 1f, false, this.skin);
-//        this.buildStatus.setWidth(getWidth() - DEFAULT_PAD / 2f);
-//        this.buildStatus.setPosition(this.buildStatus.getX() + DEFAULT_PAD / 4f,
-//                this.buildStatus.getY() + getHeight() / 6f);
-//        actor.addActor(this.buildStatus);
-//        this.roomBuildService = AsyncRoomBuildService.getInstance();
-//        this.buildTask = getBuildTask();
-//    }
+    private final RuntimeCacheService cacheService;
 
     public Cell(String id, AbstractCommand command, float x, float y, float width, float height) {
         setName(id);
@@ -61,14 +48,30 @@ public class Cell extends Group {
         this.assetService = AssetService.getInstance();
         this.skin = getDefaultSkin();
         this.roomBuildService = AsyncRoomBuildService.getInstance();
+        cacheService = RuntimeCacheService.getInstance();
         addListener(new InputListener() {
+
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                setActive(true);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                setActive(false);
+            }
+
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
                 try {
                     command.execute();
                 } catch (GameException e) {
-                    ((GameStage) getStage()).addException(e);
+                    Array<GameException> exceptions = (Array<GameException>) cacheService.getObject(GAME_EXCEPTION);
+                    exceptions.add(e);
+                    cacheService.setObject(GAME_EXCEPTION, exceptions);
                 }
                 return false;
             }

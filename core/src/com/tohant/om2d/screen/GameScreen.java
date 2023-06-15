@@ -8,25 +8,25 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
-import com.badlogic.gdx.utils.async.AsyncResult;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
-import com.tohant.om2d.service.CacheService;
 import com.tohant.om2d.service.CacheSnapshotService;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.stage.AbstractStage;
 import com.tohant.om2d.stage.GameStage;
+import com.tohant.om2d.stage.UiStage;
 import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 import static com.tohant.om2d.storage.CacheImpl.*;
 
@@ -35,8 +35,10 @@ public class GameScreen implements Screen {
 
     private Game game;
     private SpriteBatch batch;
-    private GameStage gameStage;
-    private Viewport viewport;
+    private AbstractStage gameStage;
+    private AbstractStage uiStage;
+    private Viewport gameViewport;
+    private Viewport uiViewport;
     private OrthographicCamera camera;
     private InputMultiplexer multiplexer;
     private TimeLineTask<Boolean> timeline;
@@ -54,17 +56,23 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
-        viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
-        viewport.setCamera(camera);
+        gameViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        uiViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera = new OrthographicCamera(gameViewport.getScreenWidth(), gameViewport.getScreenHeight());
+        gameViewport.setCamera(camera);
         gameCache = new CacheProxy();
         eventListener = CachedEventListener.getInstance();
         uiActorService = UiActorService.getInstance();
-        gameStage = new GameStage(viewport, batch);
+        gameStage = new GameStage(gameViewport, batch);
+        uiStage = new UiStage(uiViewport, batch);
         for (Actor a : uiActorService.getUiActors()) {
-            gameStage.addActor(a);
+            if (a instanceof WidgetGroup || a instanceof Widget) {
+                uiStage.addActor(a);
+            } else {
+                gameStage.addActor(a);
+            }
         }
-        multiplexer = new InputMultiplexer(gameStage);
+        multiplexer = new InputMultiplexer(uiStage, gameStage);
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
     }
@@ -74,8 +82,11 @@ public class GameScreen implements Screen {
         ScreenUtils.clear(Color.WHITE);
         processTimeLine();
         updateBudget();
+        uiStage.act();
+        gameStage.act();
+        gameStage.getViewport().setCamera(camera);
         gameStage.draw();
-        gameStage.act(delta);
+        uiStage.draw();
         batch.begin();
         batch.setColor(Color.WHITE);
         batch.end();
@@ -114,7 +125,7 @@ public class GameScreen implements Screen {
         if (timeline != null && !timeline.isDone()) {
             time = timeline.getDateString();
             gameCache.setValue(CURRENT_TIME, time);
-            gameStage.setTime(time);
+            ((UiStage) uiStage).setTime(time);
         } else {
             timeline = new TimeLineTask<>(500L, true);
             executor.submit(timeline);

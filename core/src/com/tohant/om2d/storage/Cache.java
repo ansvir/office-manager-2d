@@ -2,6 +2,7 @@ package com.tohant.om2d.storage;
 
 public interface Cache {
 
+    String GAME_EXCEPTION = "GAME_EXCEPTION";
     String CURRENT_LEVEL = "CURR_LVL";
     String CURRENT_OFFICE_CELLS_WIDTH = "CURR_OFFICE_CELLS_WIDTH";
     String CURRENT_OFFICE_CELLS_HEIGHT = "CURR_OFFICE_CELLS_HEIGHT";

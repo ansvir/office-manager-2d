@@ -1,5 +1,6 @@
 package com.tohant.om2d.service;
 
+import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.storage.RuntimeCacheImpl;
 
 import static com.tohant.om2d.actor.constant.Constant.GRID_HEIGHT;
@@ -14,6 +15,7 @@ public class RuntimeCacheService {
     
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
+        this.runtimeCache.setValue(GAME_EXCEPTION, new Array<>());
         this.runtimeCache.setValue(CURRENT_LEVEL, 0L);
         this.runtimeCache.setValue(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);
         this.runtimeCache.setValue(CURRENT_OFFICE_CELLS_HEIGHT, GRID_HEIGHT);
@@ -75,6 +77,14 @@ public class RuntimeCacheService {
 
     public boolean getBoolean(String key) {
         return (boolean) this.runtimeCache.getValue(key);
+    }
+
+    public void setObject(String key, Object o) {
+        this.runtimeCache.setValue(key, o);
+    }
+
+    public Object getObject(String key) {
+        return this.runtimeCache.getValue(key);
     }
 
 }

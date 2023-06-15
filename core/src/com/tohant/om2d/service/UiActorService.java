@@ -168,9 +168,11 @@ public class UiActorService {
 
     private Map createMap() {
         Map map = new Map(MAP.name());
-        map.setPosition(0, 0);
-        map.setSize(2 * Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH), 2 * Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT));
-        Background background = createBackground();
+        map.setPosition(- (GRID_WIDTH * CELL_SIZE) / 2f, - (GRID_HEIGHT * CELL_SIZE) / 2f);
+        float width = 2 * Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH);
+        float height = 2 * Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT);
+        map.setSize(width, height);
+        Background background = createBackground(width, height);
         map.addActor(background);
         map.addActor(createOffice(background.getWidth(), background.getHeight()));
         return map;
@@ -206,9 +208,8 @@ public class UiActorService {
         return grid;
     }
 
-    private Background createBackground() {
-        return new Background(BACKGROUND.name(), 2 * Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH),
-                2 * Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT));
+    private Background createBackground(float width, float height) {
+        return new Background(BACKGROUND.name(), width, height);
     }
 
     private GameTextButton createDestroyRoomButton() {
