@@ -168,9 +168,11 @@ public class UiActorService {
 
     private Map createMap() {
         Map map = new Map(MAP.name());
-        map.setPosition(- (GRID_WIDTH * CELL_SIZE) / 2f, - (GRID_HEIGHT * CELL_SIZE) / 2f);
-        float width = 2 * Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH);
-        float height = 2 * Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT);
+//        map.setPosition(- (GRID_WIDTH * CELL_SIZE) / 2f, - (GRID_HEIGHT * CELL_SIZE) / 2f);
+//        float width = 2 * Gdx.graphics.getWidth() - (CELL_SIZE * GRID_WIDTH);
+//        float height = 2 * Gdx.graphics.getHeight() - (CELL_SIZE * GRID_HEIGHT);
+        float width = 3000f;
+        float height = 2500f;
         map.setSize(width, height);
         Background background = createBackground(width, height);
         map.addActor(background);
