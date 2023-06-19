@@ -1,6 +1,7 @@
 package com.tohant.om2d.command.room;
 
 import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.AbstractCommand;
@@ -52,9 +53,20 @@ public class UpdateRoomInfoCommand extends AbstractCommand {
                 title = currentCell.getRoomModel().getRoomInfo().getType().name().charAt(0) +
                         currentCell.getRoomModel().getRoomInfo().getType().name().substring(1).toLowerCase()
                         + " #" + currentCell.getRoomModel().getRoomInfo().getNumber();
-                text = "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
-                        + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m\n" + "Employees: "
-                        + currentCell.getRoomModel().getRoomInfo().getStaff().size;
+                if (currentCell.getRoomModel().getRoomInfo().getType() == Room.Type.OFFICE) {
+                    text = ((currentCell.getRoom() == null) ? ""
+                            : "Company: " + ((OfficeRoom) currentCell.getRoom()).getCompanyInfo().getName()) + "\n"
+                            + "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
+                            + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m\n" + "Workers: "
+                            + currentCell.getRoomModel().getRoomInfo().getStaff().size;
+                } else if (currentCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
+                    text = "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
+                            + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m";
+                } else {
+                    text = "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
+                            + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m\n" + "Employees: "
+                            + currentCell.getRoomModel().getRoomInfo().getStaff().size;
+                }
             }
             roomInfoModal.getTitleLabel().setText(title);
             roomInfoModal.updateContentText(ROOM_INFO_LABEL.name(), text);

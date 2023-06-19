@@ -1,5 +1,6 @@
 package com.tohant.om2d.actor;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -84,7 +85,6 @@ public class Cell extends Group {
     public void draw(Batch batch, float parentAlpha) {
         if (!isEmpty) {
             if (roomModel.getRoom().isDone()) {
-
                 try {
                     roomModel.getRoom().get().draw(batch, parentAlpha);
                     removeActor(this.buildStatus);
@@ -136,6 +136,15 @@ public class Cell extends Group {
 
     public boolean isBuilt() {
         return this.roomModel.getRoom().isDone();
+    }
+
+    public Room getRoom() {
+        try {
+            return this.roomModel.getRoom().get();
+        } catch (InterruptedException | ExecutionException e) {
+            Gdx.app.error("ERROR", "CANNOT OBTAIN INSTANCE OF ROOM. ERROR: " + e.getMessage());
+        }
+        return null;
     }
 
     public boolean isEmpty() {

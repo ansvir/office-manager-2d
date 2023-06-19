@@ -1,13 +1,16 @@
 package com.tohant.om2d.command.room;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
+import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.*;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineDate;
@@ -15,7 +18,10 @@ import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.tohant.om2d.service.ServiceUtil.*;
@@ -56,7 +62,7 @@ public class BuildRoomCommand extends AbstractCommand {
             float budget = cache.getFloat(CURRENT_BUDGET);
             if (budget >= price) {
                 String roomId = ROOM.name() + "#" + r + "#" + c + "#" + cache.getLong(CURRENT_LEVEL);
-                String staffId = STAFF.name() + "#" + r + "#" + c + "#";
+                String staffId = STAFF.name() + "#" + r + "#" + c + "#" + cache.getLong(CURRENT_LEVEL) + "#";
                 switch (nextType) {
                     case HALL: {
                         nextRoom = new HallRoom(roomId, new RoomInfo(Array.with(), 100f, 20f, new TimeLineDate(12L, 1L, 1L), Room.Type.HALL),
@@ -68,7 +74,10 @@ public class BuildRoomCommand extends AbstractCommand {
                     case OFFICE: {
                         Array<Staff> workers = Array.with(IntStream.range(0, 15).boxed()
                                 .map(i -> new WorkerStaff(staffId + i)).toArray(WorkerStaff[]::new));
-                        nextRoom = new OfficeRoom(roomId, new RoomInfo(workers, 550f, 50f, new TimeLineDate(15L, 1L, 1L), Room.Type.OFFICE),
+                        List<String> workersIds = Arrays.stream(workers.toArray(Staff.class))
+                                .map(Staff::getId).collect(Collectors.toList());
+                        nextRoom = new OfficeRoom(roomId, new CompanyInfo(buildRandomCompanyName(), workersIds),
+                                new RoomInfo(workers, 550f, 50f, new TimeLineDate(15L, 1L, 1L), Room.Type.OFFICE),
                                 cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();
                         cost += nextRoom.getRoomInfo().getCost();
@@ -135,4 +144,13 @@ public class BuildRoomCommand extends AbstractCommand {
             }
         }
     }
+
+    private String buildRandomCompanyName() {
+        String first = CompanyConstant.values()[MathUtils.random(CompanyConstant.values().length - 1)].name();
+        String second = CompanyConstant.values()[MathUtils.random(CompanyConstant.values().length - 1)].name();
+        first = first.charAt(0) + first.substring(1).toLowerCase();
+        second = second.charAt(0) + second.substring(1).toLowerCase();
+        return first + " " + second;
+    }
+
 }
