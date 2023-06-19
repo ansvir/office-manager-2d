@@ -74,6 +74,12 @@ public class ServiceUtil {
         return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(parentCoords[3]));
     }
 
+    public static Vector3 getObjectCellCellCoordinates(ObjectCell cell) {
+        String objectCellParentName = cell.getName().substring(cell.getName().lastIndexOf("_") + 1);
+        String[] parentCoords = objectCellParentName.split("#");
+        return new Vector3(Long.parseLong(parentCoords[1]), Long.parseLong(parentCoords[2]), Long.parseLong(parentCoords[3]));
+    }
+
     public static boolean checkNoCellOnGrid(Array<Actor> children) {
         boolean result = true;
         for (int i = 0; i < children.size; i++) {

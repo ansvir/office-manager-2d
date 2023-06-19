@@ -273,6 +273,26 @@ public class UiActorService {
         return this.uiActors;
     }
 
+    public Array<Actor> getActorsByIdSuffix(String idSuffix) {
+        return selectChildrenByIdSuffixRecursively(idSuffix, getUiActors());
+    }
+
+    private Array<Actor> selectChildrenByIdSuffixRecursively(String idSuffix, Array<Actor> actors) {
+        Array<Actor> result = new Array<>();
+        for (Actor actor : actors) {
+            if (actor.getName() != null && actor.getName().startsWith(idSuffix)) {
+                result.add(actor);
+            }
+            if (actor instanceof Group) {
+                Array<Actor> children = selectChildrenByIdSuffixRecursively(idSuffix, ((Group) actor).getChildren());
+                for (Actor child : children) {
+                    result.add(child);
+                }
+            }
+        }
+        return result;
+    }
+
     public Actor getActorById(String id) {
         for (Actor c : getUiActors()) {
             if (c.getName() != null && c.getName().equals(id)) {

@@ -7,9 +7,11 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -18,8 +20,8 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.actor.Office;
-import com.tohant.om2d.actor.environment.Man;
 import com.tohant.om2d.actor.man.Staff;
+import com.tohant.om2d.actor.man.WorkerStaff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
@@ -34,7 +36,9 @@ import com.tohant.om2d.storage.CachedEventListener;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
+import static com.tohant.om2d.service.ServiceUtil.getObjectCellCellCoordinates;
+import static com.tohant.om2d.service.ServiceUtil.getObjectCellCoordinates;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 import static com.tohant.om2d.storage.CacheImpl.*;
 
 
@@ -55,7 +59,7 @@ public class GameScreen implements Screen {
     private CachedEventListener eventListener;
     private UiActorService uiActorService;
     private boolean isPayDay;
-    private Man[] men;
+    private Staff[] men;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -83,7 +87,7 @@ public class GameScreen implements Screen {
         multiplexer = new InputMultiplexer(uiStage, gameStage);
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
-        men = new Man[1];
+        men = new Staff[1];
     }
 
     @Override
@@ -94,38 +98,23 @@ public class GameScreen implements Screen {
         AtomicReference<ObjectCell> first = new AtomicReference<>();
         AtomicReference<ObjectCell> second = new AtomicReference<>();
         if (men[0] == null) {
-            uiActorService.getUiActors().forEach(a -> {
-                if (a instanceof com.tohant.om2d.actor.Map) {
-                    ((com.tohant.om2d.actor.Map) a).getChildren().forEach(c -> {
-                        if (c instanceof Office) {
-                            ((Office) c).getChildren().forEach(c1 -> {
-                                if (c1 instanceof Grid) {
-                                    ((Grid) c1).getChildren().forEach(c2 -> {
-                                        if (c2 instanceof Cell) {
-                                            ((Cell) c2).getChildren().forEach(c3 -> {
-                                                if (c3 instanceof ObjectCell) {
-                                                    if (first.get() == null) {
-                                                        first.set((ObjectCell) c3);
-                                                    } else {
-                                                        second.set((ObjectCell) c3);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-            if (first.get() != null && second.get() != null) {
                 Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#0");
-                Man man = new Man();
-                man.addPath(first.get(), second.get());
-                men[0] = man;
-                grid.addActor(man);
-            }
+                Array<Actor> actors = uiActorService.getActorsByIdSuffix(OBJECT_CELL.name());
+                if (!actors.isEmpty()) {
+                    for (int i = 0; i < actors.size; i++) {
+                        if (i == 0) {
+                            first.set((ObjectCell) actors.get(i));
+                        }
+                        if (i == actors.size - 1) {
+                            second.set((ObjectCell) actors.get(i));
+                        }
+                    }
+                    Vector3 firstCoords = getObjectCellCellCoordinates(first.get());
+                    WorkerStaff worker = new WorkerStaff(STAFF.name() + "#" + firstCoords.x + "#" + firstCoords.y + "#0#0");
+                    worker.addPath(first.get(), second.get());
+                    men[0] = worker;
+                    grid.addActor(worker);
+                }
         }
         uiStage.act();
         gameStage.act();

@@ -75,7 +75,7 @@ public class BuildRoomCommand extends AbstractCommand {
                         Array<Staff> workers = Array.with(IntStream.range(0, 15).boxed()
                                 .map(i -> new WorkerStaff(staffId + i)).toArray(WorkerStaff[]::new));
                         List<String> workersIds = Arrays.stream(workers.toArray(Staff.class))
-                                .map(Staff::getId).collect(Collectors.toList());
+                                .map(Staff::getName).collect(Collectors.toList());
                         nextRoom = new OfficeRoom(roomId, new CompanyInfo(buildRandomCompanyName(), workersIds),
                                 new RoomInfo(workers, 550f, 50f, new TimeLineDate(15L, 1L, 1L), Room.Type.OFFICE),
                                 cell.getX(), cell.getY(), cell.getWidth(), cell.getHeight());
