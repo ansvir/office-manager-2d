@@ -182,6 +182,7 @@ public class UiActorService {
 
     private Office createOffice(float width, float height) {
         Grid grid = createLevel(0);
+//        ObjectGrid objectGrid = createObjectGrid(0);
         Office office = new Office(OFFICE.name(), Array.with(grid));
         office.setPosition(Math.round(width / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),
                 Math.round(height / 2f - (GRID_HEIGHT * CELL_SIZE) / 2f));
@@ -194,10 +195,6 @@ public class UiActorService {
         for (int w = 0; w < GRID_WIDTH; w++) {
             for (int h = 0; h < GRID_HEIGHT; h++) {
                 cells.add(createCell(h, w, index, h * CELL_SIZE, w * CELL_SIZE));
-//                Cell cell = new Cell(h * cellSize, w * cellSize, cellSize, cellSize);
-//                cell.setName("Cell#" + h + "#" + w + "#" + level);
-//                addCellEventHandling(cell);
-//                actor.addActor(cell);
             }
         }
         Grid grid = new Grid(GRID.name() + "#" + index);
@@ -209,6 +206,22 @@ public class UiActorService {
         drawBorders(grid);
         return grid;
     }
+
+//    private ObjectGrid createObjectGrid(int index) {
+//        Array<ObjectCell> cells = new Array<>();
+//        for (int w = 0; w < OBJECT_GRID_SIZE; w++) {
+//            for (int h = 0; h < OBJECT_GRID_SIZE; h++) {
+//                cells.add(createObjectCell(h, w, index, h * OBJECT_CELL_SIZE, w * OBJECT_CELL_SIZE));
+//            }
+//        }
+//        ObjectGrid grid = new ObjectGrid(OBJECT_GRID.name() + "#" + index);
+//        grid.setSize(OBJECT_GRID_SIZE * OBJECT_CELL_SIZE, OBJECT_GRID_SIZE * OBJECT_CELL_SIZE);
+//        grid.setPosition(0, 0);
+//        for (ObjectCell c : cells) {
+//            grid.addActor(c);
+//        }
+//        return grid;
+//    }
 
     private Background createBackground(float width, float height) {
         return new Background(BACKGROUND.name(), width, height);
@@ -284,7 +297,7 @@ public class UiActorService {
         ROOMS_DROP_DOWN, ROOMS_LIST, ROOM_BUTTON_POSTFIX, ROOMS_MENU_TOGGLE_BUTTON, ROOM_INFO_MODAL,
         CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_NOTIFICATION_BUTTON,
         DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON,
-        CELL, ROOM, MAP, OFFICE, GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
+        OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
         NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL
     }
 

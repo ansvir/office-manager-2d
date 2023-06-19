@@ -1,5 +1,7 @@
 package com.tohant.om2d.storage;
 
+import com.badlogic.gdx.utils.Array;
+
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -47,6 +49,7 @@ public class CacheProxy implements Cache {
 
     private Consumer<Cache> getDefaultInit() {
         return (c) -> {
+            c.setValue(GAME_EXCEPTION, new Array<>());
             c.setValue(CURRENT_ROOM_TYPE, null);
             c.setValue(CURRENT_BUDGET, 10000.0f);
             c.setValue(CURRENT_TIME, "01/01/0001");

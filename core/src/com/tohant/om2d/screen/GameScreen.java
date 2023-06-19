@@ -14,6 +14,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.Grid;
+import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.actor.Office;
+import com.tohant.om2d.actor.environment.Man;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.task.TimeLineDate;
@@ -27,7 +32,9 @@ import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
 import static com.tohant.om2d.storage.CacheImpl.*;
 
 
@@ -48,6 +55,7 @@ public class GameScreen implements Screen {
     private CachedEventListener eventListener;
     private UiActorService uiActorService;
     private boolean isPayDay;
+    private Man[] men;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -75,6 +83,7 @@ public class GameScreen implements Screen {
         multiplexer = new InputMultiplexer(uiStage, gameStage);
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
+        men = new Man[1];
     }
 
     @Override
@@ -82,6 +91,42 @@ public class GameScreen implements Screen {
         ScreenUtils.clear(Color.WHITE);
         processTimeLine();
         updateBudget();
+        AtomicReference<ObjectCell> first = new AtomicReference<>();
+        AtomicReference<ObjectCell> second = new AtomicReference<>();
+        if (men[0] == null) {
+            uiActorService.getUiActors().forEach(a -> {
+                if (a instanceof com.tohant.om2d.actor.Map) {
+                    ((com.tohant.om2d.actor.Map) a).getChildren().forEach(c -> {
+                        if (c instanceof Office) {
+                            ((Office) c).getChildren().forEach(c1 -> {
+                                if (c1 instanceof Grid) {
+                                    ((Grid) c1).getChildren().forEach(c2 -> {
+                                        if (c2 instanceof Cell) {
+                                            ((Cell) c2).getChildren().forEach(c3 -> {
+                                                if (c3 instanceof ObjectCell) {
+                                                    if (first.get() == null) {
+                                                        first.set((ObjectCell) c3);
+                                                    } else {
+                                                        second.set((ObjectCell) c3);
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            if (first.get() != null && second.get() != null) {
+                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#0");
+                Man man = new Man();
+                man.addPath(first.get(), second.get());
+                men[0] = man;
+                grid.addActor(man);
+            }
+        }
         uiStage.act();
         gameStage.act();
         gameStage.getViewport().setCamera(camera);
@@ -134,7 +179,7 @@ public class GameScreen implements Screen {
 
     private void updateBudget() {
         if (this.timeline.getDate().getDays() == 1
-                && !this.timeline.getDate().equals(new TimeLineDate(1L ,1L ,1L)) && !isPayDay) {
+                && !this.timeline.getDate().equals(new TimeLineDate(1L, 1L, 1L)) && !isPayDay) {
             Map<String, ?> cacheSnapshot = eventListener.consume();
             CacheSnapshotService snapshotService = new CacheSnapshotService(cacheSnapshot);
             float budget = snapshotService.getFloat(CURRENT_BUDGET);

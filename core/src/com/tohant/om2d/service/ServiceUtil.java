@@ -1,9 +1,11 @@
 package com.tohant.om2d.service;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 
@@ -62,6 +64,14 @@ public class ServiceUtil {
         int cellY = Integer.parseInt(indexY);
         int cellZ = Integer.parseInt(yZIndices.substring(yZIndices.indexOf("#") + 1));
         return new Vector2(cellX, cellY);
+    }
+
+    public static Vector3 getObjectCellCoordinates(ObjectCell cell) {
+        String objectCellName = cell.getName().substring(0, cell.getName().lastIndexOf("_"));
+        String objectCellParentName = cell.getName().substring(cell.getName().lastIndexOf("_") + 1);
+        String[] coords = objectCellName.split("#");
+        String[] parentCoords = objectCellParentName.split("#");
+        return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(parentCoords[3]));
     }
 
     public static boolean checkNoCellOnGrid(Array<Actor> children) {

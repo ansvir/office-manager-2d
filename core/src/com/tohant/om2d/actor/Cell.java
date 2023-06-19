@@ -21,7 +21,8 @@ import com.tohant.om2d.stage.GameStage;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
+import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OBJECT_CELL;
 import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
@@ -29,6 +30,7 @@ public class Cell extends Group {
 
     private final AbstractCommand command;
 
+    private Array<Array<ObjectCell>> cells;
     private RoomBuildingModel roomModel;
     private boolean isEmpty;
     private boolean isActive;
@@ -82,6 +84,7 @@ public class Cell extends Group {
     public void draw(Batch batch, float parentAlpha) {
         if (!isEmpty) {
             if (roomModel.getRoom().isDone()) {
+
                 try {
                     roomModel.getRoom().get().draw(batch, parentAlpha);
                     removeActor(this.buildStatus);
@@ -113,6 +116,8 @@ public class Cell extends Group {
             this.roomModel = null;
             isEmpty = true;
             removeActor(this.buildStatus);
+            this.cells.forEach(c -> c.forEach(this::removeActor));
+            this.cells = new Array<>();
         } else {
             this.roomModel = model;
             if (!model.getRoom().isDone()) {
@@ -124,6 +129,8 @@ public class Cell extends Group {
                 addActor(this.buildStatus);
             }
             isEmpty = false;
+            this.cells = getCells(model.getRoomInfo().getType());
+            this.cells.forEach(c -> c.forEach(this::addActor));
         }
     }
 
@@ -153,6 +160,46 @@ public class Cell extends Group {
             }
         }
         return null;
+    }
+
+    private Array<Array<ObjectCell>> getCells(Room.Type room) {
+        Array<Array<ObjectCell>> cells = new Array<>();
+        switch (room) {
+            case HALL: {
+                for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
+                    cells.insert(i, new Array<>());
+                    for (int j = 0 ; j <= OBJECT_CELL_SIZE + 1; j++) {
+                        cells.get(i).insert(j, new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
+                    }
+                }
+                break;
+            }
+            default: {
+                for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
+                    cells.insert(i, new Array<>());
+                    for (int j = 0 ; j <= OBJECT_CELL_SIZE + 1; j++) {
+                        cells.get(i).insert(j,
+                                i == 0 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
+                                new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                : j == 0 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                : i == OBJECT_CELL_SIZE - 1 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                : j == OBJECT_CELL_SIZE - 1 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                : new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                        i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
+                    }
+                }
+                break;
+            }
+        }
+        return cells;
     }
 
 }

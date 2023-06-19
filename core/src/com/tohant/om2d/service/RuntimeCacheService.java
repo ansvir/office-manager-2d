@@ -15,6 +15,7 @@ public class RuntimeCacheService {
     
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
+        this.runtimeCache.setValue(WORKERS, new Array<>());
         this.runtimeCache.setValue(GAME_EXCEPTION, new Array<>());
         this.runtimeCache.setValue(CURRENT_LEVEL, 0L);
         this.runtimeCache.setValue(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);

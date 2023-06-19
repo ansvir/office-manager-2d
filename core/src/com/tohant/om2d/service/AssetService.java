@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
+import static com.tohant.om2d.actor.constant.Constant.OBJECT_CELL_SIZE;
 
 public class AssetService implements Disposable {
 
@@ -31,6 +32,7 @@ public class AssetService implements Disposable {
     private final Texture ROOM_CONSTRUCTION;
     private final Texture GRASS1;
     private final Texture GRASS2;
+    private final Texture MAN_STAND;
     private Texture background;
     private final TextureRegion VR_ROAD;
     private final TextureRegion VL_ROAD;
@@ -52,6 +54,7 @@ public class AssetService implements Disposable {
         this.ROOM_CONSTRUCTION = createRoomConstructionTexture();
         this.GRASS1 = createGrass1Texture();
         this.GRASS2 = createGrass2Texture();
+        this.MAN_STAND = createManStandTexture();
         this.VR_ROAD = createVRRoadTexture();
         this.VL_ROAD = createVLRoadTexture();
         this.HD_ROAD = createHDRoadTexture();
@@ -134,6 +137,10 @@ public class AssetService implements Disposable {
 
     private Texture createGrass2Texture() {
         return AssetsUtil.resizeTexture("grass2.png", CELL_SIZE, CELL_SIZE);
+    }
+
+    private Texture createManStandTexture() {
+        return AssetsUtil.resizeTexture("man_stand.png", OBJECT_CELL_SIZE, OBJECT_CELL_SIZE);
     }
 
     private TextureRegion createVRRoadTexture() {
@@ -223,6 +230,9 @@ public class AssetService implements Disposable {
     public Texture getGrass2Texture() {
         return GRASS2;
     }
+    public Texture getManStandTexture() {
+        return MAN_STAND;
+    }
 
     public Texture getBackground() {
         return background;
@@ -276,6 +286,7 @@ public class AssetService implements Disposable {
         this.ROOM_CONSTRUCTION.dispose();
         this.GRASS1.dispose();
         this.GRASS2.dispose();
+        this.MAN_STAND.dispose();
         if (this.background != null) {
             this.background.dispose();
         }
