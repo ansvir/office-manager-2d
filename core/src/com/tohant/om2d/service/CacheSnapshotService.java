@@ -30,4 +30,8 @@ public class CacheSnapshotService {
         return Boolean.parseBoolean((String) this.cacheSnapshot.get(key));
     }
 
+    public Object getObject(String key) {
+        return this.cacheSnapshot.get(key);
+    }
+
 }

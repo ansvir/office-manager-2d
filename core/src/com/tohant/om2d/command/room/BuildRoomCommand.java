@@ -72,7 +72,7 @@ public class BuildRoomCommand extends AbstractCommand {
                         break;
                     }
                     case OFFICE: {
-                        Array<Staff> workers = Array.with(IntStream.range(0, 15).boxed()
+                        Array<Staff> workers = Array.with(IntStream.range(0, 7).boxed()
                                 .map(i -> new WorkerStaff(staffId + i)).toArray(WorkerStaff[]::new));
                         List<String> workersIds = Arrays.stream(workers.toArray(Staff.class))
                                 .map(Staff::getName).collect(Collectors.toList());
@@ -138,7 +138,7 @@ public class BuildRoomCommand extends AbstractCommand {
                 cache.setFloat(CURRENT_BUDGET, budget - price);
                 cache.setFloat(TOTAL_COSTS, cache.getFloat(TOTAL_COSTS) + cost);
                 setRoomsAmountByType(nextRoom.getType(), getRoomsAmountByType(nextRoom.getType()) + 1L);
-                cell.setRoomModel(new RoomBuildingModel(roomBuildService.submitBuild(nextRoom), nextRoom.getRoomInfo()));
+                cell.setRoomModel(new RoomBuildingModel(roomBuildService.submitBuild(cell, nextRoom), nextRoom.getRoomInfo()));
                 roomInfoModal.setVisible(true);
                 cache.setValue(CURRENT_ROOM, cellId);
             }

@@ -17,13 +17,14 @@ import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.stage.GameStage;
+import com.tohant.om2d.service.UiActorService;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
+import static com.tohant.om2d.actor.constant.Constant.OBJECT_CELL_SIZE;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OBJECT_CELL;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE;
 import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
@@ -110,6 +111,9 @@ public class Cell extends Group {
 
     public void setRoomModel(RoomBuildingModel model) {
         if (model == null) {
+            UiActorService uiActorService = UiActorService.getInstance();
+            Office office = (Office) uiActorService.getActorById(OFFICE.name());
+            getRoom().getRoomInfo().getStaff().forEach(office::removeActor);
             this.roomModel.getRoom().cancel(false);
             this.roomModel.setRoomInfo(null);
             this.roomModel.setRoom(null);
@@ -129,8 +133,6 @@ public class Cell extends Group {
                 addActor(this.buildStatus);
             }
             isEmpty = false;
-            this.cells = getCells(model.getRoomInfo().getType());
-            this.cells.forEach(c -> c.forEach(this::addActor));
         }
     }
 
@@ -145,6 +147,14 @@ public class Cell extends Group {
             Gdx.app.error("ERROR", "CANNOT OBTAIN INSTANCE OF ROOM. ERROR: " + e.getMessage());
         }
         return null;
+    }
+
+    public void setDetails(Room room) {
+        this.cells = getObjectCells(this.roomModel.getRoomInfo().getType());
+        this.cells.forEach(c -> c.forEach(this::addActor));
+        UiActorService uiActorService = UiActorService.getInstance();
+        Office office = (Office) uiActorService.getActorById(OFFICE.name());
+        room.getRoomInfo().getStaff().forEach(office::addActor);
     }
 
     public boolean isEmpty() {
@@ -171,7 +181,7 @@ public class Cell extends Group {
         return null;
     }
 
-    private Array<Array<ObjectCell>> getCells(Room.Type room) {
+    private Array<Array<ObjectCell>> getObjectCells(Room.Type room) {
         Array<Array<ObjectCell>> cells = new Array<>();
         switch (room) {
             case HALL: {

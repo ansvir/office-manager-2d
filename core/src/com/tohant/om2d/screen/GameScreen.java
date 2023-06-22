@@ -16,16 +16,19 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.man.WorkerStaff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.command.office.UpdatePeopleCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.CacheSnapshotService;
+import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.stage.AbstractStage;
 import com.tohant.om2d.stage.GameStage;
@@ -33,11 +36,10 @@ import com.tohant.om2d.stage.UiStage;
 import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
 
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.service.ServiceUtil.getObjectCellCellCoordinates;
-import static com.tohant.om2d.service.ServiceUtil.getObjectCellCoordinates;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 import static com.tohant.om2d.storage.CacheImpl.*;
 
@@ -59,7 +61,7 @@ public class GameScreen implements Screen {
     private CachedEventListener eventListener;
     private UiActorService uiActorService;
     private boolean isPayDay;
-    private Staff[] men;
+//    private Staff[] men;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -87,35 +89,34 @@ public class GameScreen implements Screen {
         multiplexer = new InputMultiplexer(uiStage, gameStage);
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
-        men = new Staff[1];
+//        men = new Staff[1];
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(Color.WHITE);
-        processTimeLine();
-        updateBudget();
-        AtomicReference<ObjectCell> first = new AtomicReference<>();
-        AtomicReference<ObjectCell> second = new AtomicReference<>();
-        if (men[0] == null) {
-                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#0");
-                Array<Actor> actors = uiActorService.getActorsByIdSuffix(OBJECT_CELL.name());
-                if (!actors.isEmpty()) {
-                    for (int i = 0; i < actors.size; i++) {
-                        if (i == 0) {
-                            first.set((ObjectCell) actors.get(i));
-                        }
-                        if (i == actors.size - 1) {
-                            second.set((ObjectCell) actors.get(i));
-                        }
-                    }
-                    Vector3 firstCoords = getObjectCellCellCoordinates(first.get());
-                    WorkerStaff worker = new WorkerStaff(STAFF.name() + "#" + firstCoords.x + "#" + firstCoords.y + "#0#0");
-                    worker.addPath(first.get(), second.get());
-                    men[0] = worker;
-                    grid.addActor(worker);
-                }
-        }
+        update();
+//        AtomicReference<ObjectCell> first = new AtomicReference<>();
+//        AtomicReference<ObjectCell> second = new AtomicReference<>();
+//        if (men[0] == null) {
+//                Office office = (Office) uiActorService.getActorById(OFFICE.name());
+//                Array<Actor> actors = uiActorService.getActorsByIdPrefix(OBJECT_CELL.name());
+//                if (!actors.isEmpty()) {
+//                    for (int i = 0; i < actors.size; i++) {
+//                        if (i == 0) {
+//                            first.set((ObjectCell) actors.get(i));
+//                        }
+//                        if (i == actors.size - 1) {
+//                            second.set((ObjectCell) actors.get(i));
+//                        }
+//                    }
+//                    Vector3 firstCoords = getObjectCellCellCoordinates(first.get());
+//                    WorkerStaff worker = new WorkerStaff(STAFF.name() + "#" + (int) firstCoords.x + "#" + (int) firstCoords.y + "#0#0");
+//                    worker.addPath(first.get(), second.get());
+//                    men[0] = worker;
+//                    office.addActor(worker);
+//                }
+//        }
         uiStage.act();
         gameStage.act();
         gameStage.getViewport().setCamera(camera);
@@ -155,13 +156,18 @@ public class GameScreen implements Screen {
         eventListener.stop();
     }
 
+    private void update() {
+        processTimeLine();
+        updateBudget();
+    }
+
     private void processTimeLine() {
         if (timeline != null && !timeline.isDone()) {
             time = timeline.getDateString();
             gameCache.setValue(CURRENT_TIME, time);
             ((UiStage) uiStage).setTime(time);
         } else {
-            timeline = new TimeLineTask<>(500L, true);
+            timeline = new TimeLineTask<>(500L, this::updatePeople, true);
             executor.submit(timeline);
         }
     }
@@ -202,6 +208,11 @@ public class GameScreen implements Screen {
 
     private float calculateIncomes(CacheSnapshotService snapshotService) {
         return snapshotService.getLong(TOTAL_WORKERS) * 100.0f;
+    }
+
+
+    private void updatePeople() {
+        new UpdatePeopleCommand().execute();
     }
 
 }

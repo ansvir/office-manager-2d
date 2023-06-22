@@ -2,6 +2,8 @@ package com.tohant.om2d.service;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
+import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
@@ -12,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.getEmployeesAmountByType;
 import static com.tohant.om2d.service.ServiceUtil.setEmployeesAmountByType;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE;
 import static com.tohant.om2d.storage.CacheImpl.*;
 
 public class AsyncRoomBuildService {
@@ -34,9 +37,9 @@ public class AsyncRoomBuildService {
         return instance;
     }
 
-    public synchronized CompletableFuture<Room> submitBuild(Room room) {
+    public synchronized CompletableFuture<Room> submitBuild(Cell cell, Room room) {
         TimeLineTask<Room> task = new TimeLineTask<>(room.getRoomInfo().getId(), DAY_WAIT_TIME_MILLIS, room,
-                (d) -> d.compareTo(room.getRoomInfo().getBuildTime()) >= 0, () -> {
+                (d) -> d.compareTo(room.getRoomInfo().getBuildTime()) >= 0, () -> {}, () -> {
             String staffTypeString = room.getType() == Room.Type.SECURITY ? TOTAL_SECURITY_STAFF
                     : room.getType() == Room.Type.CLEANING ? TOTAL_CLEANING_STAFF
                     : room.getType() == Room.Type.OFFICE ? TOTAL_WORKERS
@@ -57,6 +60,7 @@ public class AsyncRoomBuildService {
                 cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
                         + room.getRoomInfo().getStaff().size * staffType.getSalary());
             }
+            cell.setDetails(room);
         });
         this.tasks.add(task);
         asyncExecutor.submit(task);

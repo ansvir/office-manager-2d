@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.button.AbstractTextButton;
@@ -26,6 +27,9 @@ import com.tohant.om2d.command.room.DestroyRoomCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.command.ui.ToggleGridCommand;
 import com.tohant.om2d.util.AssetsUtil;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
@@ -60,6 +64,7 @@ public class UiActorService {
         this.uiActors.add(createTimeLabel());
         this.uiActors.add(createRoomInfoModal());
         this.uiActors.add(createOfficeInfoModal());
+        this.uiActors.add(createPeopleInfoModal());
         this.uiActors.add(createNotificationModal());
         this.uiActors.add(createBottomPane());
         this.uiActors.add(createRoomsButtonsMenu());
@@ -136,6 +141,10 @@ public class UiActorService {
         return new GameTextButton(CLOSE_OFFICE_INFO_BUTTON.name(), new ToggleCommand(OFFICE_INFO_MODAL.name()), "X", skin);
     }
 
+    private AbstractTextButton createClosePeopleInfoButton() {
+        return new GameTextButton(CLOSE_PEOPLE_INFO_BUTTON.name(), new ToggleCommand(PEOPLE_INFO_MODAL.name()), "X", skin);
+    }
+
     private AbstractTextButton createCloseNotificationButton() {
         return new GameTextButton(CLOSE_NOTIFICATION_BUTTON.name(), new ToggleCommand(NOTIFICATION_MODAL.name()), "X", skin);
     }
@@ -144,11 +153,15 @@ public class UiActorService {
         return new GameTextButton(TOGGLE_OFFICE_INFO_BUTTON.name(), new ToggleCommand(OFFICE_INFO_MODAL.name()), "Office", skin);
     }
 
+    private AbstractTextButton createTogglePeopleInfoButton() {
+        return new GameTextButton(TOGGLE_PEOPLE_INFO_BUTTON.name(), new ToggleCommand(PEOPLE_INFO_MODAL.name()), "People", skin);
+    }
+
     private AbstractTextButton createCollapsePaneButton() {
         return new GameTextButton(COLLAPSE_BUTTON.name(), new ToggleCommand(MAIN_PANE.name()), "-", skin);
     }
     private AbstractPane createBottomPane() {
-        AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton()), createCollapsePaneButton(),
+        AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton(), createTogglePeopleInfoButton()), createCollapsePaneButton(),
                 AbstractPane.Alignment.BOTTOM, "Office Manager 2D", skin);
         pane.setPosition(0,0);
         return pane;
@@ -157,6 +170,14 @@ public class UiActorService {
     private DefaultModal createOfficeInfoModal() {
         DefaultModal modal = new DefaultModal(OFFICE_INFO_MODAL.name(), "Statistics", Array.with(new GameLabel(OFFICE_INFO_LABEL.name(), "", skin)),
                 createCloseOfficeInfoButton(), skin);
+        modal.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
+        modal.toggle();
+        return modal;
+    }
+
+    private DefaultModal createPeopleInfoModal() {
+        DefaultModal modal = new DefaultModal(PEOPLE_INFO_MODAL.name(), "Staff and Residents", Array.with(new GameLabel(PEOPLE_INFO_LABEL.name(), "", skin)),
+                createClosePeopleInfoButton(), skin);
         modal.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
         modal.toggle();
         return modal;
@@ -273,18 +294,27 @@ public class UiActorService {
         return this.uiActors;
     }
 
-    public Array<Actor> getActorsByIdSuffix(String idSuffix) {
-        return selectChildrenByIdSuffixRecursively(idSuffix, getUiActors());
+    public Array<Actor> getActorsByIdPrefix(String idPrefix) {
+        try {
+            return selectChildrenByIdPrefixRecursively(idPrefix, getUiActors());
+        } catch (RuntimeException e) {
+            System.out.println(Arrays.stream(e.getStackTrace())
+                    .map(StackTraceElement::toString)
+                    .collect(Collectors.joining("\n")));
+        }
+        return null;
     }
 
-    private Array<Actor> selectChildrenByIdSuffixRecursively(String idSuffix, Array<Actor> actors) {
+    private Array<Actor> selectChildrenByIdPrefixRecursively(String idPrefix, Array<Actor> actors) {
         Array<Actor> result = new Array<>();
-        for (Actor actor : actors) {
-            if (actor.getName() != null && actor.getName().startsWith(idSuffix)) {
+        for (int i = 0; i < actors.size; i++) {
+            Actor actor = actors.get(i);
+            if (actor.getName() != null && actor.getName().startsWith(idPrefix)) {
                 result.add(actor);
             }
             if (actor instanceof Group) {
-                Array<Actor> children = selectChildrenByIdSuffixRecursively(idSuffix, ((Group) actor).getChildren());
+                Array.ArrayIterator<Actor> children = selectChildrenByIdPrefixRecursively(idPrefix, ((Group) actor).getChildren())
+                        .iterator();
                 for (Actor child : children) {
                     result.add(child);
                 }
@@ -294,15 +324,20 @@ public class UiActorService {
     }
 
     public Actor getActorById(String id) {
-        for (Actor c : getUiActors()) {
-            if (c.getName() != null && c.getName().equals(id)) {
-                return c;
+        if (id == null) {
+            return null;
+        }
+        Array<Actor> uiActors = getUiActors();
+        for (int i = 0; i < uiActors.size; i++) {
+            Actor a = uiActors.get(i);
+            if (a.getName() != null && a.getName().equals(id)) {
+                return a;
             } else {
-                if (c instanceof Group) {
+                if (a instanceof Group) {
                     Actor found = null;
                     try {
-                        found = ((Group) c).findActor(id);
-                    } catch (NullPointerException i) {
+                        found = ((Group) a).findActor(id);
+                    } catch (NullPointerException ignored) {
                     }
                     if (found != null) {
                         return found;
@@ -315,8 +350,9 @@ public class UiActorService {
 
     public enum UiComponentConstant {
         ROOMS_DROP_DOWN, ROOMS_LIST, ROOM_BUTTON_POSTFIX, ROOMS_MENU_TOGGLE_BUTTON, ROOM_INFO_MODAL,
-        CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_NOTIFICATION_BUTTON,
-        DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON,
+        CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_PEOPLE_INFO_BUTTON, CLOSE_NOTIFICATION_BUTTON,
+        DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON, PEOPLE_INFO_MODAL,
+        TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
         OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
         NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL
     }

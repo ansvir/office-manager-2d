@@ -15,10 +15,11 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
     private long time;
     private boolean isFinished;
     private final T result;
+    private final Runnable updateCallback;
     private final Predicate<TimeLineDate> stopCondition;
     private final Runnable successCallback;
 
-    public TimeLineTask(long waitTime, T result) {
+    public TimeLineTask(long waitTime, Runnable updateCallback, T result) {
         this.id = UUID.randomUUID().toString();
         this.date = new TimeLineDate(1L, 1L ,1L);
         this.prevTime = System.currentTimeMillis();
@@ -26,10 +27,11 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
         this.waitTime = waitTime;
         this.result = result;
         this.stopCondition = (z) -> false;
+        this.updateCallback = updateCallback;
         this.successCallback = () -> {};
     }
 
-    public TimeLineTask(String id, long waitTime, T result, Predicate<TimeLineDate> stopCondition, Runnable successCallback) {
+    public TimeLineTask(String id, long waitTime, T result, Predicate<TimeLineDate> stopCondition, Runnable updateCallback, Runnable successCallback) {
         this.id = id;
         this.date = new TimeLineDate(1L, 1L ,1L);
         this.prevTime = System.currentTimeMillis();
@@ -37,6 +39,7 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
         this.waitTime = waitTime;
         this.result = result;
         this.stopCondition = stopCondition;
+        this.updateCallback = updateCallback;
         this.successCallback = successCallback;
     }
 
@@ -57,8 +60,9 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
     }
 
     private synchronized boolean iterateAndGet() {
-        if (this.prevTime - this.time >= this.waitTime) {
+        if (isTimeUpdated()) {
             this.time = this.prevTime;
+            updateCallback.run();
             return next();
         }
         this.prevTime = System.currentTimeMillis();
@@ -162,5 +166,9 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
     @Override
     public T call() throws Exception {
         return get();
+    }
+
+    public boolean isTimeUpdated() {
+        return this.prevTime - this.time >= this.waitTime;
     }
 }

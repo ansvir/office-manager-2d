@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.model.man.ManInfo;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.UiActorService;
 
@@ -28,7 +29,11 @@ public abstract class Staff extends Actor {
     private final Texture texture;
     private float speedDelta;
 
+    private final ManInfo manInfo;
+
     public Staff(String id, float salary) {
+        setName(id);
+        this.manInfo = new ManInfo(100.0f, 100.0f);
         this.fullName = DEFAULT_NAME;
         this.salary = salary;
         this.pathsQueue = new ConcurrentLinkedQueue<>();
@@ -148,6 +153,10 @@ public abstract class Staff extends Actor {
         String cellId = cell.getName().substring(cell.getName().lastIndexOf("_") + 1);
         String neighborCellId = OBJECT_CELL.name() + "#" + newRow + "#" + newColumn + "_" + cellId;
         return (ObjectCell) UiActorService.getInstance().getActorById(neighborCellId);
+    }
+
+    public ManInfo getManInfo() {
+        return manInfo;
     }
 
 }

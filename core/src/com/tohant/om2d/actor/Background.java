@@ -15,6 +15,7 @@ import com.tohant.om2d.actor.environment.Road;
 import com.tohant.om2d.model.RoadType;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
+import com.tohant.om2d.service.UiActorService;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,7 +41,7 @@ public class Background extends Group {
         roads = new Array<>();
         cars = new Array<>();
         createRoads();
-        backgroundTimeline = new TimeLineTask<>(DAY_WAIT_TIME_MILLIS / 2L, true);
+        backgroundTimeline = new TimeLineTask<>(DAY_WAIT_TIME_MILLIS / 2L, () -> {}, true);
         executor = new AsyncExecutor(1);
         executor.submit(backgroundTimeline);
     }
@@ -145,12 +146,14 @@ public class Background extends Group {
             getChildren().removeAll(carsToRemove, false);
         }
         trySpawnCar();
-        getChildren().forEach(c -> {
-            if (c instanceof Car) {
-                if (((Car) c).getDirection() == BOTTOM && c.getY() > -c.getHeight()) {
-                    c.setY(c.getY() - 5);
-                } else if (((Car) c).getDirection() == Car.Type.Direction.TOP) {
-                    c.setY(c.getY() + 5);
+        UiActorService uiActorService = UiActorService.getInstance();
+        Array<Actor> actors = uiActorService.getActorsByIdPrefix(CAR.name());
+        actors.forEach(a -> {
+            if (a instanceof Car) {
+                if (((Car) a).getDirection() == BOTTOM && a.getY() > -a.getHeight()) {
+                    a.setY(a.getY() - 5);
+                } else if (((Car) a).getDirection() == Car.Type.Direction.TOP) {
+                    a.setY(a.getY() + 5);
                 }
             }
         });
