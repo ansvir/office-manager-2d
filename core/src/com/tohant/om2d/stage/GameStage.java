@@ -10,17 +10,18 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.Map;
 import com.tohant.om2d.service.AssetService;
+import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
+
+import static com.tohant.om2d.storage.Cache.CURRENT_ITEM;
 
 public class GameStage extends AbstractStage {
 
     private final Vector2 lastDragPos;
-    private final AssetService assetService;
     private final UiActorService uiActorService;
 
     public GameStage(Viewport viewport, Batch batch) {
         super(viewport, batch);
-        assetService = AssetService.getInstance();
         lastDragPos = new Vector2();
         uiActorService = UiActorService.getInstance();
     }
@@ -48,14 +49,28 @@ public class GameStage extends AbstractStage {
         camera.position.set(deltaVector);
         camera.update();
         lastDragPos.set(screenX, screenY);
-        Gdx.graphics.setSystemCursor(Cursor.SystemCursor.AllResize);
+        AssetService.getInstance().setCursor(AssetService.GameCursor.MOVE_CURSOR);
         return true;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        super.scrolled(amountX, amountY);
+        float newZoom = MathUtils.lerp(
+                ((OrthographicCamera) getCamera()).zoom,
+                ((OrthographicCamera) getCamera()).zoom + (amountY * Gdx.graphics.getDeltaTime()),
+                1.0f);
+        newZoom = MathUtils.clamp(newZoom, 0.1f, 1.0f);
+        ((OrthographicCamera) getCamera()).zoom = newZoom;
+        return false;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         super.touchUp(screenX, screenY, pointer, button);
-        Gdx.graphics.setCursor(assetService.getDefaultCursor());
+        if (RuntimeCacheService.getInstance().getObject(CURRENT_ITEM) == null) {
+            AssetService.getInstance().setCursor(AssetService.GameCursor.MAIN);
+        }
         return false;
     }
 

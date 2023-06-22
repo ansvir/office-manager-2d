@@ -15,14 +15,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
-import static com.tohant.om2d.actor.constant.Constant.OBJECT_CELL_SIZE;
+import static com.tohant.om2d.actor.constant.Constant.*;
 
 public class AssetService implements Disposable {
 
     private static AssetService instance;
 
     private final Texture ACTIVE_EMPTY_CELL;
+    private final Texture ACTIVE_OBJECT_CELL;
+    private final Texture OBJECT_CELL_BORDERS;
     private final Texture HALL_ROOM;
     private final Texture SECURITY_ROOM;
     private final Texture OFFICE_ROOM;
@@ -41,10 +42,15 @@ public class AssetService implements Disposable {
     private final TextureRegion EMPTY_ROAD;
     private final Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> CARS_TEXTURES;
     private final Cursor DEFAULT_CURSOR;
+    private final Cursor.SystemCursor PICK_UP_CURSOR;
+    private final Cursor.SystemCursor MOVE_CURSOR;
     private final Pixmap DEFAULT_CURSOR_PIXMAP;
+    private final Items items;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
+        this.ACTIVE_OBJECT_CELL = createActiveObjectCellTexture();
+        this.OBJECT_CELL_BORDERS = createObjectCellBordersTexture();
         this.HALL_ROOM = createHallRoomTexture();
         this.SECURITY_ROOM = createSecurityRoomTexture();
         this.OFFICE_ROOM = createOfficeRoomTexture();
@@ -62,7 +68,10 @@ public class AssetService implements Disposable {
         this.EMPTY_ROAD = createEmptyRoadTexture();
         this.CARS_TEXTURES = createCarsTextures();
         this.DEFAULT_CURSOR_PIXMAP = new Pixmap(Gdx.files.internal("cursor.png"));
+        this.MOVE_CURSOR = Cursor.SystemCursor.AllResize;
+        this.PICK_UP_CURSOR = Cursor.SystemCursor.Crosshair;
         this.DEFAULT_CURSOR = createDefaultCursor();
+        this.items = new Items();
     }
 
     public static AssetService getInstance() {
@@ -81,6 +90,28 @@ public class AssetService implements Disposable {
         Texture result = new Texture(cellPixmap);
         cellPixmap.dispose();
         return result;
+    }
+
+    private Texture createObjectCellBordersTexture() {
+        Pixmap pixmap = new Pixmap(OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, Pixmap.Format.RGBA8888);
+        Color borderColor = new Color(Color.GRAY);
+        borderColor.a = 0.5f;
+        pixmap.setColor(borderColor);
+        pixmap.drawRectangle(1, 1, OBJECT_CELL_SIZE - 1, OBJECT_CELL_SIZE - 1);
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+
+    private Texture createActiveObjectCellTexture() {
+        Pixmap pixmap = new Pixmap(OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, Pixmap.Format.RGBA8888);
+        Color borderColor = new Color(Color.BLACK);
+        borderColor.a = 0.2f;
+        pixmap.setColor(borderColor);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
     }
 
     private Texture createHallRoomTexture() {
@@ -195,6 +226,14 @@ public class AssetService implements Disposable {
         return ACTIVE_EMPTY_CELL;
     }
 
+    public Texture getActiveObjectCellTexture() {
+        return ACTIVE_OBJECT_CELL;
+    }
+
+    public Texture getObjectCellBordersTexture() {
+        return OBJECT_CELL_BORDERS;
+    }
+
     public Texture getHallRoomTexture() {
         return HALL_ROOM;
     }
@@ -266,6 +305,14 @@ public class AssetService implements Disposable {
         return DEFAULT_CURSOR;
     }
 
+    public void setCursor(GameCursor gameCursor) {
+        if (gameCursor == GameCursor.MAIN) {
+            Gdx.graphics.setCursor(DEFAULT_CURSOR);
+        } else {
+            Gdx.graphics.setSystemCursor(gameCursor == GameCursor.MOVE_CURSOR ? MOVE_CURSOR : PICK_UP_CURSOR);
+        }
+    }
+
     public Map<Car.Type, Map<Car.Type.Direction, TextureRegion>> getCarsTextures() {
         return CARS_TEXTURES;
     }
@@ -274,9 +321,87 @@ public class AssetService implements Disposable {
         return CARS_TEXTURES.get(type).get(direction);
     }
 
+    public enum GameCursor {
+        MAIN, MOVE_CURSOR, PICK_UP
+    }
+
+    public static class Items {
+
+        private final Texture PLANT;
+        private final Texture COOLER;
+        private final Texture PLANT_CELL;
+        private final Texture COOLER_CELL;
+
+        public Items() {
+            this.PLANT = createPlantTexture();
+            this.COOLER = createCoolerTexture();
+            this.PLANT_CELL = createPlantCellTexture();
+            this.COOLER_CELL = createCoolerCellTexture();
+        }
+
+        private Texture createPlantTexture() {
+            Pixmap pixmap = new Pixmap((int) TEXTURE_SIZE, (int) TEXTURE_SIZE, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.GREEN);
+            pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
+            Texture result = new Texture(pixmap);
+            pixmap.dispose();
+            return result;
+        }
+
+        private Texture createCoolerTexture() {
+            Pixmap pixmap = new Pixmap((int) TEXTURE_SIZE, (int) TEXTURE_SIZE, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.BLACK);
+            pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
+            Texture result = new Texture(pixmap);
+            pixmap.dispose();
+            return result;
+        }
+
+        private Texture createPlantCellTexture() {
+            Pixmap pixmap = new Pixmap(OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.GREEN);
+            pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
+            Texture result = new Texture(pixmap);
+            pixmap.dispose();
+            return result;
+        }
+
+        private Texture createCoolerCellTexture() {
+            Pixmap pixmap = new Pixmap(OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.BLACK);
+            pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
+            Texture result = new Texture(pixmap);
+            pixmap.dispose();
+            return result;
+        }
+
+        public Texture getPlantTexture() {
+            return PLANT;
+        }
+
+        public Texture getCoolerTexture() {
+            return COOLER;
+        }
+
+        public Texture getPlantCellTexture() {
+            return PLANT_CELL;
+        }
+
+        public Texture getCoolerCellTexture() {
+            return COOLER_CELL;
+        }
+
+    }
+
+    public Items getItems() {
+        return items;
+    }
+
     @Override
     public void dispose() {
         this.ACTIVE_EMPTY_CELL.dispose();
+        this.ACTIVE_OBJECT_CELL.dispose();
+        this.OBJECT_CELL_BORDERS.dispose();
         this.HALL_ROOM.dispose();
         this.SECURITY_ROOM.dispose();
         this.CLEANING_ROOM.dispose();
@@ -287,6 +412,10 @@ public class AssetService implements Disposable {
         this.GRASS1.dispose();
         this.GRASS2.dispose();
         this.MAN_STAND.dispose();
+        this.items.PLANT.dispose();
+        this.items.COOLER.dispose();
+        this.items.PLANT_CELL.dispose();
+        this.items.COOLER_CELL.dispose();
         if (this.background != null) {
             this.background.dispose();
         }

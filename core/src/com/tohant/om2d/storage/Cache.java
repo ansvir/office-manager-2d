@@ -2,6 +2,9 @@ package com.tohant.om2d.storage;
 
 public interface Cache {
 
+    String CURRENT_OBJECT_CELL = "CURRENT_OBJECT_CELL";
+    String CURRENT_ITEM = "CURRENT_ITEM";
+    String UI_ACTORS = "UI_ACTORS";
     String WORKERS = "WORKERS";
     String GAME_EXCEPTION = "GAME_EXCEPTION";
     String CURRENT_LEVEL = "CURR_LVL";
@@ -9,7 +12,6 @@ public interface Cache {
     String CURRENT_OFFICE_CELLS_HEIGHT = "CURR_OFFICE_CELLS_HEIGHT";
     String CURRENT_ROOM_TYPE = "CURR_ROOM_TYPE";
     String CURRENT_BUDGET = "CURR_BUDGET";
-    String IS_TIME_CHANGED = "IS_TIME_CHANGED";
     String CURRENT_TIME = "CURR_TIME";
     String OFFICES_AMOUNT = "OFFICES_AM";
     String HALLS_AMOUNT = "HALLS_AM";

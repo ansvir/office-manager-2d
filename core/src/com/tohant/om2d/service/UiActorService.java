@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -14,6 +15,7 @@ import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 import com.tohant.om2d.actor.ui.button.GameTextButton;
 import com.tohant.om2d.actor.ui.dropdown.HorizontalDropdown;
+import com.tohant.om2d.actor.ui.grid.NamedItemGrid;
 import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.actor.ui.label.GameStandaloneLabel;
 import com.tohant.om2d.actor.ui.list.AbstractList;
@@ -28,22 +30,23 @@ import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.command.ui.ToggleGridCommand;
 import com.tohant.om2d.util.AssetsUtil;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
+import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
+import static com.tohant.om2d.storage.Cache.UI_ACTORS;
 
 public class UiActorService {
 
-    private final Array<Actor> uiActors;
     private final Skin skin;
 
     private static UiActorService instance;
 
     private UiActorService() {
-        this.uiActors = new Array<>();
         this.skin = AssetsUtil.getDefaultSkin();
         init();
     }
@@ -59,16 +62,19 @@ public class UiActorService {
 //        this.uiActors.add(createLevel(0));
 //        this.uiActors.add(createBackground());
 //        this.uiActors.add(createOffice());
-        this.uiActors.add(createMap());
-        this.uiActors.add(createBudgetLabel());
-        this.uiActors.add(createTimeLabel());
-        this.uiActors.add(createRoomInfoModal());
-        this.uiActors.add(createOfficeInfoModal());
-        this.uiActors.add(createPeopleInfoModal());
-        this.uiActors.add(createNotificationModal());
-        this.uiActors.add(createBottomPane());
-        this.uiActors.add(createRoomsButtonsMenu());
-        this.uiActors.add(createToggleGridButton());
+        RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
+        Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(UI_ACTORS);
+        uiActors.add(createMap());
+        uiActors.add(createBudgetLabel());
+        uiActors.add(createTimeLabel());
+        uiActors.add(createRoomInfoModal());
+        uiActors.add(createOfficeInfoModal());
+        uiActors.add(createPeopleInfoModal());
+        uiActors.add(createEnvironmentModal());
+        uiActors.add(createNotificationModal());
+        uiActors.add(createBottomPane());
+        uiActors.add(createRoomsButtonsMenu());
+        uiActors.add(createToggleGridButton());
 //        reorder(this.uiActors, 3, 1, 2, 0, 4, 5, 6, 7, 8, 9, 10, 11);
 //        Array<AbstractUiActor> before = slice(this.uiActors, 0, 1);
 //        Array<AbstractUiActor> after = slice(this.uiActors, 4, this.uiActors.size - 1);
@@ -145,12 +151,20 @@ public class UiActorService {
         return new GameTextButton(CLOSE_PEOPLE_INFO_BUTTON.name(), new ToggleCommand(PEOPLE_INFO_MODAL.name()), "X", skin);
     }
 
+    private AbstractTextButton createCloseEnvironmentModalButton() {
+        return new GameTextButton(CLOSE_ENVIRONMENT_MODAL_BUTTON.name(), new ToggleCommand(ENVIRONMENT_MODAL.name()), "X", skin);
+    }
+
     private AbstractTextButton createCloseNotificationButton() {
         return new GameTextButton(CLOSE_NOTIFICATION_BUTTON.name(), new ToggleCommand(NOTIFICATION_MODAL.name()), "X", skin);
     }
 
     private AbstractTextButton createToggleOfficeInfoButton() {
         return new GameTextButton(TOGGLE_OFFICE_INFO_BUTTON.name(), new ToggleCommand(OFFICE_INFO_MODAL.name()), "Office", skin);
+    }
+
+    private AbstractTextButton createToggleEnvironmentModalButton() {
+        return new GameTextButton(TOGGLE_ENVIRONMENT_MODAL_BUTTON.name(), new ToggleCommand(ENVIRONMENT_MODAL.name()), "Environment", skin);
     }
 
     private AbstractTextButton createTogglePeopleInfoButton() {
@@ -160,8 +174,9 @@ public class UiActorService {
     private AbstractTextButton createCollapsePaneButton() {
         return new GameTextButton(COLLAPSE_BUTTON.name(), new ToggleCommand(MAIN_PANE.name()), "-", skin);
     }
+
     private AbstractPane createBottomPane() {
-        AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton(), createTogglePeopleInfoButton()), createCollapsePaneButton(),
+        AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton(), createTogglePeopleInfoButton(), createToggleEnvironmentModalButton()), createCollapsePaneButton(),
                 AbstractPane.Alignment.BOTTOM, "Office Manager 2D", skin);
         pane.setPosition(0,0);
         return pane;
@@ -181,6 +196,18 @@ public class UiActorService {
         modal.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
         modal.toggle();
         return modal;
+    }
+
+    private DefaultModal createEnvironmentModal() {
+        DefaultModal modal = new DefaultModal(ENVIRONMENT_MODAL.name(), "Environment",
+                Array.with(new NamedItemGrid(ENVIRONMENT_MODAL_ITEM_GRID.name(), getItems())), createCloseEnvironmentModalButton(), skin);
+        modal.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2, Gdx.graphics.getHeight() / 2f);
+        modal.toggle();
+        return modal;
+    }
+
+    private Array<Item> getItems() {
+        return Array.with(new Item(Items.PLANT), new Item(Items.COOLER));
     }
 
     private Cell createCell(int r, int c, int level, int x, int y) {
@@ -252,7 +279,7 @@ public class UiActorService {
         return new GameTextButton(DESTROY_ROOM_BUTTON.name(), new DestroyRoomCommand(), "Destroy", skin);
     }
 
-    private GameTextButton createToggleGridButton() {
+    private GameTextButton createToggleGridButton() {;
         GameTextButton toggleGridButton = new GameTextButton(TOGGLE_GRID_BUTTON.name(), new ToggleGridCommand(), "#", skin);
         toggleGridButton.getLabel().setFontScale(1.5f);
         toggleGridButton.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 3.68f, Gdx.graphics.getHeight() / 4.08f);
@@ -291,7 +318,7 @@ public class UiActorService {
     }
 
     public Array<Actor> getUiActors() {
-        return this.uiActors;
+        return (Array<Actor>) RuntimeCacheService.getInstance().getObject(UI_ACTORS);
     }
 
     public Array<Actor> getActorsByIdPrefix(String idPrefix) {
@@ -350,11 +377,28 @@ public class UiActorService {
 
     public enum UiComponentConstant {
         ROOMS_DROP_DOWN, ROOMS_LIST, ROOM_BUTTON_POSTFIX, ROOMS_MENU_TOGGLE_BUTTON, ROOM_INFO_MODAL,
-        CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_PEOPLE_INFO_BUTTON, CLOSE_NOTIFICATION_BUTTON,
-        DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON, PEOPLE_INFO_MODAL,
-        TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
+        CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_PEOPLE_INFO_BUTTON, CLOSE_ENVIRONMENT_MODAL_BUTTON,
+        CLOSE_NOTIFICATION_BUTTON, DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON,
+        ENVIRONMENT_MODAL, PEOPLE_INFO_MODAL,
+        TOGGLE_ENVIRONMENT_MODAL_BUTTON, ENVIRONMENT_MODAL_ITEM_GRID, TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
         OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
-        NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL
+        NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL;
+
+        public enum Items {
+            PLANT(BigDecimal.valueOf(15.0f)), COOLER(BigDecimal.valueOf(35.0f));
+
+            private final BigDecimal price;
+
+            Items(BigDecimal price) {
+                this.price = price;
+            }
+
+            public BigDecimal getPrice() {
+                return price;
+            }
+
+        }
+
     }
 
 //    private void reorder(Array<Actor> elements, int ...indices) {

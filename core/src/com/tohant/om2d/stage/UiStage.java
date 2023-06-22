@@ -9,13 +9,15 @@ import com.tohant.om2d.command.office.UpdateOfficeInfoCommand;
 import com.tohant.om2d.command.office.UpdateTimeCommand;
 import com.tohant.om2d.command.room.UpdateRoomInfoCommand;
 import com.tohant.om2d.command.ui.CreateNotificationCommand;
+import com.tohant.om2d.command.ui.RestoreDefaultsCommand;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
+import static com.badlogic.gdx.Input.Keys.ESCAPE;
 import static com.tohant.om2d.actor.constant.Constant.DAY_WAIT_TIME_MILLIS;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.NOTIFICATION_MODAL;
-import static com.tohant.om2d.storage.Cache.CURRENT_BUDGET;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class UiStage extends AbstractStage {
 
@@ -59,6 +61,15 @@ public class UiStage extends AbstractStage {
             new UpdateOfficeInfoCommand().execute();
             new UpdateRoomInfoCommand(deltaTimestamp).execute();
         }
+    }
+
+    @Override
+    public boolean keyDown(int keyCode) {
+        super.keyDown(keyCode);
+        if (keyCode == ESCAPE) {
+            new RestoreDefaultsCommand().execute();
+        }
+        return false;
     }
 
     public void setBudget(float budget) {

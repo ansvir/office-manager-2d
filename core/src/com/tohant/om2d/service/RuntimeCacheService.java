@@ -18,6 +18,8 @@ public class RuntimeCacheService {
     
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
+        this.runtimeCache.setValue(CURRENT_ITEM, null);
+        this.runtimeCache.setValue(UI_ACTORS, new Array<>());
         this.runtimeCache.setValue(WORKERS, new Array<>());
         this.runtimeCache.setValue(GAME_EXCEPTION, new Array<>());
         this.runtimeCache.setValue(CURRENT_LEVEL, 0L);

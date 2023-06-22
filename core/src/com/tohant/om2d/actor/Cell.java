@@ -28,11 +28,11 @@ import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE;
 import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
-public class Cell extends Group {
+public class Cell extends Group implements ToggleActor {
 
     private final AbstractCommand command;
 
-    private Array<Array<ObjectCell>> cells;
+    private Array<Array<ObjectCell>> objectCells;
     private RoomBuildingModel roomModel;
     private boolean isEmpty;
     private boolean isActive;
@@ -42,6 +42,7 @@ public class Cell extends Group {
     private final AsyncRoomBuildService roomBuildService;
     private TimeLineTask<Room> buildTask;
     private final RuntimeCacheService cacheService;
+    private boolean isGridVisible;
 
     public Cell(String id, AbstractCommand command, float x, float y, float width, float height) {
         setName(id);
@@ -58,13 +59,22 @@ public class Cell extends Group {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                setActive(true);
+                if (!isGridVisible) {
+                    setActive(true);
+                } else if (roomModel != null && roomModel.getRoom().isDone()) {
+                    objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(true)));
+                }
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
                 setActive(false);
+                if (isGridVisible) {
+                    if (roomModel != null && roomModel.getRoom().isDone()) {
+                        objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(false)));
+                    }
+                }
             }
 
             @Override
@@ -120,8 +130,8 @@ public class Cell extends Group {
             this.roomModel = null;
             isEmpty = true;
             removeActor(this.buildStatus);
-            this.cells.forEach(c -> c.forEach(this::removeActor));
-            this.cells = new Array<>();
+            this.objectCells.forEach(c -> c.forEach(this::removeActor));
+            this.objectCells = new Array<>();
         } else {
             this.roomModel = model;
             if (!model.getRoom().isDone()) {
@@ -150,8 +160,8 @@ public class Cell extends Group {
     }
 
     public void setDetails(Room room) {
-        this.cells = getObjectCells(this.roomModel.getRoomInfo().getType());
-        this.cells.forEach(c -> c.forEach(this::addActor));
+        this.objectCells = getObjectCells(this.roomModel.getRoomInfo().getType());
+        this.objectCells.forEach(c -> c.forEach(this::addActor));
         UiActorService uiActorService = UiActorService.getInstance();
         Office office = (Office) uiActorService.getActorById(OFFICE.name());
         room.getRoomInfo().getStaff().forEach(office::addActor);
@@ -219,6 +229,11 @@ public class Cell extends Group {
             }
         }
         return cells;
+    }
+
+    @Override
+    public void toggle() {
+        isGridVisible = !isGridVisible;
     }
 
 }
