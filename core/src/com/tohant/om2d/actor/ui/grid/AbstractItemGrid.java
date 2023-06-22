@@ -17,7 +17,6 @@ public abstract class AbstractItemGrid extends Table {
         setSize(gridSize.x * TEXTURE_SIZE + DEFAULT_PAD * gridSize.x + DEFAULT_PAD * 2,
                 gridSize.y * TEXTURE_SIZE + DEFAULT_PAD * gridSize.y + DEFAULT_PAD * 2);
         populateGrid(items);
-        debug();
     }
 
     protected abstract void populateGrid(Array<Item> items);

@@ -1,24 +1,18 @@
 package com.tohant.om2d.actor.ui.grid;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Item;
 import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.command.item.PickItemCommand;
 import com.tohant.om2d.util.AssetsUtil;
 
-import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
-import static com.tohant.om2d.actor.constant.Constant.TEXTURE_SIZE;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.Items.PLANT;
 
 public class NamedItemGrid extends AbstractItemGrid {
 
@@ -35,14 +29,14 @@ public class NamedItemGrid extends AbstractItemGrid {
                 Table itemLabel = new Table();
                 Item next = items.get(i * j);
                 itemLabel.add(next);
-                itemLabel.row();
-                String labelString = next.getType().name().charAt(0)
-                        + next.getType().name().substring(1).toLowerCase() + "\n"
-                        + Math.round(next.getType().getPrice().floatValue()) + " $";
-                itemLabel.add(new GameLabel(PLANT.name() + "_ITEM_LABEL", labelString, AssetsUtil.getDefaultSkin()));
+                itemLabel.row().pad(DEFAULT_PAD);
+                String itemName = next.getType().name().charAt(0)
+                        + next.getType().name().substring(1).toLowerCase();
+                String itemPrice = Math.round(next.getType().getPrice().floatValue()) + " $";
+                itemLabel.add(new GameLabel(next.getType().name() + "_ITEM_NAME_LABEL", itemName, AssetsUtil.getDefaultSkin())).center();
+                itemLabel.row().pad(-DEFAULT_PAD);
+                itemLabel.add(new GameLabel(next.getType().name() + "_ITEM_PRICE_LABEL", itemPrice, AssetsUtil.getDefaultSkin())).center();
                 itemLabel.addListener(new InputListener() {
-
-                    private final Action enterAction = Actions.scaleBy(1.5f, 1.5f, 0.7f);
 
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -54,20 +48,25 @@ public class NamedItemGrid extends AbstractItemGrid {
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                         super.enter(event, x, y, pointer, fromActor);
-                        itemLabel.addAction(enterAction);
+                        itemLabel.getChildren().iterator().forEach(c -> {
+                            c.clearActions();
+                            c.addAction(Actions.parallel(Actions.moveBy(-next.getWidth() / 6f, -next.getHeight() / 6f, 0.02f), Actions.scaleBy(0.3f, 0.3f, 0.02f)));
+                        });
                     }
 
                     @Override
                     public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                         super.exit(event, x, y, pointer, toActor);
-                        itemLabel.removeAction(enterAction);
+                        itemLabel.getChildren().iterator().forEach(c -> {
+                            c.clearActions();
+                            c.addAction(Actions.parallel(Actions.moveBy(next.getWidth() / 6f, next.getHeight() / 6f, 0.02f), Actions.scaleBy(-0.3f, -0.3f, 0.02f)));
+                        });
                     }
                 });
-                add(itemLabel).center().pad(DEFAULT_PAD).width(TEXTURE_SIZE).height(TEXTURE_SIZE + DEFAULT_PAD * 2);
+                add(itemLabel).center().pad(DEFAULT_PAD);
             }
             row();
         }
-        pad(DEFAULT_PAD);
     }
 
 }

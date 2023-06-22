@@ -202,6 +202,7 @@ public class UiActorService {
         DefaultModal modal = new DefaultModal(ENVIRONMENT_MODAL.name(), "Environment",
                 Array.with(new NamedItemGrid(ENVIRONMENT_MODAL_ITEM_GRID.name(), getItems())), createCloseEnvironmentModalButton(), skin);
         modal.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2, Gdx.graphics.getHeight() / 2f);
+        modal.setSize(modal.getPrefWidth(), modal.getPrefHeight());
         modal.toggle();
         return modal;
     }
