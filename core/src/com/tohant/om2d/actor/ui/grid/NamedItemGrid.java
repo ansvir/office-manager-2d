@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Item;
@@ -50,7 +51,11 @@ public class NamedItemGrid extends AbstractItemGrid {
                         super.enter(event, x, y, pointer, fromActor);
                         itemLabel.getChildren().iterator().forEach(c -> {
                             c.clearActions();
-                            c.addAction(Actions.parallel(Actions.moveBy(-next.getWidth() / 6f, -next.getHeight() / 6f, 0.02f), Actions.scaleBy(0.3f, 0.3f, 0.02f)));
+                            if (c instanceof GameLabel) {
+                                c.addAction(Actions.parallel(Actions.moveBy(0f, next.getHeight() / 6f, 0.02f)));
+                            } else if (c instanceof Image) {
+                                c.addAction(Actions.parallel(Actions.moveBy(next.getWidth() / 6f, next.getHeight() / 6f, 0.02f), Actions.sizeTo(next.getWidth() + next.getWidth() * 0.3f, next.getHeight() + next.getHeight() * 0.3f, 0.02f)));
+                            }
                         });
                     }
 
@@ -59,7 +64,11 @@ public class NamedItemGrid extends AbstractItemGrid {
                         super.exit(event, x, y, pointer, toActor);
                         itemLabel.getChildren().iterator().forEach(c -> {
                             c.clearActions();
-                            c.addAction(Actions.parallel(Actions.moveBy(next.getWidth() / 6f, next.getHeight() / 6f, 0.02f), Actions.scaleBy(-0.3f, -0.3f, 0.02f)));
+                            if (c instanceof GameLabel) {
+                                c.addAction(Actions.parallel(Actions.moveBy(0f, -next.getHeight() / 6f, 0.02f)));
+                            } else if (c instanceof Image) {
+                                c.addAction(Actions.parallel(Actions.moveBy(next.getWidth() / 6f, next.getHeight() / 6f, 0.02f), Actions.sizeTo(next.getWidth() - next.getWidth() * 0.3f, next.getHeight() - next.getHeight() * 0.3f, 0.02f)));
+                            }
                         });
                     }
                 });

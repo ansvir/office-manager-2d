@@ -9,6 +9,7 @@ import com.tohant.om2d.command.item.PlaceItemCommand;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 
+import static com.tohant.om2d.storage.Cache.CURRENT_ITEM;
 import static com.tohant.om2d.storage.Cache.CURRENT_OBJECT_CELL;
 
 public class ObjectCell extends Group {
@@ -26,9 +27,9 @@ public class ObjectCell extends Group {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                if (isGridVisible) {
+                if (RuntimeCacheService.getInstance().getObject(CURRENT_ITEM) != null) {
                     RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-                    runtimeCache.setObject(CURRENT_OBJECT_CELL, ObjectCell.this);
+                    runtimeCache.setObject(CURRENT_OBJECT_CELL, this);
                     setActive(true);
                 }
             }
@@ -36,18 +37,20 @@ public class ObjectCell extends Group {
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
-                if (isGridVisible) {
+                if (RuntimeCacheService.getInstance().getObject(CURRENT_ITEM) == null) {
                     RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
                     runtimeCache.setObject(CURRENT_OBJECT_CELL, null);
-                    setActive(false);
                 }
+                setActive(false);
             }
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
-                new PlaceItemCommand().execute();
-                return true;
+                if (RuntimeCacheService.getInstance().getObject(CURRENT_ITEM) != null) {
+                    new PlaceItemCommand().execute();
+                }
+                return false;
             }
         });
     }

@@ -27,6 +27,7 @@ import com.tohant.om2d.command.office.UpdatePeopleCommand;
 import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
+import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.CacheSnapshotService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
@@ -89,6 +90,7 @@ public class GameScreen implements Screen {
         multiplexer = new InputMultiplexer(uiStage, gameStage);
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
+        AssetService.getInstance().getBgMusic().play();
 //        men = new Staff[1];
     }
 
@@ -154,6 +156,7 @@ public class GameScreen implements Screen {
         batch.dispose();
         timeline.forceFinish();
         eventListener.stop();
+        AssetService.getInstance().getBgMusic().stop();
     }
 
     private void update() {

@@ -236,4 +236,9 @@ public class Cell extends Group implements ToggleActor {
         isGridVisible = !isGridVisible;
     }
 
+    @Override
+    public void forceToggle(boolean value) {
+        isGridVisible = value;
+    }
+
 }

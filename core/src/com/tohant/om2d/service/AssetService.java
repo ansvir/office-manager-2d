@@ -1,6 +1,10 @@
 package com.tohant.om2d.service;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetLoaderParameters;
+import com.badlogic.gdx.assets.loaders.MusicLoader;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -46,6 +50,10 @@ public class AssetService implements Disposable {
     private final Cursor.SystemCursor MOVE_CURSOR;
     private final Pixmap DEFAULT_CURSOR_PIXMAP;
     private final Items items;
+    private final Music BG_MUSIC;
+    private final Sound NOTIFICATION_SOUND;
+    private final Sound CONSTRUCTION_SOUND;
+    private final Sound DEMOLISH_SOUND;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -72,6 +80,10 @@ public class AssetService implements Disposable {
         this.PICK_UP_CURSOR = Cursor.SystemCursor.Crosshair;
         this.DEFAULT_CURSOR = createDefaultCursor();
         this.items = new Items();
+        this.BG_MUSIC = createBgMusic();
+        this.NOTIFICATION_SOUND = createNotificationSound();
+        this.CONSTRUCTION_SOUND = createConstructionSound();
+        this.DEMOLISH_SOUND = createDemolishSound();
     }
 
     public static AssetService getInstance() {
@@ -222,6 +234,24 @@ public class AssetService implements Disposable {
         return Gdx.graphics.newCursor(DEFAULT_CURSOR_PIXMAP, 0, 0);
     }
 
+    public Music createBgMusic() {
+        Music music = Gdx.audio.newMusic(Gdx.files.internal("audio/Forest Theme - D Minor - Jordan Ottesen.mp3"));
+        music.setLooping(true);
+        return music;
+    }
+
+    private Sound createNotificationSound() {
+        return Gdx.audio.newSound(Gdx.files.internal("audio/African2.mp3"));
+    }
+
+    private Sound createConstructionSound() {
+        return Gdx.audio.newSound(Gdx.files.internal("audio/construction.mp3"));
+    }
+
+    private Sound createDemolishSound() {
+        return Gdx.audio.newSound(Gdx.files.internal("audio/demolish.mp3"));
+    }
+
     public Texture getActiveEmptyCellTexture() {
         return ACTIVE_EMPTY_CELL;
     }
@@ -321,6 +351,22 @@ public class AssetService implements Disposable {
         return CARS_TEXTURES.get(type).get(direction);
     }
 
+    public Music getBgMusic() {
+        return BG_MUSIC;
+    }
+
+    public Sound getNotificationSound() {
+        return NOTIFICATION_SOUND;
+    }
+
+    public Sound getConstructionSound() {
+        return CONSTRUCTION_SOUND;
+    }
+
+    public Sound getDemolishSound() {
+        return DEMOLISH_SOUND;
+    }
+
     public enum GameCursor {
         MAIN, MOVE_CURSOR, PICK_UP
     }
@@ -416,6 +462,10 @@ public class AssetService implements Disposable {
         this.items.COOLER.dispose();
         this.items.PLANT_CELL.dispose();
         this.items.COOLER_CELL.dispose();
+        this.BG_MUSIC.dispose();
+        this.NOTIFICATION_SOUND.dispose();
+        this.CONSTRUCTION_SOUND.dispose();
+        this.DEMOLISH_SOUND.dispose();
         if (this.background != null) {
             this.background.dispose();
         }

@@ -4,4 +4,6 @@ public interface ToggleActor {
 
     void toggle();
 
+    default void forceToggle(boolean value) {}
+
 }

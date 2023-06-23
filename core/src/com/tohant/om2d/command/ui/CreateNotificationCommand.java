@@ -8,6 +8,7 @@ import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
@@ -33,6 +34,7 @@ public class CreateNotificationCommand extends AbstractCommand {
         notification.setVisible(true);
         GameLabel label = (GameLabel) uiActorService.getActorById(NOTIFICATION_INFO_LABEL.name());
         label.setText(e.getCode().getMessage());
+        AssetService.getInstance().getNotificationSound().play();
     }
 
 }

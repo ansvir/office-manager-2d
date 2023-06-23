@@ -6,6 +6,7 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Item;
 import com.tohant.om2d.actor.ToggleActor;
 import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.UiActorService;
@@ -27,9 +28,9 @@ public class PickItemCommand extends AbstractCommand {
         Item item = (Item) uiActorService.getActorById(this.itemId);
         getRuntimeCacheService().setObject(CURRENT_ITEM, item);
         Array<Actor> cells = uiActorService.getActorsByIdPrefix(CELL.name());
-        cells.forEach(c -> {
+        cells.iterator().forEach(c -> {
             if (c instanceof ToggleActor) {
-                new ToggleCommand(c.getName()).execute();
+                new ForceToggleCommand(c.getName(), true).execute();
             }
         });
         AssetService.getInstance().setCursor(AssetService.GameCursor.PICK_UP);

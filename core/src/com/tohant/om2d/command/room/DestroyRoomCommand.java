@@ -6,6 +6,7 @@ import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
@@ -62,6 +63,7 @@ public class DestroyRoomCommand extends AbstractCommand {
                 cache.setValue(CURRENT_ROOM, null);
                 currentCell.setRoomModel(null);
                 new ToggleCommand(ROOM_INFO_MODAL.name()).execute();
+                AssetService.getInstance().getDemolishSound().play();
             }
         }
     }

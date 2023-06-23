@@ -14,6 +14,7 @@ import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineDate;
+import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
@@ -141,6 +142,7 @@ public class BuildRoomCommand extends AbstractCommand {
                 cell.setRoomModel(new RoomBuildingModel(roomBuildService.submitBuild(cell, nextRoom), nextRoom.getRoomInfo()));
                 roomInfoModal.setVisible(true);
                 cache.setValue(CURRENT_ROOM, cellId);
+                AssetService.getInstance().getConstructionSound().play();
             }
         }
     }

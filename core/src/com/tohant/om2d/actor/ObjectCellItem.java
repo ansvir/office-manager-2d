@@ -11,8 +11,8 @@ public class ObjectCellItem extends Actor {
 
     private final UiActorService.UiComponentConstant.Items type;
 
-    public ObjectCellItem(UiActorService.UiComponentConstant.Items type) {
-        setSize(OBJECT_CELL_SIZE, OBJECT_CELL_SIZE);
+    public ObjectCellItem(String id, UiActorService.UiComponentConstant.Items type) {
+        setName(id);
         this.type = type;
     }
 
