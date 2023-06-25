@@ -19,15 +19,15 @@ public class CacheSnapshotService {
     }
 
     public float getFloat(String key) {
-        return Float.parseFloat((String) this.cacheSnapshot.get(key));
+        return (float) this.cacheSnapshot.get(key);
     }
 
     public long getLong(String key) {
-        return Long.parseLong((String) this.cacheSnapshot.get(key));
+        return (long) this.cacheSnapshot.get(key);
     }
 
     public boolean getBoolean(String key) {
-        return Boolean.parseBoolean((String) this.cacheSnapshot.get(key));
+        return (boolean) this.cacheSnapshot.get(key);
     }
 
     public Object getObject(String key) {

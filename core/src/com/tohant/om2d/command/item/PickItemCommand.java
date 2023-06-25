@@ -33,7 +33,7 @@ public class PickItemCommand extends AbstractCommand {
                 new ForceToggleCommand(c.getName(), true).execute();
             }
         });
-        AssetService.getInstance().setCursor(AssetService.GameCursor.PICK_UP);
+//        AssetService.getInstance().setCursor(AssetService.GameCursor.PICK_UP);
     }
 
 }

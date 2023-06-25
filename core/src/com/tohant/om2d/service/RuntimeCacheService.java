@@ -18,32 +18,30 @@ public class RuntimeCacheService {
     
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
-        this.runtimeCache.setValue(CURRENT_ITEM, null);
-        this.runtimeCache.setValue(UI_ACTORS, new Array<>());
-        this.runtimeCache.setValue(WORKERS, new Array<>());
-        this.runtimeCache.setValue(GAME_EXCEPTION, new Array<>());
-        this.runtimeCache.setValue(CURRENT_LEVEL, 0L);
-        this.runtimeCache.setValue(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);
-        this.runtimeCache.setValue(CURRENT_OFFICE_CELLS_HEIGHT, GRID_HEIGHT);
-        this.runtimeCache.setValue(CURRENT_ROOM_TYPE, null);
-        this.runtimeCache.setValue(CURRENT_BUDGET, 10000.0f);
-        this.runtimeCache.setValue(CURRENT_TIME, "01/01/0001");
-        this.runtimeCache.setValue(OFFICES_AMOUNT, 0L);
-        this.runtimeCache.setValue(HALLS_AMOUNT, 0L);
-        this.runtimeCache.setValue(SECURITY_AMOUNT, 0L);
-        this.runtimeCache.setValue(CLEANING_AMOUNT, 0L);
-        this.runtimeCache.setValue(CAFFE_AMOUNT, 0L);
-        this.runtimeCache.setValue(ELEVATOR_AMOUNT, 0L);
-        this.runtimeCache.setValue(IS_PAYDAY, false);
-        this.runtimeCache.setValue(CURRENT_ROOM, null);
-        this.runtimeCache.setValue(TOTAL_COSTS, 0.0f);
-        this.runtimeCache.setValue(TOTAL_INCOMES, 0.0f);
-        this.runtimeCache.setValue(TOTAL_SALARIES, 0.0f);
-        this.runtimeCache.setValue(TOTAL_WORKERS, 0L);
-        this.runtimeCache.setValue(TOTAL_ADMIN_STAFF, 0L);
-        this.runtimeCache.setValue(TOTAL_CLEANING_STAFF, 0L);
-        this.runtimeCache.setValue(TOTAL_SECURITY_STAFF, 0L);
-        this.runtimeCache.setValue(TOTAL_CAFFE_STAFF, 0L);
+        this.setObject(COMPANIES, new Array<>());
+        this.setObject(UI_ACTORS, new Array<>());
+        this.setObject(WORKERS, new Array<>());
+        this.setObject(GAME_EXCEPTION, new Array<>());
+        this.setLong(CURRENT_LEVEL, 0L);
+        this.setLong(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);
+        this.setLong(CURRENT_OFFICE_CELLS_HEIGHT, GRID_HEIGHT);
+        this.setFloat(CURRENT_BUDGET, 10000.0f);
+        this.setValue(CURRENT_TIME, "01/01/0001");
+        this.setLong(OFFICES_AMOUNT, 0L);
+        this.setLong(HALLS_AMOUNT, 0L);
+        this.setLong(SECURITY_AMOUNT, 0L);
+        this.setLong(CLEANING_AMOUNT, 0L);
+        this.setLong(CAFFE_AMOUNT, 0L);
+        this.setLong(ELEVATOR_AMOUNT, 0L);
+        this.setBoolean(IS_PAYDAY, false);
+        this.setFloat(TOTAL_COSTS, 0.0f);
+        this.setFloat(TOTAL_INCOMES, 0.0f);
+        this.setFloat(TOTAL_SALARIES, 0.0f);
+        this.setLong(TOTAL_WORKERS, 0L);
+        this.setLong(TOTAL_ADMIN_STAFF, 0L);
+        this.setLong(TOTAL_CLEANING_STAFF, 0L);
+        this.setLong(TOTAL_SECURITY_STAFF, 0L);
+        this.setLong(TOTAL_CAFFE_STAFF, 0L);
     }
 
     public static RuntimeCacheService getInstance() {

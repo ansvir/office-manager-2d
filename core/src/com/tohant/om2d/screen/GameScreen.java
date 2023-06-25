@@ -7,24 +7,18 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.tohant.om2d.actor.Grid;
-import com.tohant.om2d.actor.ObjectCell;
-import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.man.Staff;
-import com.tohant.om2d.actor.man.WorkerStaff;
 import com.tohant.om2d.actor.room.Room;
-import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.command.office.UpdatePeopleCommand;
-import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.model.entity.WorkerEntity;
+import com.tohant.om2d.model.office.OfficeInfo;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
@@ -34,15 +28,12 @@ import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.stage.AbstractStage;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.stage.UiStage;
-import com.tohant.om2d.storage.CacheProxy;
 import com.tohant.om2d.storage.CachedEventListener;
+import com.tohant.om2d.storage.database.WorkerJsonDatabase;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static com.tohant.om2d.service.ServiceUtil.getObjectCellCellCoordinates;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
-import static com.tohant.om2d.storage.CacheImpl.*;
+import static com.tohant.om2d.storage.Cache.*;
 
 
 public class GameScreen implements Screen {
@@ -58,7 +49,7 @@ public class GameScreen implements Screen {
     private TimeLineTask<Boolean> timeline;
     private String time;
     private AsyncExecutor executor;
-    private CacheProxy gameCache;
+    private RuntimeCacheService gameCache;
     private CachedEventListener eventListener;
     private UiActorService uiActorService;
     private boolean isPayDay;
@@ -75,7 +66,7 @@ public class GameScreen implements Screen {
         uiViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = new OrthographicCamera(gameViewport.getScreenWidth(), gameViewport.getScreenHeight());
         gameViewport.setCamera(camera);
-        gameCache = new CacheProxy();
+        gameCache = RuntimeCacheService.getInstance();
         eventListener = CachedEventListener.getInstance();
         uiActorService = UiActorService.getInstance();
         gameStage = new GameStage(gameViewport, batch);
@@ -91,6 +82,8 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
         AssetService.getInstance().getBgMusic().play();
+        RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
+        runtimeCache.setObject(OFFICE_INFO, new OfficeInfo("Office Inc."));
 //        men = new Staff[1];
     }
 
@@ -161,7 +154,7 @@ public class GameScreen implements Screen {
 
     private void update() {
         processTimeLine();
-        updateBudget();
+        updateOfficeInfo();
     }
 
     private void processTimeLine() {
@@ -175,7 +168,7 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void updateBudget() {
+    private void updateOfficeInfo() {
         if (this.timeline.getDate().getDays() == 1
                 && !this.timeline.getDate().equals(new TimeLineDate(1L, 1L, 1L)) && !isPayDay) {
             Map<String, ?> cacheSnapshot = eventListener.consume();
@@ -184,12 +177,16 @@ public class GameScreen implements Screen {
             float salaries = calculateSalaries(snapshotService);
             float costs = calculateCosts(snapshotService);
             float incomes = calculateIncomes(snapshotService);
-            gameCache.setValue(CURRENT_BUDGET, budget - costs - salaries + incomes);
+            gameCache.setFloat(CURRENT_BUDGET, budget - costs - salaries + incomes);
             isPayDay = true;
         } else {
             isPayDay = false;
             eventListener.post();
         }
+    }
+
+    private void updateBudget(CacheSnapshotService snapshotService) {
+
     }
 
     private float calculateCosts(CacheSnapshotService snapshotService) {

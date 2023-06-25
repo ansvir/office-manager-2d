@@ -9,8 +9,7 @@ import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 
-import static com.tohant.om2d.storage.CacheImpl.*;
-import static com.tohant.om2d.storage.CacheImpl.TOTAL_ADMIN_STAFF;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class ServiceUtil {
     

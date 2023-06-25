@@ -29,7 +29,7 @@ public class ObjectCell extends Group {
                 super.enter(event, x, y, pointer, fromActor);
                 if (RuntimeCacheService.getInstance().getObject(CURRENT_ITEM) != null) {
                     RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-                    runtimeCache.setObject(CURRENT_OBJECT_CELL, this);
+                    runtimeCache.setObject(CURRENT_OBJECT_CELL, ObjectCell.this);
                     setActive(true);
                 }
             }
@@ -37,10 +37,6 @@ public class ObjectCell extends Group {
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
-                if (RuntimeCacheService.getInstance().getObject(CURRENT_ITEM) == null) {
-                    RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-                    runtimeCache.setObject(CURRENT_OBJECT_CELL, null);
-                }
                 setActive(false);
             }
 

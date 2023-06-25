@@ -30,4 +30,8 @@ public class RuntimeCacheImpl implements Cache {
         return this.cache.get(key);
     }
 
+    public Map<String, ?> getCache() {
+        return this.cache;
+    }
+
 }

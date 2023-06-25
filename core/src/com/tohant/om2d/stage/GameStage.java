@@ -49,7 +49,7 @@ public class GameStage extends AbstractStage {
         camera.position.set(deltaVector);
         camera.update();
         lastDragPos.set(screenX, screenY);
-        AssetService.getInstance().setCursor(AssetService.GameCursor.MOVE_CURSOR);
+//        AssetService.getInstance().setCursor(AssetService.GameCursor.MOVE_CURSOR);
         return true;
     }
 
@@ -59,7 +59,7 @@ public class GameStage extends AbstractStage {
         float newZoom = MathUtils.lerp(
                 ((OrthographicCamera) getCamera()).zoom,
                 ((OrthographicCamera) getCamera()).zoom + (amountY * Gdx.graphics.getDeltaTime()),
-                1.0f);
+                3.0f);
         newZoom = MathUtils.clamp(newZoom, 0.1f, 1.0f);
         ((OrthographicCamera) getCamera()).zoom = newZoom;
         return false;

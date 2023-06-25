@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.utils.Disposable;
 import com.tohant.om2d.service.AsyncRoomBuildService;
-import com.tohant.om2d.service.CacheService;
-import com.tohant.om2d.storage.CacheProxy;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
 

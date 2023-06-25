@@ -2,6 +2,8 @@ package com.tohant.om2d.storage;
 
 public interface Cache {
 
+    String OFFICE_INFO = "OFFICE_INFO";
+    String COMPANIES = "COMPANIES";
     String CURRENT_OBJECT_CELL = "CURRENT_OBJECT_CELL";
     String CURRENT_ITEM = "CURRENT_ITEM";
     String UI_ACTORS = "UI_ACTORS";

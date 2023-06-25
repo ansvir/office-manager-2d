@@ -3,7 +3,6 @@ package com.tohant.om2d.service;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.tohant.om2d.actor.Cell;
-import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
@@ -14,8 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.getEmployeesAmountByType;
 import static com.tohant.om2d.service.ServiceUtil.setEmployeesAmountByType;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE;
-import static com.tohant.om2d.storage.CacheImpl.*;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class AsyncRoomBuildService {
 

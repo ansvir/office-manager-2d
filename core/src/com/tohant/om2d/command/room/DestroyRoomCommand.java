@@ -12,7 +12,7 @@ import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
-import static com.tohant.om2d.storage.CacheImpl.*;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class DestroyRoomCommand extends AbstractCommand {
 

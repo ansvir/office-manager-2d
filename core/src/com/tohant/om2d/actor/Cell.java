@@ -59,9 +59,8 @@ public class Cell extends Group implements ToggleActor {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                if (!isGridVisible) {
-                    setActive(true);
-                } else if (roomModel != null && roomModel.getRoom().isDone()) {
+                setActive(true);
+                if (roomModel != null && roomModel.getRoom().isDone()) {
                     objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(true)));
                 }
             }
@@ -70,10 +69,8 @@ public class Cell extends Group implements ToggleActor {
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
                 setActive(false);
-                if (isGridVisible) {
-                    if (roomModel != null && roomModel.getRoom().isDone()) {
-                        objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(false)));
-                    }
+                if (roomModel != null && roomModel.getRoom().isDone()) {
+                    objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(false)));
                 }
             }
 
@@ -106,7 +103,7 @@ public class Cell extends Group implements ToggleActor {
                 }
             } else {
                 this.buildStatus.setValue(this.buildTask.getDate().getDays());
-                batch.draw(assetService.getRoomConstructionTexture(),getX(), getY());
+                batch.draw(assetService.getRoomConstructionTexture(), getX(), getY());
             }
         }
         if (isActive && isEmpty) {
@@ -182,6 +179,7 @@ public class Cell extends Group implements ToggleActor {
     public void setActive(boolean active) {
         isActive = active;
     }
+
     private TimeLineTask<Room> getBuildTask() {
         for (TimeLineTask<Room> t : roomBuildService.getTasks()) {
             if (t.getId().equals(this.roomModel.getRoomInfo().getId())) {
@@ -197,7 +195,7 @@ public class Cell extends Group implements ToggleActor {
             case HALL: {
                 for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
                     cells.insert(i, new Array<>());
-                    for (int j = 0 ; j <= OBJECT_CELL_SIZE + 1; j++) {
+                    for (int j = 0; j <= OBJECT_CELL_SIZE + 1; j++) {
                         cells.get(i).insert(j, new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
                     }
@@ -207,21 +205,21 @@ public class Cell extends Group implements ToggleActor {
             default: {
                 for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
                     cells.insert(i, new Array<>());
-                    for (int j = 0 ; j <= OBJECT_CELL_SIZE + 1; j++) {
+                    for (int j = 0; j <= OBJECT_CELL_SIZE + 1; j++) {
                         cells.get(i).insert(j,
                                 i == 0 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
-                                new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
-                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
-                                : j == 0 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
                                         new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
-                                : i == OBJECT_CELL_SIZE - 1 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
+                                        : j == 0 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
                                         new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
-                                : j == OBJECT_CELL_SIZE - 1 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
+                                        : i == OBJECT_CELL_SIZE - 1 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
                                         new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
-                                : new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                        : j == OBJECT_CELL_SIZE - 1 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                        : new ObjectCell(OBJECT_CELL.name() + "#" + i + "#" + j + "_" + this.getName(),
                                         i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
                     }
                 }
