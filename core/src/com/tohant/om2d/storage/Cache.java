@@ -5,8 +5,10 @@ public interface Cache {
     String OFFICE_INFO = "OFFICE_INFO";
     String COMPANIES = "COMPANIES";
     String CURRENT_OBJECT_CELL = "CURRENT_OBJECT_CELL";
+    String CURRENT_SCREEN = "CURR_SCREEN";
     String CURRENT_ITEM = "CURRENT_ITEM";
     String UI_ACTORS = "UI_ACTORS";
+    String MENU_UI_ACTORS = "MENU_UI_ACTORS";
     String WORKERS = "WORKERS";
     String GAME_EXCEPTION = "GAME_EXCEPTION";
     String CURRENT_LEVEL = "CURR_LVL";

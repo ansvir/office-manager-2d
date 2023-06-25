@@ -4,12 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.button.AbstractTextButton;
@@ -37,10 +35,9 @@ import java.util.stream.Collectors;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
-import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
 import static com.tohant.om2d.storage.Cache.UI_ACTORS;
 
-public class UiActorService {
+public class UiActorService extends ActorService {
 
     private final Skin skin;
 
@@ -48,7 +45,7 @@ public class UiActorService {
 
     private UiActorService() {
         this.skin = AssetsUtil.getDefaultSkin();
-        init();
+        initGameScreen();
     }
 
     public static UiActorService getInstance() {
@@ -58,7 +55,7 @@ public class UiActorService {
         return instance;
     }
 
-    private void init() {
+    private void initGameScreen() {
 //        this.uiActors.add(createLevel(0));
 //        this.uiActors.add(createBackground());
 //        this.uiActors.add(createOffice());
@@ -318,62 +315,9 @@ public class UiActorService {
         pixmap.dispose();
     }
 
+    @Override
     public Array<Actor> getUiActors() {
         return (Array<Actor>) RuntimeCacheService.getInstance().getObject(UI_ACTORS);
-    }
-
-    public Array<Actor> getActorsByIdPrefix(String idPrefix) {
-        try {
-            return selectChildrenByIdPrefixRecursively(idPrefix, getUiActors());
-        } catch (RuntimeException e) {
-            System.out.println(Arrays.stream(e.getStackTrace())
-                    .map(StackTraceElement::toString)
-                    .collect(Collectors.joining("\n")));
-        }
-        return null;
-    }
-
-    private Array<Actor> selectChildrenByIdPrefixRecursively(String idPrefix, Array<Actor> actors) {
-        Array<Actor> result = new Array<>();
-        for (int i = 0; i < actors.size; i++) {
-            Actor actor = actors.get(i);
-            if (actor.getName() != null && actor.getName().startsWith(idPrefix)) {
-                result.add(actor);
-            }
-            if (actor instanceof Group) {
-                Array.ArrayIterator<Actor> children = selectChildrenByIdPrefixRecursively(idPrefix, ((Group) actor).getChildren())
-                        .iterator();
-                for (Actor child : children) {
-                    result.add(child);
-                }
-            }
-        }
-        return result;
-    }
-
-    public Actor getActorById(String id) {
-        if (id == null) {
-            return null;
-        }
-        Array<Actor> uiActors = getUiActors();
-        for (int i = 0; i < uiActors.size; i++) {
-            Actor a = uiActors.get(i);
-            if (a.getName() != null && a.getName().equals(id)) {
-                return a;
-            } else {
-                if (a instanceof Group) {
-                    Actor found = null;
-                    try {
-                        found = ((Group) a).findActor(id);
-                    } catch (NullPointerException ignored) {
-                    }
-                    if (found != null) {
-                        return found;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public enum UiComponentConstant {

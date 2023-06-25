@@ -54,6 +54,8 @@ public class AssetService implements Disposable {
     private final Sound NOTIFICATION_SOUND;
     private final Sound CONSTRUCTION_SOUND;
     private final Sound DEMOLISH_SOUND;
+    private final Sound CHOOSE_SOUND;
+    private final Music MENU_SCREEN_BG_MUSIC;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -84,6 +86,8 @@ public class AssetService implements Disposable {
         this.NOTIFICATION_SOUND = createNotificationSound();
         this.CONSTRUCTION_SOUND = createConstructionSound();
         this.DEMOLISH_SOUND = createDemolishSound();
+        this.CHOOSE_SOUND = createChooseSound();
+        this.MENU_SCREEN_BG_MUSIC = createMenuScreenBgMusic();
     }
 
     public static AssetService getInstance() {
@@ -234,7 +238,7 @@ public class AssetService implements Disposable {
         return Gdx.graphics.newCursor(DEFAULT_CURSOR_PIXMAP, 0, 0);
     }
 
-    public Music createBgMusic() {
+    private Music createBgMusic() {
         Music music = Gdx.audio.newMusic(Gdx.files.internal("audio/Forest Theme - D Minor - Jordan Ottesen.mp3"));
         music.setLooping(true);
         return music;
@@ -250,6 +254,16 @@ public class AssetService implements Disposable {
 
     private Sound createDemolishSound() {
         return Gdx.audio.newSound(Gdx.files.internal("audio/demolish.mp3"));
+    }
+
+    private Sound createChooseSound() {
+        return Gdx.audio.newSound(Gdx.files.internal("audio/Minimalist3.mp3"));
+    }
+
+    private Music createMenuScreenBgMusic() {
+        Music music = Gdx.audio.newMusic(Gdx.files.internal("audio/Delightful Stroll.mp3"));
+        music.setLooping(true);
+        return music;
     }
 
     public Texture getActiveEmptyCellTexture() {
@@ -365,6 +379,14 @@ public class AssetService implements Disposable {
 
     public Sound getDemolishSound() {
         return DEMOLISH_SOUND;
+    }
+
+    public Sound getChooseSound() {
+        return CHOOSE_SOUND;
+    }
+
+    public Music getMenuScreenBgMusic() {
+        return MENU_SCREEN_BG_MUSIC;
     }
 
     public enum GameCursor {

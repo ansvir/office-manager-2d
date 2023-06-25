@@ -19,6 +19,7 @@ public class RuntimeCacheService {
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
         this.setObject(COMPANIES, new Array<>());
+        this.setObject(MENU_UI_ACTORS, new Array<>());
         this.setObject(UI_ACTORS, new Array<>());
         this.setObject(WORKERS, new Array<>());
         this.setObject(GAME_EXCEPTION, new Array<>());

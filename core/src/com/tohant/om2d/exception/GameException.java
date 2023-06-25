@@ -16,7 +16,8 @@ public class GameException extends RuntimeException {
     public enum Code {
         E100("Room can be placed only next to hall!", Type.WARNING),
         E200("At least one hall is required!", Type.WARNING),
-        E300("One single hall near room cannot be destroyed!", Type.WARNING);
+        E300("One single hall near room cannot be destroyed!", Type.WARNING),
+        E400("No more than 3 games can be saved at a time!", Type.WARNING);
 
         private final String message;
         private final Type type;
