@@ -1,11 +1,13 @@
 package com.tohant.om2d.service;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 
@@ -176,6 +178,14 @@ public class ServiceUtil {
         } else {
             return Room.Type.valueOf(value);
         }
+    }
+
+    public static String buildRandomCompanyName() {
+        String first = CompanyConstant.values()[MathUtils.random(CompanyConstant.values().length - 1)].name();
+        String second = CompanyConstant.values()[MathUtils.random(CompanyConstant.values().length - 1)].name();
+        first = first.charAt(0) + first.substring(1).toLowerCase();
+        second = second.charAt(0) + second.substring(1).toLowerCase();
+        return first + " " + second;
     }
 
 }

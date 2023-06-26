@@ -7,6 +7,7 @@ import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 import com.tohant.om2d.actor.ui.button.GameTextButton;
 import com.tohant.om2d.actor.ui.grid.AbstractItemGrid;
 import com.tohant.om2d.actor.ui.label.GameLabel;
+import com.tohant.om2d.actor.ui.slide.AbstractSlideShow;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
@@ -16,6 +17,12 @@ public class DefaultModal extends AbstractModal {
         super(id, title, close, skin);
         for (Actor c : children.iterator()) {
             if (c instanceof GameLabel) {
+                add(c).pad(DEFAULT_PAD).center().expand();
+                row();
+            }
+        }
+        for (Actor c : children.iterator()) {
+            if (c instanceof AbstractSlideShow) {
                 add(c).pad(DEFAULT_PAD).center().expand();
                 row();
             }

@@ -147,12 +147,4 @@ public class BuildRoomCommand extends AbstractCommand {
         }
     }
 
-    private String buildRandomCompanyName() {
-        String first = CompanyConstant.values()[MathUtils.random(CompanyConstant.values().length - 1)].name();
-        String second = CompanyConstant.values()[MathUtils.random(CompanyConstant.values().length - 1)].name();
-        first = first.charAt(0) + first.substring(1).toLowerCase();
-        second = second.charAt(0) + second.substring(1).toLowerCase();
-        return first + " " + second;
-    }
-
 }

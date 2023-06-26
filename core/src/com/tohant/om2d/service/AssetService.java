@@ -1,15 +1,15 @@
 package com.tohant.om2d.service;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.assets.AssetLoaderParameters;
-import com.badlogic.gdx.assets.loaders.MusicLoader;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Disposable;
 import com.tohant.om2d.actor.environment.Car;
 import com.tohant.om2d.actor.room.Room;
@@ -50,6 +50,7 @@ public class AssetService implements Disposable {
     private final Cursor.SystemCursor MOVE_CURSOR;
     private final Pixmap DEFAULT_CURSOR_PIXMAP;
     private final Items items;
+    private final Character character;
     private final Music BG_MUSIC;
     private final Sound NOTIFICATION_SOUND;
     private final Sound CONSTRUCTION_SOUND;
@@ -82,6 +83,7 @@ public class AssetService implements Disposable {
         this.PICK_UP_CURSOR = Cursor.SystemCursor.Crosshair;
         this.DEFAULT_CURSOR = createDefaultCursor();
         this.items = new Items();
+        this.character = new Character();
         this.BG_MUSIC = createBgMusic();
         this.NOTIFICATION_SOUND = createNotificationSound();
         this.CONSTRUCTION_SOUND = createConstructionSound();
@@ -465,6 +467,230 @@ public class AssetService implements Disposable {
         return items;
     }
 
+    public static class Character {
+        private static final Texture BODY_FAT_DARK = createBodyFatDarkTexture();
+        private static final Texture BODY_FAT_LIGHT = createBodyFatLightTexture();
+        private static final Texture BODY_FAT_MEDIUM = createBodyFatMediumTexture();
+        private static final Texture BODY_MIDDLE_DARK = createBodyMiddleDarkTexture();
+        private static final Texture BODY_MIDDLE_LIGHT = createBodyMiddleLightTexture();
+        private static final Texture BODY_MIDDLE_MEDIUM = createBodyMiddleMediumTexture();
+        private static final Texture BODY_THIN_DARK = createBodyThinDarkTexture();
+        private static final Texture BODY_THIN_LIGHT = createBodyThinLightTexture();
+        private static final Texture BODY_THIN_MEDIUM = createBodyThinMediumTexture();
+        private final Texture HAIR_ICON_BLOND;
+        private final Texture HAIR_ICON_DARK;
+        private final Texture HAIR_ICON_BROWN;
+        private final Texture HAIR_ICON_GRAY;
+        private static final Texture HEAD_ICON_DARK = createHeadIconDarkTexture();
+        private static final Texture HEAD_ICON_LIGHT = createHeadIconLightTexture();
+        private static final Texture HEAD_ICON_MEDIUM = createHeadIconMediumTexture();
+
+        public Character() {
+            this.HAIR_ICON_BLOND = createHairIconBlondTexture();
+            this.HAIR_ICON_DARK = createHairIconDarkTexture();
+            this.HAIR_ICON_BROWN = createHairIconBrownTexture();
+            this.HAIR_ICON_GRAY = createHairIconGrayTexture();
+        }
+
+        private static Texture createHeadIconMediumTexture() {
+            return new Texture(Gdx.files.internal("textures/man/head_icon_medium.png"));
+        }
+
+        private static Texture createHeadIconLightTexture() {
+            return new Texture(Gdx.files.internal("textures/man/head_icon_light.png"));
+        }
+
+        private static Texture createHeadIconDarkTexture() {
+            return new Texture(Gdx.files.internal("textures/man/head_icon_dark.png"));
+        }
+
+        private Texture createHairIconGrayTexture() {
+            return new Texture(Gdx.files.internal("textures/man/hair_icon_gray.png"));
+        }
+
+        private Texture createHairIconDarkTexture() {
+            return new Texture(Gdx.files.internal("textures/man/hair_icon_dark.png"));
+        }
+
+        private Texture createHairIconBrownTexture() {
+            return new Texture(Gdx.files.internal("textures/man/hair_icon_brown.png"));
+        }
+
+        private Texture createHairIconBlondTexture() {
+            return new Texture(Gdx.files.internal("textures/man/hair_icon_blond.png"));
+        }
+
+        private static Texture createBodyThinMediumTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_thin_medium.png"));
+        }
+
+        private static Texture createBodyThinLightTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_thin_light.png"));
+        }
+
+        private static Texture createBodyThinDarkTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_thin_dark.png"));
+        }
+
+        private static Texture createBodyMiddleMediumTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_middle_medium.png"));
+        }
+
+        private static Texture createBodyMiddleLightTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_middle_light.png"));
+        }
+
+        private static Texture createBodyMiddleDarkTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_middle_dark.png"));
+        }
+
+        private static Texture createBodyFatMediumTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_fat_medium.png"));
+        }
+
+        private static Texture createBodyFatLightTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_fat_light.png"));
+        }
+
+        private static Texture createBodyFatDarkTexture() {
+            return new Texture(Gdx.files.internal("textures/man/body_fat_dark.png"));
+        }
+
+        public static Texture getBodyFatDarkTexture() {
+            return BODY_FAT_DARK;
+        }
+
+        public static Texture getBodyFatLightTexture() {
+            return BODY_FAT_LIGHT;
+        }
+
+        public static Texture getBodyFatMediumTexture() {
+            return BODY_FAT_MEDIUM;
+        }
+
+        public static Texture getBodyMiddleDarkTexture() {
+            return BODY_MIDDLE_DARK;
+        }
+
+        public static Texture getBodyMiddleLightTexture() {
+            return BODY_MIDDLE_LIGHT;
+        }
+
+        public static Texture getBodyMiddleMediumTexture() {
+            return BODY_MIDDLE_MEDIUM;
+        }
+
+        public static Texture getBodyThinDarkTexture() {
+            return BODY_THIN_DARK;
+        }
+
+        public static Texture getBodyThinLightTexture() {
+            return BODY_THIN_LIGHT;
+        }
+
+        public static Texture getBodyThinMediumTexture() {
+            return BODY_THIN_MEDIUM;
+        }
+
+        public Texture getHairIconBlondTexture() {
+            return HAIR_ICON_BLOND;
+        }
+
+        public Texture getHairIconDarkTexture() {
+            return HAIR_ICON_DARK;
+        }
+
+        public Texture getHairIconBrownTexture() {
+            return HAIR_ICON_BROWN;
+        }
+
+        public Texture getHairIconGrayTexture() {
+            return HAIR_ICON_GRAY;
+        }
+
+        public static Texture getHeadIconDarkTexture() {
+            return HEAD_ICON_DARK;
+        }
+
+        public static Texture getHeadIconLightTexture() {
+            return HEAD_ICON_LIGHT;
+        }
+
+        public static Texture getHeadIconMediumTexture() {
+            return HEAD_ICON_MEDIUM;
+        }
+
+        public enum Type {
+            FAT_DARK(new Texture[] {
+                    getHeadIconDarkTexture(),
+                    getBodyFatDarkTexture()
+            }),
+            FAT_MEDIUM(new Texture[] {
+                    getHeadIconMediumTexture(),
+                    getBodyFatMediumTexture()
+            }),
+            FAT_LIGHT(new Texture[] {
+                    getHeadIconLightTexture(),
+                    getBodyFatLightTexture()
+            }),
+            MIDDLE_DARK(new Texture[] {
+                    getHeadIconDarkTexture(),
+                    getBodyMiddleDarkTexture()
+            }),
+            MIDDLE_MEDIUM(new Texture[] {
+                    getHeadIconMediumTexture(),
+                    getBodyMiddleMediumTexture()
+            }),
+            MIDDLE_LIGHT(new Texture[] {
+                    getHeadIconLightTexture(),
+                    getBodyMiddleLightTexture()
+            }),
+            THIN_DARK(new Texture[] {
+                    getHeadIconDarkTexture(),
+                    getBodyThinDarkTexture()
+            }),
+            THIN_MEDIUM(new Texture[] {
+                    getHeadIconMediumTexture(),
+                    getBodyThinMediumTexture()
+            }),
+            THIN_LIGHT(new Texture[] {
+                    getHeadIconLightTexture(),
+                    getBodyThinLightTexture()
+            });
+
+            private final Texture texture;
+            private final Texture[] textures;
+
+            Type(Texture[] textures) {
+                this.textures = textures;
+                this.texture = createTexture();
+            }
+
+            public Texture getTexture() {
+                return texture;
+            }
+
+            private Texture createTexture() {
+                Pixmap result = new Pixmap(42, 134 + 30, Pixmap.Format.RGBA8888);
+                if (!this.textures[0].getTextureData().isPrepared()) {
+                    this.textures[0].getTextureData().prepare();
+                }
+                if (!this.textures[1].getTextureData().isPrepared()) {
+                    this.textures[1].getTextureData().prepare();
+                }
+                result.drawPixmap(this.textures[1].getTextureData().consumePixmap(), 0, 0);
+                result.drawPixmap(this.textures[0].getTextureData().consumePixmap(), 42 / 2 - this.textures[0].getWidth() / 2, 2);
+                return new Texture(result);
+            }
+
+        }
+
+    }
+
+    public Character getCharacter() {
+        return this.character;
+    }
+
     @Override
     public void dispose() {
         this.ACTIVE_EMPTY_CELL.dispose();
@@ -484,6 +710,18 @@ public class AssetService implements Disposable {
         this.items.COOLER.dispose();
         this.items.PLANT_CELL.dispose();
         this.items.COOLER_CELL.dispose();
+        Character.BODY_FAT_DARK.dispose();
+        Character.BODY_FAT_LIGHT.dispose();
+        Character.BODY_FAT_MEDIUM.dispose();
+        Character.BODY_MIDDLE_DARK.dispose();
+        Character.BODY_MIDDLE_LIGHT.dispose();
+        Character.BODY_MIDDLE_MEDIUM.dispose();
+        this.character.HAIR_ICON_BLOND.dispose();
+        this.character.HAIR_ICON_DARK.dispose();
+        this.character.HAIR_ICON_GRAY.dispose();
+        Character.HEAD_ICON_DARK.dispose();
+        Character.HEAD_ICON_LIGHT.dispose();
+        Character.HEAD_ICON_MEDIUM.dispose();
         this.BG_MUSIC.dispose();
         this.NOTIFICATION_SOUND.dispose();
         this.CONSTRUCTION_SOUND.dispose();

@@ -36,6 +36,11 @@ public abstract class AbstractModal extends Window implements ToggleActor {
         this.setVisible(!this.isVisible());
     }
 
+    @Override
+    public void forceToggle(boolean value) {
+        setVisible(value);
+    }
+
     public void updateContentText(String targetId, String text) {
         getCells().forEach(c -> {
             if (c.getActor() != null && c.getActor().getName() != null
