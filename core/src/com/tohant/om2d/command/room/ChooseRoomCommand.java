@@ -2,17 +2,18 @@ package com.tohant.om2d.command.room;
 
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.Room;
-import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.ServiceUtil.getCurrentRoomType;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
+import static com.tohant.om2d.storage.Cache.CURRENT_ROOM;
 
-public class ChooseRoomCommand extends AbstractCommand {
+public class ChooseRoomCommand implements Command {
 
     private final int r;
     private final int c;
@@ -24,7 +25,7 @@ public class ChooseRoomCommand extends AbstractCommand {
 
     @Override
     public void execute() {
-        RuntimeCacheService cache = getRuntimeCacheService();
+        RuntimeCacheService cache = RuntimeCacheService.getInstance();
         String roomId = CELL.name() + "#" + r + "#" + c + "#" + cache.getLong(CURRENT_LEVEL);
         Cell cell = (Cell) UiActorService.getInstance().getActorById(roomId);
         Room.Type nextType = getCurrentRoomType();

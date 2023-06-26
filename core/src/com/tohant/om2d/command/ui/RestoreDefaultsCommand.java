@@ -1,13 +1,13 @@
 package com.tohant.om2d.command.ui;
 
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 
-import static com.tohant.om2d.storage.Cache.*;
-import static com.tohant.om2d.storage.Cache.CURRENT_OBJECT_CELL;
+import static com.tohant.om2d.storage.Cache.CURRENT_ITEM;
+import static com.tohant.om2d.storage.Cache.CURRENT_ROOM_TYPE;
 
-public class RestoreDefaultsCommand extends AbstractCommand {
+public class RestoreDefaultsCommand implements Command {
 
     @Override
     public void execute() {

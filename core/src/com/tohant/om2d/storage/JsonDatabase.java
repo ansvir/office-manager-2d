@@ -27,7 +27,7 @@ public abstract class JsonDatabase<T> implements Database<T> {
         return dbPreferences;
     }
 
-    private void init() {
+    public static void init() {
         dbPreferences.putString(COMPANIES_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(OFFICES_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(LEVELS_TABLE, EMPTY_ARRAY);
@@ -36,6 +36,7 @@ public abstract class JsonDatabase<T> implements Database<T> {
         dbPreferences.putString(OBJECT_CELL_ITEM_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(RESIDENTS_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(WORKERS_TABLE, EMPTY_ARRAY);
+        dbPreferences.flush();
     }
 
     public static boolean checkDatabaseIsEmpty() {
@@ -49,12 +50,13 @@ public abstract class JsonDatabase<T> implements Database<T> {
         return entries.size() == 8 && amountOfEmpty.get() == 8;
     }
 
-    private static boolean checkFirstInit() {
+    public static boolean checkFirstInit() {
         return dbPreferences == null || dbPreferences.get().isEmpty();
     }
 
     public static void clearDatabase() {
-        dbPreferences.get().clear();
+        dbPreferences.clear();
+        dbPreferences.flush();
     }
 
 }

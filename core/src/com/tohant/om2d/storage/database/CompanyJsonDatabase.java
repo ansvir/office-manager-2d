@@ -46,6 +46,7 @@ public class CompanyJsonDatabase extends JsonDatabase<CompanyEntity> {
         Array<CompanyEntity> entities = getAll();
         entities.add(companyEntity);
         getDbPreferences().putString(COMPANIES_TABLE, json.toJson(entities, Array.class, CompanyEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
@@ -53,6 +54,7 @@ public class CompanyJsonDatabase extends JsonDatabase<CompanyEntity> {
         Array<CompanyEntity> entities = getAll();
         entities.addAll(t);
         getDbPreferences().putString(COMPANIES_TABLE, json.toJson(entities, Array.class, CompanyEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override

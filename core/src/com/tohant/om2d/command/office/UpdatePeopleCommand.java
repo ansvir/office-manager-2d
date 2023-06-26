@@ -7,7 +7,7 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.UiActorService;
 
 import java.util.Arrays;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 
-public class UpdatePeopleCommand extends AbstractCommand {
+public class UpdatePeopleCommand implements Command {
 
     @Override
     public void execute() {

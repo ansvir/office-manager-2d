@@ -46,6 +46,7 @@ public class OfficeJsonDatabase extends JsonDatabase<OfficeEntity> {
         Array<OfficeEntity> entities = getAll();
         entities.add(officeEntity);
         getDbPreferences().putString(OFFICES_TABLE, json.toJson(entities, Array.class, OfficeEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
@@ -53,6 +54,7 @@ public class OfficeJsonDatabase extends JsonDatabase<OfficeEntity> {
         Array<OfficeEntity> entities = getAll();
         entities.addAll(t);
         getDbPreferences().putString(OFFICES_TABLE, json.toJson(entities, Array.class, OfficeEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override

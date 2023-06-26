@@ -47,6 +47,7 @@ public class ResidentJsonDatabase extends JsonDatabase<ResidentEntity> {
         Array<ResidentEntity> entities = getAll();
         entities.add(residentEntity);
         getDbPreferences().putString(RESIDENTS_TABLE, json.toJson(entities, Array.class, ResidentEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
@@ -54,6 +55,7 @@ public class ResidentJsonDatabase extends JsonDatabase<ResidentEntity> {
         Array<ResidentEntity> entities = getAll();
         entities.addAll(t);
         getDbPreferences().putString(RESIDENTS_TABLE, json.toJson(entities, Array.class, ResidentEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override

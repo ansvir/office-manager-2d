@@ -25,6 +25,8 @@ public interface Cache {
     String ELEVATOR_AMOUNT = "ELEVATOR_AM";
     String IS_PAYDAY = "IS_PAYDAY";
     String CURRENT_ROOM = "CURR_ROOM";
+    String READY_TO_START = "READY_TO_START";
+    String COMPANY_NAME = "COMPANY_NAME";
     String TOTAL_COSTS = "TOTAL_COSTS";
     String TOTAL_SALARIES = "TOTAL_SALAR";
     String TOTAL_INCOMES = "TOTAL_INC";

@@ -2,12 +2,12 @@ package com.tohant.om2d.command.office;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.TIMELINE_LABEL;
 
-public class UpdateTimeCommand extends AbstractCommand {
+public class UpdateTimeCommand implements Command {
 
     private final String time;
 

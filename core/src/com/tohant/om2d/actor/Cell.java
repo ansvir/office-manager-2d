@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.room.Room;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
@@ -30,8 +30,6 @@ import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class Cell extends Group implements ToggleActor {
 
-    private final AbstractCommand command;
-
     private Array<Array<ObjectCell>> objectCells;
     private RoomBuildingModel roomModel;
     private boolean isEmpty;
@@ -44,9 +42,8 @@ public class Cell extends Group implements ToggleActor {
     private final RuntimeCacheService cacheService;
     private boolean isGridVisible;
 
-    public Cell(String id, AbstractCommand command, float x, float y, float width, float height) {
+    public Cell(String id, Command command, float x, float y, float width, float height) {
         setName(id);
-        this.command = command;
         setPosition(x, y);
         setSize(width, height);
         isEmpty = true;

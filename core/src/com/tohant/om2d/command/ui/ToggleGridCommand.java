@@ -1,20 +1,17 @@
 package com.tohant.om2d.command.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.utils.Array;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
 import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
-import static com.tohant.om2d.storage.Cache.UI_ACTORS;
 
-public class ToggleGridCommand extends AbstractCommand {
+public class ToggleGridCommand implements Command {
 
     private final Queue<String> actorsToToggleQueue;
 

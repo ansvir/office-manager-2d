@@ -1,22 +1,18 @@
 package com.tohant.om2d.command.ui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
-import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.NOTIFICATION_INFO_LABEL;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.NOTIFICATION_MODAL;
 
-public class CreateNotificationCommand extends AbstractCommand {
+public class CreateNotificationCommand implements Command {
 
     private final GameException e;
 

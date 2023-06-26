@@ -46,6 +46,7 @@ public class CellJsonDatabase extends JsonDatabase<CellEntity> {
         Array<CellEntity> entities = getAll();
         entities.add(cellEntity);
         getDbPreferences().putString(CELLS_TABLE, json.toJson(entities, Array.class, CellEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
@@ -53,6 +54,7 @@ public class CellJsonDatabase extends JsonDatabase<CellEntity> {
         Array<CellEntity> entities = getAll();
         entities.addAll(t);
         getDbPreferences().putString(CELLS_TABLE, json.toJson(entities, Array.class, CellEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override

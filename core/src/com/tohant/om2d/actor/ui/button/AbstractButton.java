@@ -4,13 +4,12 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 
 public abstract class AbstractButton extends Button {
 
-    private final AbstractCommand command;
-
-    public AbstractButton(String id, AbstractCommand command, Skin skin) {
+    public AbstractButton(String id, Command command, Skin skin) {
+        super(skin);
         setName(id);
         addListener(new InputListener() {
             @Override
@@ -20,11 +19,6 @@ public abstract class AbstractButton extends Button {
                 return false;
             }
         });
-        this.command = command;
-    }
-
-    public AbstractCommand getCommand() {
-        return command;
     }
 
 }

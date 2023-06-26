@@ -4,9 +4,10 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AsyncRoomBuildService;
+import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,7 +16,7 @@ import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_IN
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
 import static com.tohant.om2d.storage.Cache.CURRENT_ROOM;
 
-public class UpdateRoomInfoCommand extends AbstractCommand {
+public class UpdateRoomInfoCommand implements Command {
 
     private final float deltaTimestamp;
 
@@ -27,7 +28,7 @@ public class UpdateRoomInfoCommand extends AbstractCommand {
     public void execute() {
         UiActorService uiActorService = UiActorService.getInstance();
         AsyncRoomBuildService roomBuildService = AsyncRoomBuildService.getInstance();
-        Cell currentCell = (Cell) uiActorService.getActorById(getRuntimeCacheService().getValue(CURRENT_ROOM));
+        Cell currentCell = (Cell) uiActorService.getActorById(RuntimeCacheService.getInstance().getValue(CURRENT_ROOM));
         if (currentCell != null) {
             AtomicReference<TimeLineTask<Room>> roomBuildingTimeline = new AtomicReference<>();
             String currentId = currentCell.getRoomModel().getRoomInfo().getId();

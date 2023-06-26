@@ -46,6 +46,7 @@ public class LevelJsonDatabase extends JsonDatabase<LevelEntity> {
         Array<LevelEntity> entities = getAll();
         entities.add(levelEntity);
         getDbPreferences().putString(LEVELS_TABLE, json.toJson(entities, Array.class, LevelEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
@@ -53,6 +54,7 @@ public class LevelJsonDatabase extends JsonDatabase<LevelEntity> {
         Array<LevelEntity> entities = getAll();
         entities.addAll(t);
         getDbPreferences().putString(LEVELS_TABLE, json.toJson(entities, Array.class, LevelEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override

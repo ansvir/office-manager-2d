@@ -2,19 +2,17 @@ package com.tohant.om2d.command.item;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
-import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Item;
 import com.tohant.om2d.actor.ToggleActor;
-import com.tohant.om2d.command.AbstractCommand;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
-import com.tohant.om2d.command.ui.ToggleCommand;
-import com.tohant.om2d.service.AssetService;
+import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.storage.Cache.CURRENT_ITEM;
 
-public class PickItemCommand extends AbstractCommand {
+public class PickItemCommand implements Command {
 
     private final String itemId;
 
@@ -26,14 +24,13 @@ public class PickItemCommand extends AbstractCommand {
     public void execute() {
         UiActorService uiActorService = UiActorService.getInstance();
         Item item = (Item) uiActorService.getActorById(this.itemId);
-        getRuntimeCacheService().setObject(CURRENT_ITEM, item);
+        RuntimeCacheService.getInstance().setObject(CURRENT_ITEM, item);
         Array<Actor> cells = uiActorService.getActorsByIdPrefix(CELL.name());
         cells.iterator().forEach(c -> {
             if (c instanceof ToggleActor) {
                 new ForceToggleCommand(c.getName(), true).execute();
             }
         });
-//        AssetService.getInstance().setCursor(AssetService.GameCursor.PICK_UP);
     }
 
 }

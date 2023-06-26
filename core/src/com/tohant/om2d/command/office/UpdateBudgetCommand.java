@@ -2,12 +2,12 @@ package com.tohant.om2d.command.office;
 
 import com.badlogic.gdx.graphics.Color;
 import com.tohant.om2d.actor.ui.label.GameStandaloneLabel;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.BUDGET_LABEL;
 
-public class UpdateBudgetCommand extends AbstractCommand {
+public class UpdateBudgetCommand implements Command {
 
     private final float budget;
 

@@ -1,13 +1,14 @@
 package com.tohant.om2d.command.room;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
 import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
 
-public class SelectLevelCommand extends AbstractCommand {
+public class SelectLevelCommand implements Command {
 
     private final int index;
 
@@ -24,7 +25,7 @@ public class SelectLevelCommand extends AbstractCommand {
             }
         }
         uiActorService.getActorById(GRID.name() + "#" + index).setVisible(true);
-        getRuntimeCacheService().setLong(CURRENT_LEVEL, index);
+        RuntimeCacheService.getInstance().setLong(CURRENT_LEVEL, index);
     }
 
 }

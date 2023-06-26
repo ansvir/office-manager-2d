@@ -1,14 +1,12 @@
 package com.tohant.om2d.command.room;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
-import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.*;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
@@ -26,11 +24,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.tohant.om2d.service.ServiceUtil.*;
-import static com.tohant.om2d.service.ServiceUtil.getRoomsAmountByType;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 import static com.tohant.om2d.storage.Cache.*;
 
-public class BuildRoomCommand extends AbstractCommand {
+public class BuildRoomCommand implements Command {
 
     private final AsyncRoomBuildService roomBuildService;
     private final int r, c;

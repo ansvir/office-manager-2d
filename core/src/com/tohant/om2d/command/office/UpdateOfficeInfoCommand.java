@@ -2,7 +2,7 @@ package com.tohant.om2d.command.office;
 
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
@@ -11,7 +11,7 @@ import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE_
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OFFICE_INFO_MODAL;
 import static com.tohant.om2d.storage.Cache.*;
 
-public class UpdateOfficeInfoCommand extends AbstractCommand {
+public class UpdateOfficeInfoCommand implements Command {
 
     @Override
     public void execute() {

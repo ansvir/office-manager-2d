@@ -1,15 +1,16 @@
 package com.tohant.om2d.command.item;
 
 import com.tohant.om2d.actor.ObjectCell;
-import com.tohant.om2d.command.AbstractCommand;
+import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.service.RuntimeCacheService;
 
 import static com.tohant.om2d.storage.Cache.CURRENT_OBJECT_CELL;
 
-public class DestroyItemCommand extends AbstractCommand {
+public class DestroyItemCommand implements Command {
 
     @Override
     public void execute() {
-        ObjectCell objectCell = (ObjectCell) getRuntimeCacheService().getObject(CURRENT_OBJECT_CELL);
+        ObjectCell objectCell = (ObjectCell) RuntimeCacheService.getInstance().getObject(CURRENT_OBJECT_CELL);
         objectCell.clearChildren();
         objectCell.setObstacle(false);
     }

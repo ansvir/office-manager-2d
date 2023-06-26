@@ -8,13 +8,11 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -24,14 +22,10 @@ import com.tohant.om2d.actor.ui.list.AbstractList;
 import com.tohant.om2d.actor.ui.list.DefaultList;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
-import com.tohant.om2d.command.ui.LoadGameCommand;
-import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.exception.GameException;
-import com.tohant.om2d.exception.GameException.Code;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.MenuUiActorService;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.storage.JsonDatabase;
 import com.tohant.om2d.storage.database.CompanyJsonDatabase;
 import com.tohant.om2d.util.AssetsUtil;
@@ -40,9 +34,8 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.exception.GameException.Code.E400;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.NOTIFICATION_INFO_LABEL;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.NOTIFICATION_MODAL;
 import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
+import static com.tohant.om2d.storage.Cache.READY_TO_START;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class MenuScreen implements Screen {
@@ -92,9 +85,7 @@ public class MenuScreen implements Screen {
                     exceptions.add(new GameException(E400));
                     RuntimeCacheService.getInstance().setObject(GAME_EXCEPTION, exceptions);
                 } else {
-//                    AssetService.getInstance().getMenuScreenBgMusic().stop();
                     new ForceToggleCommand(MENU_NEW_COMPANY_MODAL.name(), true).execute();
-//                    game.setScreen(new GameScreen(game));
                 }
                 return false;
             }
@@ -150,12 +141,15 @@ public class MenuScreen implements Screen {
         menuButtons.row();
         menuButtons.add(start).padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD).padBottom(DEFAULT_PAD).grow().center().colspan(2);
         menuButtons.row();
-        if (!JsonDatabase.checkDatabaseIsEmpty()) {
-            menuButtons.add(load).padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD).padBottom(DEFAULT_PAD).grow().center().colspan(2);
-            menuButtons.row();
-            menuButtons.add(savedGames);
+        if (!JsonDatabase.checkFirstInit()) {
+            if (!JsonDatabase.checkDatabaseIsEmpty()) {
+                menuButtons.add(load).padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD).padBottom(DEFAULT_PAD).grow().center().colspan(2);
+                menuButtons.row();
+                menuButtons.add(savedGames);
+                JsonDatabase.clearDatabase();
+            }
         } else {
-            JsonDatabase.clearDatabase();
+            JsonDatabase.init();
         }
         menuButtons.setPosition(DEFAULT_PAD * 4, DEFAULT_PAD * 4);
         bgColor = Color.valueOf("a0dcef");
@@ -171,6 +165,7 @@ public class MenuScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(bgColor);
         processExceptions();
+        checkIsReadyToStart();
         batch.begin();
         batch.draw(background, Gdx.graphics.getWidth() / 2f - background.getWidth() / 2f, background.getHeight() / -10f);
         batch.end();
@@ -221,8 +216,8 @@ public class MenuScreen implements Screen {
         Array<Actor> gamesButtons = new Array<>();
         CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
         companyJsonDatabase.getAll().forEach(c -> gamesButtons.add(new GameTextButton(c.getId() + "_GAME_BUTTON",
-                new LoadGameCommand(game), c.getName(), AssetsUtil.getDefaultSkin())));
-        return new DefaultList("SAVED_GAMES_LIST", gamesButtons);
+                () -> RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true), c.getName(), AssetsUtil.getDefaultSkin())));
+        return new DefaultList("MENU_SAVED_GAMES_LIST", gamesButtons);
     }
 
     private void processExceptions() {
@@ -252,6 +247,14 @@ public class MenuScreen implements Screen {
             GameException e = exceptions.get(i);
             exceptions.removeIndex(i);
             throw e;
+        }
+    }
+
+    private void checkIsReadyToStart() {
+        if (RuntimeCacheService.getInstance().getBoolean(READY_TO_START)) {
+            RuntimeCacheService.getInstance().setBoolean(READY_TO_START, false);
+            AssetService.getInstance().getMenuScreenBgMusic().stop();
+            game.setScreen(new GameScreen(game));
         }
     }
 

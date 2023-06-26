@@ -46,6 +46,7 @@ public class WorkerJsonDatabase extends JsonDatabase<WorkerEntity> {
         Array<WorkerEntity> entities = getAll();
         entities.add(workerEntity);
         getDbPreferences().putString(WORKERS_TABLE, json.toJson(entities, Array.class, WorkerEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
@@ -53,6 +54,7 @@ public class WorkerJsonDatabase extends JsonDatabase<WorkerEntity> {
         Array<WorkerEntity> entities = getAll();
         entities.addAll(t);
         getDbPreferences().putString(WORKERS_TABLE, json.toJson(entities, Array.class, WorkerEntity.class));
+        getDbPreferences().flush();
     }
 
     @Override
