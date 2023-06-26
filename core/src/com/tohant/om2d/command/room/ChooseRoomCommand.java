@@ -2,16 +2,18 @@ package com.tohant.om2d.command.room;
 
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
-import static com.tohant.om2d.service.ServiceUtil.getCurrentRoomType;
+import static com.tohant.om2d.actor.constant.Constant.COORD_DELIMITER;
+import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
-import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
-import static com.tohant.om2d.storage.Cache.CURRENT_ROOM;
+import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.Cache.CURRENT_OFFICE_ID;
 
 public class ChooseRoomCommand implements Command {
 
@@ -26,21 +28,23 @@ public class ChooseRoomCommand implements Command {
     @Override
     public void execute() {
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String roomId = CELL.name() + "#" + r + "#" + c + "#" + cache.getLong(CURRENT_LEVEL);
-        Cell cell = (Cell) UiActorService.getInstance().getActorById(roomId);
+        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
+        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
+        String cellId = getCellActorId(r, c, (int) cache.getLong(CURRENT_LEVEL), currentOfficeId, currentCompanyId);
+        Cell cell = (Cell) UiActorService.getInstance().getActorById(cellId);
         Room.Type nextType = getCurrentRoomType();
         if (cell.isEmpty() && nextType != null) {
             BuildRoomCommand buildRoomCommand = new BuildRoomCommand(r, c);
             buildRoomCommand.execute();
-            cache.setValue(CURRENT_ROOM, roomId);
-            ToggleCommand toggleCommand = new ToggleCommand(ROOM_INFO_MODAL.name());
-            toggleCommand.execute();
+            cache.setValue(CURRENT_CELL, cellId);
+            new ForceToggleCommand(ROOM_INFO_MODAL.name(), true).execute();
+            cache.setValue(CURRENT_ROOM_TYPE, null);
         } else if (nextType == null) {
-            cache.setValue(CURRENT_ROOM, null);
+            cache.setValue(CURRENT_CELL, null);
+            new ForceToggleCommand(ROOM_INFO_MODAL.name(), false).execute();
         } else {
-            cache.setValue(CURRENT_ROOM, roomId);
-            ToggleCommand toggleCommand = new ToggleCommand(ROOM_INFO_MODAL.name());
-            toggleCommand.execute();
+            cache.setValue(CURRENT_CELL, cellId);
+            new ForceToggleCommand(ROOM_INFO_MODAL.name(), true).execute();
         }
     }
 

@@ -108,7 +108,7 @@ public class Background extends Group {
         roads.clear();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                String roadId = ROAD.name() + "#" + i + "#" + j;
+                String roadId = ROAD.name() + COORD_DELIMITER + i + COORD_DELIMITER + j;
                 if (i == roadOneStartPos) {
                     Road road = new Road(roadId, i * CELL_SIZE, j * CELL_SIZE, RoadType.EMPTY);
                     roads.add(road);
@@ -169,7 +169,7 @@ public class Background extends Group {
                 }
             });
             if (nextCar.get() != null) {
-                Car car = new Car(CAR.name() + "#" + BOTTOM.name(), Car.Type.RED, BOTTOM, nextCar.get());
+                Car car = new Car(CAR.name() + COORD_DELIMITER + BOTTOM.name(), Car.Type.RED, BOTTOM, nextCar.get());
                 cars.add(car);
                 addActor(car);
             }
@@ -182,7 +182,7 @@ public class Background extends Group {
                 }
             });
             if (nextCar.get() != null) {
-                Car car = new Car(CAR.name() + "#" + TOP.name(), Car.Type.RED, Car.Type.Direction.TOP, nextCar.get());
+                Car car = new Car(CAR.name() + COORD_DELIMITER + TOP.name(), Car.Type.RED, Car.Type.Direction.TOP, nextCar.get());
                 cars.add(car);
                 addActor(car);
             }

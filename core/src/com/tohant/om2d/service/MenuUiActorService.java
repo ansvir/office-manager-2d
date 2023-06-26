@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
-import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
+import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
 import static com.tohant.om2d.service.ServiceUtil.buildRandomCompanyName;
 import static com.tohant.om2d.storage.Cache.*;
@@ -198,8 +198,9 @@ public class MenuUiActorService extends ActorService {
     private GameTextButton createStartButton() {
         return new GameTextButton(MENU_NEW_COMPANY_START_BUTTON.name(), () -> {
             CellJsonDatabase cellJsonDatabase = CellJsonDatabase.getInstance();
-            CellEntity[] cellsArray = IntStream.range(0, 100).boxed()
-                    .map(i -> new CellEntity(UUID.randomUUID().toString(), null, null, Array.with()))
+            CellEntity[] cellsArray = IntStream.range(0, GRID_HEIGHT).boxed()
+                    .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed().map(c ->
+                                    new CellEntity(UUID.randomUUID().toString(), null, null, r, c, Array.with())))
                     .toArray(CellEntity[]::new);
             Array<CellEntity> cells = new Array<>(cellsArray);
             cellJsonDatabase.saveAll(cells);
@@ -213,6 +214,8 @@ public class MenuUiActorService extends ActorService {
             CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
             CompanyEntity companyEntity = new CompanyEntity(UUID.randomUUID().toString(), RuntimeCacheService.getInstance().getValue(COMPANY_NAME), Array.with(officeEntity.getId()));
             companyJsonDatabase.save(companyEntity);
+            RuntimeCacheService.getInstance().setValue(CURRENT_COMPANY_ID, companyEntity.getId());
+            RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeEntity.getId());
             RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
         }, "Start", skin);
     }

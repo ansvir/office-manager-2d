@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Predicate;
 
-public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T> {
+public class TimeLineTask<T> implements AsyncTask<T> {
 
     private final String id;
     private final TimeLineDate date;
@@ -44,32 +44,29 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
     }
 
     @Override
-    public T get() {
-        boolean stop = false;
-        while (!stop && !this.isFinished) {
+    public T call() {
+        while (!this.isFinished) {
             if (this.stopCondition != null) {
                 if (this.stopCondition.test(this.date)) {
                     successCallback.run();
-                    forceFinish();
                     break;
                 }
             }
-            stop = iterateAndGet();
+            iterateAndGet();
         }
         return this.result;
     }
 
-    private synchronized boolean iterateAndGet() {
+    private synchronized void iterateAndGet() {
         if (isTimeUpdated()) {
             this.time = this.prevTime;
             updateCallback.run();
-            return next();
+            next();
         }
         this.prevTime = System.currentTimeMillis();
-        return false;
     }
 
-    private synchronized boolean next() {
+    private synchronized void next() {
         long currentDay = this.date.getDays();
         long currentMonth = this.date.getMonth();
         long currentYear = this.date.getYears();
@@ -87,7 +84,6 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
         this.date.setDays(currentDay);
         this.date.setMonth(currentMonth);
         this.date.setYears(currentYear);
-        return false;
     }
 
     public String getDateString() {
@@ -115,11 +111,11 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
     }
 
     public boolean isFinished() {
-        return isCancelled();
+        return isFinished;
     }
 
     public void forceFinish() {
-        cancel(true);
+        this.isFinished = true;
     }
 
     public TimeLineDate getDate() {
@@ -136,36 +132,6 @@ public class TimeLineTask<T> extends CompletableFuture<T> implements AsyncTask<T
 
     public long getTime() {
         return this.time;
-    }
-
-    public long getWaitTime() {
-        return waitTime;
-    }
-
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        this.isFinished = true;
-        return true;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return this.isFinished;
-    }
-
-    @Override
-    public boolean isDone() {
-        return this.isFinished;
-    }
-
-    @Override
-    public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return get();
-    }
-
-    @Override
-    public T call() throws Exception {
-        return get();
     }
 
     public boolean isTimeUpdated() {

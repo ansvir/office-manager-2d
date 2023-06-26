@@ -17,16 +17,6 @@ public class RoomInfo {
     private TimeLineDate buildTime;
     private Room.Type type;
 
-    public RoomInfo(Array<Staff> staff, float price, float cost, TimeLineDate buildTime, Room.Type type) {
-        this.id = UUID.randomUUID().toString();
-        this.staff = staff;
-        this.number = this.id.substring(0, 4);;
-        this.price = price;
-        this.cost = cost;
-        this.buildTime = buildTime;
-        this.type = type;
-    }
-
     public RoomInfo(String id, Array<Staff> staff, float price, float cost, TimeLineDate buildTime, Room.Type type) {
         this.id = id;
         this.staff = staff;

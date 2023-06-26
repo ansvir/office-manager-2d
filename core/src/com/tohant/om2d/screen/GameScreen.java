@@ -106,7 +106,7 @@ public class GameScreen implements Screen {
 //                        }
 //                    }
 //                    Vector3 firstCoords = getObjectCellCellCoordinates(first.get());
-//                    WorkerStaff worker = new WorkerStaff(STAFF.name() + "#" + (int) firstCoords.x + "#" + (int) firstCoords.y + "#0#0");
+//                    WorkerStaff worker = new WorkerStaff(STAFF.name() + COORD_DELIMITER + (int) firstCoords.x + COORD_DELIMITER + (int) firstCoords.y + "#0#0");
 //                    worker.addPath(first.get(), second.get());
 //                    men[0] = worker;
 //                    office.addActor(worker);

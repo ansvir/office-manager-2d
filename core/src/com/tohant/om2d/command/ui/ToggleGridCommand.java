@@ -8,8 +8,11 @@ import com.tohant.om2d.service.UiActorService;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static com.tohant.om2d.actor.constant.Constant.COORD_DELIMITER;
+import static com.tohant.om2d.service.ServiceUtil.getCellActorId;
+import static com.tohant.om2d.service.ServiceUtil.getGridActorId;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
-import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class ToggleGridCommand implements Command {
 
@@ -31,7 +34,10 @@ public class ToggleGridCommand implements Command {
 
     private void toggleGrid() {
         UiActorService uiActorService = UiActorService.getInstance();
-        String gridId = GRID.name() + "#" + RuntimeCacheService.getInstance().getLong(CURRENT_LEVEL);
+        RuntimeCacheService cache = RuntimeCacheService.getInstance();
+        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
+        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
+        String gridId = getGridActorId((int) cache.getLong(CURRENT_LEVEL), currentOfficeId, currentCompanyId);
         Actor grid = uiActorService.getActorById(gridId);
         new ToggleCommand(grid.getName()).execute();
     }

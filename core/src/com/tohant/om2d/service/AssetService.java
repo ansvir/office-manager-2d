@@ -410,12 +410,7 @@ public class AssetService implements Disposable {
         }
 
         private Texture createPlantTexture() {
-            Pixmap pixmap = new Pixmap((int) TEXTURE_SIZE, (int) TEXTURE_SIZE, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.GREEN);
-            pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
-            Texture result = new Texture(pixmap);
-            pixmap.dispose();
-            return result;
+            return new Texture(Gdx.files.internal("plant.png"));
         }
 
         private Texture createCoolerTexture() {
@@ -428,12 +423,7 @@ public class AssetService implements Disposable {
         }
 
         private Texture createPlantCellTexture() {
-            Pixmap pixmap = new Pixmap(OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.GREEN);
-            pixmap.fillRectangle(0, 0, pixmap.getWidth(), pixmap.getHeight());
-            Texture result = new Texture(pixmap);
-            pixmap.dispose();
-            return result;
+            return AssetsUtil.resizeTexture("plant.png", OBJECT_CELL_SIZE, OBJECT_CELL_SIZE);
         }
 
         private Texture createCoolerCellTexture() {

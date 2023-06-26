@@ -6,6 +6,8 @@ import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.service.MenuUiActorService;
 import com.tohant.om2d.service.UiActorService;
 
+import java.util.NoSuchElementException;
+
 public class ToggleCommand implements Command {
 
     private final String id;
@@ -16,12 +18,15 @@ public class ToggleCommand implements Command {
 
     @Override
     public void execute() {
-        Actor component = UiActorService.getInstance().getActorById(id);
-        if (component == null) {
+        Actor component = null;
+        try {
+            component = UiActorService.getInstance().getActorById(id);
+        } catch (NoSuchElementException e) {
             component = MenuUiActorService.getInstance().getActorById(id);
-        }
-        if (component instanceof ToggleActor) {
-            ((ToggleActor) component).toggle();
+        } finally {
+            if (component instanceof ToggleActor) {
+                ((ToggleActor) component).toggle();
+            }
         }
     }
 }

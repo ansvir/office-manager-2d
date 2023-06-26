@@ -1,7 +1,6 @@
 package com.tohant.om2d.service;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
@@ -11,73 +10,111 @@ import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.actor.constant.Constant.OBJECT_CELL_SIZE;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 import static com.tohant.om2d.storage.Cache.*;
 
 public class ServiceUtil {
     
+    public static final String ID_PATTERN = OBJECT_CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
+            + CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
+            + GRID.name() + COORD_DELIMITER + "%d" + ID_DELIMITER
+            + OFFICE.name() + COORD_DELIMITER + "%s" + ID_DELIMITER
+            + "COMPANY" + COORD_DELIMITER + "%s";
     private static final RuntimeCacheService CACHE_SERVICE = RuntimeCacheService.getInstance();
 
     public static int nextToHalls(Cell cell, Array<Actor> children) {
-        Vector2 coords = getCellCoordinates(cell);
-        int points = 0;
+        Vector3 coords = getCellCoordinates(cell);
+        AtomicInteger points = new AtomicInteger();
         for (int i = 0; i < children.size; i++) {
             if (children.get(i) instanceof Cell) {
                 Cell currCell = (Cell) children.get(i);
-                Vector2 currCoords = getCellCoordinates(currCell);
+                Vector3 currCoords = getCellCoordinates(currCell);
                 if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
                         (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty() && currCell.isBuilt() && currCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
-                        points++;
+                    if (!currCell.isEmpty()) {
+                        currCell.getChildren().iterator().forEach(c -> {
+                            if (c instanceof Room) {
+                                if (((Room) c).getType() == Room.Type.HALL) {
+                                    if (nextToHalls(currCell, children) <= 1) {
+                                        points.getAndIncrement();
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
-        return points;
+        return points.get();
     }
 
     public static boolean checkHallNextToRoomThatHasNoOtherHalls(Cell hall, Array<Actor> children) {
-        Vector2 coords = getCellCoordinates(hall);
-        int points = 0;
+        Vector3 coords = getCellCoordinates(hall);
+        AtomicInteger points = new AtomicInteger();
         for (int i = 0; i < children.size; i++) {
             if (children.get(i) instanceof Cell) {
                 Cell currCell = (Cell) children.get(i);
-                Vector2 currCoords = getCellCoordinates(currCell);
+                Vector3 currCoords = getCellCoordinates(currCell);
                 if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
                         (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty() && currCell.isBuilt()
-                            && !(currCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL)) {
-                        if (nextToHalls(currCell, children) <= 1) {
-                            points++;
-                        }
+                    if (!currCell.isEmpty()) {
+                        currCell.getChildren().iterator().forEach(c -> {
+                            if (c instanceof Room) {
+                                if (((Room) c).getType() == Room.Type.HALL) {
+                                    if (nextToHalls(currCell, children) <= 1) {
+                                        points.getAndIncrement();
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
-        return points > 0;
+        return points.get() > 0;
     }
 
-    private static Vector2 getCellCoordinates(Cell cell) {
-        String indices = cell.getName().substring(cell.getName().indexOf("#") + 1);
-        String yZIndices = indices.substring(indices.indexOf("#") + 1);
-        String indexX = indices.substring(0, indices.indexOf("#"));
-        int cellX = Integer.parseInt(indexX);
-        String indexY = yZIndices.substring(0, yZIndices.indexOf("#"));
-        int cellY = Integer.parseInt(indexY);
-        int cellZ = Integer.parseInt(yZIndices.substring(yZIndices.indexOf("#") + 1));
-        return new Vector2(cellX, cellY);
+    private static Vector3 getCellCoordinates(Cell cell) {
+        String[] objectsNames = cell.getName().split(ID_DELIMITER);
+        String[] coords = objectsNames[0].split(COORD_DELIMITER);
+        String[] levelCoords = objectsNames[1].split(COORD_DELIMITER);
+        return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
     }
 
     public static Vector3 getObjectCellCoordinates(ObjectCell cell) {
-        String objectCellName = cell.getName().substring(0, cell.getName().lastIndexOf("_"));
-        String objectCellParentName = cell.getName().substring(cell.getName().lastIndexOf("_") + 1);
-        String[] coords = objectCellName.split("#");
-        String[] parentCoords = objectCellParentName.split("#");
-        return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(parentCoords[3]));
+        String[] objectsNames = cell.getName().split(ID_DELIMITER);
+        String[] coords = objectsNames[0].split(COORD_DELIMITER);
+        String[] cellCoords = objectsNames[1].split(COORD_DELIMITER);
+        String[] levelCoords = objectsNames[2].split(COORD_DELIMITER);
+        return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
+    }
+    
+    public static String getObjectCellActorId(int objectCellX, int objectCellY, int cellX, int cellY, int level, String officeId, String companyId) {
+        return String.format(ID_PATTERN, objectCellX, objectCellY, cellX, cellY, level, officeId, companyId);
+    }
+
+    public static String getCellActorId(int cellX, int cellY, int level, String officeId, String companyId) {
+        return String.format(ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1), cellX, cellY, level, officeId, companyId);
+    }
+
+    public static String getGridActorId(int level, String officeId, String companyId) {
+        String cellString = ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1);
+        return String.format(cellString.substring(cellString.indexOf(ID_DELIMITER) + 1), level, officeId, companyId);
+    }
+
+    public static String getOfficeActorId(String officeId, String companyId) {
+        String cellString = ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1);
+        String levelString = cellString.substring(cellString.indexOf(ID_DELIMITER) + 1);
+        return String.format(levelString.substring(levelString.indexOf(ID_DELIMITER) + 1), officeId, companyId);
     }
 
     public static Vector3 getObjectCellCellCoordinates(ObjectCell cell) {
-        String objectCellParentName = cell.getName().substring(cell.getName().lastIndexOf("_") + 1);
-        String[] parentCoords = objectCellParentName.split("#");
+        String objectCellParentName = cell.getName().substring(cell.getName().lastIndexOf(ID_DELIMITER) + 1);
+        String[] parentCoords = objectCellParentName.split(COORD_DELIMITER);
         return new Vector3(Long.parseLong(parentCoords[1]), Long.parseLong(parentCoords[2]), Long.parseLong(parentCoords[3]));
     }
 
@@ -86,7 +123,7 @@ public class ServiceUtil {
         for (int i = 0; i < children.size; i++) {
             Actor a = children.get(i);
             if (a instanceof Cell) {
-                if (((Cell) a).getRoomModel() != null && !((Cell) a).isEmpty()) {
+                if (!((Cell) a).isEmpty()) {
                     result = false;
                     break;
                 }
@@ -186,6 +223,53 @@ public class ServiceUtil {
         first = first.charAt(0) + first.substring(1).toLowerCase();
         second = second.charAt(0) + second.substring(1).toLowerCase();
         return first + " " + second;
+    }
+
+    public static Array<Array<ObjectCell>> getObjectCells(Cell cell, Room.Type room) {
+        Vector3 coords = getCellCoordinates(cell);
+        int r = (int) coords.x;
+        int c = (int) coords.y;
+        RuntimeCacheService cache = RuntimeCacheService.getInstance();
+        String companyId = cache.getValue(CURRENT_COMPANY_ID);
+        String officeId = cache.getValue(CURRENT_OFFICE_ID);
+        int level = (int) cache.getLong(CURRENT_LEVEL);
+        Array<Array<ObjectCell>> cells = new Array<>();
+        switch (room) {
+            case HALL: {
+                for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
+                    cells.insert(i, new Array<>());
+                    for (int j = 0; j <= OBJECT_CELL_SIZE + 1; j++) {
+                        cells.get(i).insert(j, new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
+                    }
+                }
+                break;
+            }
+            default: {
+                for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
+                    cells.insert(i, new Array<>());
+                    for (int j = 0; j <= OBJECT_CELL_SIZE + 1; j++) {
+                        cells.get(i).insert(j,
+                                i == 0 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                        : j == 0 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                        : i == OBJECT_CELL_SIZE - 1 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                        : j == OBJECT_CELL_SIZE - 1 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
+                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                                i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
+                                        : new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                        i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
+                    }
+                }
+                break;
+            }
+        }
+        return cells;
     }
 
 }

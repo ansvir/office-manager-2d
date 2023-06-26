@@ -1,10 +1,14 @@
 package com.tohant.om2d.command.room;
 
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.model.room.RoomInfo;
+import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
@@ -14,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_LABEL;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
-import static com.tohant.om2d.storage.Cache.CURRENT_ROOM;
+import static com.tohant.om2d.storage.Cache.*;
 
 public class UpdateRoomInfoCommand implements Command {
 
@@ -27,46 +31,49 @@ public class UpdateRoomInfoCommand implements Command {
     @Override
     public void execute() {
         UiActorService uiActorService = UiActorService.getInstance();
-        AsyncRoomBuildService roomBuildService = AsyncRoomBuildService.getInstance();
-        Cell currentCell = (Cell) uiActorService.getActorById(RuntimeCacheService.getInstance().getValue(CURRENT_ROOM));
+        RuntimeCacheService cacheService = RuntimeCacheService.getInstance();
+        Array<RoomBuildingModel> tasks = (Array<RoomBuildingModel>) cacheService.getObject(BUILD_TASKS);
+        Cell currentCell = (Cell) uiActorService.getActorById(RuntimeCacheService.getInstance().getValue(CURRENT_CELL));
         if (currentCell != null) {
-            AtomicReference<TimeLineTask<Room>> roomBuildingTimeline = new AtomicReference<>();
-            String currentId = currentCell.getRoomModel().getRoomInfo().getId();
-            roomBuildService.getTasks().forEach(t -> {
-                if (t.getId().equals(currentId)) {
-                    roomBuildingTimeline.set(t);
+            AtomicReference<RoomBuildingModel> buildingModel = new AtomicReference<>();
+            String currentId = currentCell.getName();
+            tasks.forEach(t -> {
+                if (t.getRoomInfo().getId().endsWith(currentId)) {
+                    buildingModel.set(t);
                 }
             });
+            TimeLineTask<Room> roomBuildingTimeline = buildingModel.get().getTimeLineTask();
             DefaultModal roomInfoModal = (DefaultModal) uiActorService.getActorById(ROOM_INFO_MODAL.name());
             String title;
             String text;
-            if (roomBuildingTimeline.get() != null && !roomBuildingTimeline.get().isFinished()) {
-                long days = roomBuildingTimeline.get().getDate().getDays();
-                days = currentCell.getRoomModel().getRoomInfo().getBuildTime().getDays() - days;
-                long months = roomBuildingTimeline.get().getDate().getMonth();
-                months = months == 1L ? 0 : currentCell.getRoomModel().getRoomInfo().getBuildTime().getMonth() - months;
-                long years = roomBuildingTimeline.get().getDate().getYears();
-                years = years == 1L ? 0 : currentCell.getRoomModel().getRoomInfo().getBuildTime().getYears() - years;
+            RoomInfo roomInfo = buildingModel.get().getRoomInfo();
+            if (roomBuildingTimeline != null && !roomBuildingTimeline.isFinished()) {
+                long days = roomBuildingTimeline.getDate().getDays();
+                days = roomInfo.getBuildTime().getDays() - days;
+                long months = roomBuildingTimeline.getDate().getMonth();
+                months = months == 1L ? 0 : roomInfo.getBuildTime().getMonth() - months;
+                long years = roomBuildingTimeline.getDate().getYears();
+                years = years == 1L ? 0 : roomInfo.getBuildTime().getYears() - years;
                 title = "Construction " + buildSymbol();
-                text = "Building " + currentCell.getRoomModel().getRoomInfo().getType()
+                text = "Building " + roomInfo.getType()
                         .name().toLowerCase() + " room\n\nTime left: " + days + " d. " + months + " m. " + years + " y.";
             } else {
-                title = currentCell.getRoomModel().getRoomInfo().getType().name().charAt(0) +
-                        currentCell.getRoomModel().getRoomInfo().getType().name().substring(1).toLowerCase()
-                        + " #" + currentCell.getRoomModel().getRoomInfo().getNumber();
-                if (currentCell.getRoomModel().getRoomInfo().getType() == Room.Type.OFFICE) {
-                    text = ((currentCell.getRoom() == null) ? ""
-                            : "Company: " + ((OfficeRoom) currentCell.getRoom()).getCompanyInfo().getName()) + "\n"
-                            + "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
-                            + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m\n" + "Workers: "
-                            + currentCell.getRoomModel().getRoomInfo().getStaff().size;
-                } else if (currentCell.getRoomModel().getRoomInfo().getType() == Room.Type.HALL) {
-                    text = "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
-                            + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m";
+                title = roomInfo.getType().name().charAt(0) +
+                        roomInfo.getType().name().substring(1).toLowerCase()
+                        + " #" + roomInfo.getNumber();
+                if (roomInfo.getType() == Room.Type.OFFICE) {
+                    text = (!buildingModel.get().getRoom().isDone()) ? ""
+                            : "Company: " + ((OfficeRoom) buildingModel.get().getRoom().get()).getCompanyInfo().getName() + "\n"
+                            + "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
+                            + "Cost: " + Math.round(roomInfo.getCost()) + "$/m\n" + "Workers: "
+                            + roomInfo.getStaff().size;
+                } else if (roomInfo.getType() == Room.Type.HALL) {
+                    text = "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
+                            + "Cost: " + Math.round(roomInfo.getCost()) + "$/m";
                 } else {
-                    text = "Price: " + Math.round(currentCell.getRoomModel().getRoomInfo().getPrice()) + "$\n"
-                            + "Cost: " + Math.round(currentCell.getRoomModel().getRoomInfo().getCost()) + "$/m\n" + "Employees: "
-                            + currentCell.getRoomModel().getRoomInfo().getStaff().size;
+                    text = "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
+                            + "Cost: " + Math.round(roomInfo.getCost()) + "$/m\n" + "Employees: "
+                            + roomInfo.getStaff().size;
                 }
             }
             roomInfoModal.getTitleLabel().setText(title);

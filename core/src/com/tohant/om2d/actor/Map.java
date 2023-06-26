@@ -45,7 +45,7 @@ public class Map extends Group {
 //                super.mouseMoved(event, x, y);
 //                UiActorService uiActorService = UiActorService.getInstance();
 //                Office office = (Office) uiActorService.getActorById(OFFICE.name());
-//                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + "#" + runtimeCacheService.getLong(CURRENT_LEVEL));
+//                Grid grid = (Grid) uiActorService.getActorById(GRID.name() + COORD_DELIMITER + runtimeCacheService.getLong(CURRENT_LEVEL));
 //                grid.getChildren().forEach(c -> {
 //                    if (c instanceof Cell) {
 //                        Cell current = (Cell) c;

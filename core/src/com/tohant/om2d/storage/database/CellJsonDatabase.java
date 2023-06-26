@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
 import com.tohant.om2d.model.entity.CellEntity;
+import com.tohant.om2d.model.entity.OfficeEntity;
 import com.tohant.om2d.storage.JsonDatabase;
 
 import java.util.Iterator;
@@ -39,6 +40,19 @@ public class CellJsonDatabase extends JsonDatabase<CellEntity> {
     @Override
     public Array<CellEntity> getAll() {
         return json.fromJson(Array.class, CellEntity.class, getDbPreferences().getString(CELLS_TABLE));
+    }
+
+    public Array<CellEntity> getAllByLevelId(String id) {
+        Array<CellEntity> result = new Array<>();
+        LevelJsonDatabase levelJsonDatabase = LevelJsonDatabase.getInstance();
+        levelJsonDatabase.getById(id).ifPresent(c -> {
+            Iterator<String> ids = c.getCellsIds().select(i -> getById(i).isPresent()).iterator();
+            Array<CellEntity> cells = getAll();
+            while (ids.hasNext()) {
+                cells.select(o -> o.getId().equals(ids.next())).forEach(result::add);
+            }
+        });
+        return result;
     }
 
     @Override

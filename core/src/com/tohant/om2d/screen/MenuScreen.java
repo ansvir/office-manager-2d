@@ -28,14 +28,14 @@ import com.tohant.om2d.service.MenuUiActorService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.storage.JsonDatabase;
 import com.tohant.om2d.storage.database.CompanyJsonDatabase;
+import com.tohant.om2d.storage.database.OfficeJsonDatabase;
 import com.tohant.om2d.util.AssetsUtil;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.exception.GameException.Code.E400;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
-import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
-import static com.tohant.om2d.storage.Cache.READY_TO_START;
+import static com.tohant.om2d.storage.Cache.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class MenuScreen implements Screen {
@@ -216,7 +216,12 @@ public class MenuScreen implements Screen {
         Array<Actor> gamesButtons = new Array<>();
         CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
         companyJsonDatabase.getAll().forEach(c -> gamesButtons.add(new GameTextButton(c.getId() + "_GAME_BUTTON",
-                () -> RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true), c.getName(), AssetsUtil.getDefaultSkin())));
+                () -> {
+                    RuntimeCacheService.getInstance().setValue(CURRENT_COMPANY_ID, c.getId());
+                    OfficeJsonDatabase officeJsonDatabase = OfficeJsonDatabase.getInstance();
+                    RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeJsonDatabase.getAllByCompanyId(c.getId()).get(0).getId());
+                    RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
+                }, c.getName(), AssetsUtil.getDefaultSkin())));
         return new DefaultList("MENU_SAVED_GAMES_LIST", gamesButtons);
     }
 
@@ -251,8 +256,9 @@ public class MenuScreen implements Screen {
     }
 
     private void checkIsReadyToStart() {
-        if (RuntimeCacheService.getInstance().getBoolean(READY_TO_START)) {
-            RuntimeCacheService.getInstance().setBoolean(READY_TO_START, false);
+        RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
+        if (runtimeCache.getBoolean(READY_TO_START)) {
+            runtimeCache.setBoolean(READY_TO_START, false);
             AssetService.getInstance().getMenuScreenBgMusic().stop();
             game.setScreen(new GameScreen(game));
         }

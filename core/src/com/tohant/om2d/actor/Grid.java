@@ -34,7 +34,7 @@ public class Grid extends Group implements Disposable, ToggleActor {
 //        for (int w = 0; w < cellsWidth; w++) {
 //            for (int h = 0; h < cellsHeight; h++) {
 //                Cell cell = new Cell(h * cellSize, w * cellSize, cellSize, cellSize);
-//                cell.setName("Cell#" + h + "#" + w + "#" + level);
+//                cell.setName("Cell#" + h + COORD_DELIMITER + w + COORD_DELIMITER + level);
 //                addCellEventHandling(cell);
 //                actor.addActor(cell);
 //            }

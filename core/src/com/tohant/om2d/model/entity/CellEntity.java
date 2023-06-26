@@ -9,12 +9,16 @@ public class CellEntity implements Serializable {
     private String id;
     private String roomId;
     private String roomType;
+    private int x;
+    private int y;
     private Array<String> objectCellsIds;
 
-    public CellEntity(String id, String roomId, String roomType, Array<String> objectCellsIds) {
+    public CellEntity(String id, String roomId, String roomType, int x, int y, Array<String> objectCellsIds) {
         this.id = id;
         this.roomId = roomId;
         this.roomType = roomType;
+        this.x = x;
+        this.y = y;
         this.objectCellsIds = objectCellsIds;
     }
 
@@ -44,6 +48,22 @@ public class CellEntity implements Serializable {
 
     public void setRoomType(String roomType) {
         this.roomType = roomType;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 
     public Array<String> getObjectCellsIds() {

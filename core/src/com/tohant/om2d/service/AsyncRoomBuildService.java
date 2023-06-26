@@ -1,18 +1,28 @@
 package com.tohant.om2d.service;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
+import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.model.entity.ResidentEntity;
+import com.tohant.om2d.model.entity.WorkerEntity;
+import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
+import com.tohant.om2d.storage.database.ResidentJsonDatabase;
+import com.tohant.om2d.storage.database.WorkerJsonDatabase;
 
+import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
-import static com.tohant.om2d.service.ServiceUtil.getEmployeesAmountByType;
-import static com.tohant.om2d.service.ServiceUtil.setEmployeesAmountByType;
+import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.storage.Cache.*;
 
 public class AsyncRoomBuildService {
@@ -20,12 +30,10 @@ public class AsyncRoomBuildService {
     private static AsyncRoomBuildService instance;
     private final AsyncExecutor asyncExecutor;
     private final RuntimeCacheService cacheService;
-    private final Array<TimeLineTask<Room>> tasks;
 
     private AsyncRoomBuildService() {
         asyncExecutor = new AsyncExecutor(GRID_WIDTH * GRID_HEIGHT);
         cacheService = RuntimeCacheService.getInstance();
-        this.tasks = Array.with();
     }
 
     public synchronized static AsyncRoomBuildService getInstance() {
@@ -35,16 +43,13 @@ public class AsyncRoomBuildService {
         return instance;
     }
 
-    public synchronized CompletableFuture<Room> submitBuild(Cell cell, Room room) {
+    public synchronized RoomBuildingModel submitBuild(Cell cell, Room room) {
         TimeLineTask<Room> task = new TimeLineTask<>(room.getRoomInfo().getId(), DAY_WAIT_TIME_MILLIS, room,
                 (d) -> d.compareTo(room.getRoomInfo().getBuildTime()) >= 0, () -> {}, () -> {
             String staffTypeString = room.getType() == Room.Type.SECURITY ? TOTAL_SECURITY_STAFF
                     : room.getType() == Room.Type.CLEANING ? TOTAL_CLEANING_STAFF
                     : room.getType() == Room.Type.OFFICE ? TOTAL_WORKERS
                     : room.getType() == Room.Type.CAFFE ? TOTAL_CAFFE_STAFF : null;
-            if (room instanceof OfficeRoom) {
-                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * room.getRoomInfo().getStaff().size);
-            }
             Staff.Type staffType = null;
             if (staffTypeString != null) {
                 staffType = staffTypeString.equals(TOTAL_SECURITY_STAFF) ? Staff.Type.SECURITY
@@ -58,11 +63,33 @@ public class AsyncRoomBuildService {
                 cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
                         + room.getRoomInfo().getStaff().size * staffType.getSalary());
             }
-            cell.setDetails(room);
+            Array<WorkerEntity> workers = new Array<>(Arrays.stream(room.getRoomInfo().getStaff().toArray(Staff.class))
+                    .map(s -> new WorkerEntity(UUID.randomUUID().toString(), s.getFullName(), s.getManInfo().getMood(), s.getType().name(), s.getSalary()))
+                    .toArray(WorkerEntity[]::new));
+            Array<String> staffIds = new Array<>(Arrays.stream(room.getRoomInfo().getStaff().toArray(Staff.class))
+                    .map(Actor::getName).toArray(String[]::new));
+            WorkerJsonDatabase workerJsonDatabase = WorkerJsonDatabase.getInstance();
+            workerJsonDatabase.saveAll(workers);
+            if (room instanceof OfficeRoom) {
+                cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * room.getRoomInfo().getStaff().size);
+                ResidentEntity residentEntity = new ResidentEntity(UUID.randomUUID().toString(), buildRandomCompanyName(), staffIds);
+                ResidentJsonDatabase residentJsonDatabase = ResidentJsonDatabase.getInstance();
+                residentJsonDatabase.save(residentEntity);
+            }
+            addObjectCellsAndStaff(cell, room);
         });
-        this.tasks.add(task);
-        asyncExecutor.submit(task);
-        return task;
+        return new RoomBuildingModel(task, asyncExecutor.submit(task), room.getRoomInfo());
+    }
+
+    private void addObjectCellsAndStaff(Cell cell, Room room) {
+        getObjectCells(cell, room.getType()).iterator().forEach(c -> c.iterator().forEach(cell::addActor));
+        UiActorService uiActorService = UiActorService.getInstance();
+        RuntimeCacheService cache = RuntimeCacheService.getInstance();
+        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
+        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
+        String officeId = getOfficeActorId(currentOfficeId, currentCompanyId);
+        Office office = (Office) uiActorService.getActorById(officeId);
+        room.getRoomInfo().getStaff().forEach(office::addActor);
     }
 
     /*
@@ -74,9 +101,5 @@ public class AsyncRoomBuildService {
         return task;
     }
      */
-
-    public Array<TimeLineTask<Room>> getTasks() {
-        return tasks;
-    }
 
 }

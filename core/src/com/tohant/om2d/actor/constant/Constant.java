@@ -10,5 +10,7 @@ public final class Constant {
     public static final long DAY_WAIT_TIME_MILLIS = 700L;
     public static final int DEFAULT_PAD = 20;
     public static final float TEXTURE_SIZE = 64f;
+    public static final String ID_DELIMITER = "@";
+    public static final String COORD_DELIMITER = "#";
 
 }

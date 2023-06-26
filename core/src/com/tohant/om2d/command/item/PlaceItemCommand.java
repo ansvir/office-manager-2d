@@ -14,6 +14,7 @@ import com.tohant.om2d.service.UiActorService;
 
 import java.math.BigDecimal;
 
+import static com.tohant.om2d.actor.constant.Constant.ID_DELIMITER;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.storage.Cache.*;
 
@@ -28,7 +29,7 @@ public class PlaceItemCommand implements Command {
             if (objectCell.hasChildren()) {
                 objectCell.clearChildren();
             }
-            ObjectCellItem cellItem = new ObjectCellItem(objectCell.getName() + "_" + item.getType().name(), item.getType());
+            ObjectCellItem cellItem = new ObjectCellItem(item.getType().name() + ID_DELIMITER + objectCell.getName(), item.getType());
             objectCell.addActor(cellItem);
             objectCell.setObstacle(true);
             runtimeCache.setFloat(CURRENT_BUDGET,
