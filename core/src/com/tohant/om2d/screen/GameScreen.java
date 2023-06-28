@@ -158,7 +158,7 @@ public class GameScreen implements Screen {
     }
 
     private void processTimeLine() {
-        if (timeline != null && !timeline.isDone()) {
+        if (timeline != null && !timeline.isFinished()) {
             time = timeline.getDateString();
             gameCache.setValue(CURRENT_TIME, time);
             ((UiStage) uiStage).setTime(time);

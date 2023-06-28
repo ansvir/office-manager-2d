@@ -10,7 +10,10 @@ import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.actor.constant.Constant.OBJECT_CELL_SIZE;
@@ -18,7 +21,7 @@ import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 import static com.tohant.om2d.storage.Cache.*;
 
 public class ServiceUtil {
-    
+
     public static final String ID_PATTERN = OBJECT_CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
             + CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
             + GRID.name() + COORD_DELIMITER + "%d" + ID_DELIMITER
@@ -26,60 +29,63 @@ public class ServiceUtil {
             + "COMPANY" + COORD_DELIMITER + "%s";
     private static final RuntimeCacheService CACHE_SERVICE = RuntimeCacheService.getInstance();
 
-    public static int nextToHalls(Cell cell, Array<Actor> children) {
-        Vector3 coords = getCellCoordinates(cell);
-        AtomicInteger points = new AtomicInteger();
-        for (int i = 0; i < children.size; i++) {
-            if (children.get(i) instanceof Cell) {
-                Cell currCell = (Cell) children.get(i);
-                Vector3 currCoords = getCellCoordinates(currCell);
-                if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
-                        (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty()) {
-                        currCell.getChildren().iterator().forEach(c -> {
-                            if (c instanceof Room) {
-                                if (((Room) c).getType() == Room.Type.HALL) {
-                                    if (nextToHalls(currCell, children) <= 1) {
-                                        points.getAndIncrement();
-                                    }
-                                }
-                            }
-                        });
-                    }
+    public static int nextToHalls(Cell cell) {
+        Array<Cell> neighborCells = getNeighborCells(cell);
+        int points = 0;
+        for (Cell c : neighborCells) {
+            if (!c.isEmpty() && c.isBuilt()) {
+                Room room = getCellRoom(c);
+                if (room != null && room.getType() == Room.Type.HALL) {
+                    points++;
                 }
             }
         }
-        return points.get();
+        return points;
     }
 
-    public static boolean checkHallNextToRoomThatHasNoOtherHalls(Cell hall, Array<Actor> children) {
-        Vector3 coords = getCellCoordinates(hall);
-        AtomicInteger points = new AtomicInteger();
-        for (int i = 0; i < children.size; i++) {
-            if (children.get(i) instanceof Cell) {
-                Cell currCell = (Cell) children.get(i);
-                Vector3 currCoords = getCellCoordinates(currCell);
-                if (((coords.x - 1 == currCoords.x || coords.x + 1 == currCoords.x) && coords.y == currCoords.y) ||
-                        (coords.y - 1 == currCoords.y || coords.y + 1 == currCoords.y) && coords.x == currCoords.x) {
-                    if (!currCell.isEmpty()) {
-                        currCell.getChildren().iterator().forEach(c -> {
-                            if (c instanceof Room) {
-                                if (((Room) c).getType() == Room.Type.HALL) {
-                                    if (nextToHalls(currCell, children) <= 1) {
-                                        points.getAndIncrement();
-                                    }
-                                }
-                            }
-                        });
-                    }
-                }
+    private static Array<Cell> getNeighborCells(Cell cell) {
+        String companyId = CACHE_SERVICE.getValue(CURRENT_COMPANY_ID);
+        String officeId = CACHE_SERVICE.getValue(CURRENT_OFFICE_ID);
+        int level = (int) CACHE_SERVICE.getLong(CURRENT_LEVEL);
+        UiActorService uiActorService = UiActorService.getInstance();
+        Array<Cell> cells = new Array<>();
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x - 1, (int) getCellCoordinates(cell).y, level, officeId, companyId)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x + 1, (int) getCellCoordinates(cell).y, level, officeId, companyId)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x, (int) getCellCoordinates(cell).y - 1, level, officeId, companyId)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x, (int) getCellCoordinates(cell).y + 1, level, officeId, companyId)));
+        return new Array<>(Arrays.stream(cells.toArray(Cell.class)).filter(Objects::nonNull).toArray(Cell[]::new));
+    }
+
+    public static boolean checkHallNextToRoomThatHasNoOtherHalls(Cell hall) {
+        Array<Cell> cells = getNeighborCells(hall);
+        int points = 0;
+        for (Cell c : cells) {
+            Room room = getCellRoom(c);
+            if (room != null && room.getType() != Room.Type.HALL && nextToHalls(c) <= 1) {
+                points++;
             }
         }
-        return points.get() > 0;
+        return points > 0;
     }
 
-    private static Vector3 getCellCoordinates(Cell cell) {
+    public static Room getCellRoom(Cell cell) {
+        for (Actor a : cell.getChildren()) {
+            if (a instanceof Room) {
+                return (Room) a;
+            }
+        }
+        return null;
+    }
+
+    public static Vector3 getCellCoordinates(Cell cell) {
         String[] objectsNames = cell.getName().split(ID_DELIMITER);
+        String[] coords = objectsNames[0].split(COORD_DELIMITER);
+        String[] levelCoords = objectsNames[1].split(COORD_DELIMITER);
+        return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
+    }
+
+    public static Vector3 getCellCoordinatesByName(String name) {
+        String[] objectsNames = name.split(ID_DELIMITER);
         String[] coords = objectsNames[0].split(COORD_DELIMITER);
         String[] levelCoords = objectsNames[1].split(COORD_DELIMITER);
         return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
@@ -92,7 +98,7 @@ public class ServiceUtil {
         String[] levelCoords = objectsNames[2].split(COORD_DELIMITER);
         return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
     }
-    
+
     public static String getObjectCellActorId(int objectCellX, int objectCellY, int cellX, int cellY, int level, String officeId, String companyId) {
         return String.format(ID_PATTERN, objectCellX, objectCellY, cellX, cellY, level, officeId, companyId);
     }
@@ -134,12 +140,18 @@ public class ServiceUtil {
 
     public static long getEmployeesAmountByType(Staff.Type type) {
         switch (type) {
-            case SECURITY: return CACHE_SERVICE.getLong(TOTAL_SECURITY_STAFF);
-            case WORKER: return CACHE_SERVICE.getLong(TOTAL_WORKERS);
-            case CLEANING: return CACHE_SERVICE.getLong(TOTAL_CLEANING_STAFF);
-            case ADMINISTRATION: return CACHE_SERVICE.getLong(TOTAL_ADMIN_STAFF);
-            case CAFFE: return CACHE_SERVICE.getLong(TOTAL_CAFFE_STAFF);
-            default: return -1L;
+            case SECURITY:
+                return CACHE_SERVICE.getLong(TOTAL_SECURITY_STAFF);
+            case WORKER:
+                return CACHE_SERVICE.getLong(TOTAL_WORKERS);
+            case CLEANING:
+                return CACHE_SERVICE.getLong(TOTAL_CLEANING_STAFF);
+            case ADMINISTRATION:
+                return CACHE_SERVICE.getLong(TOTAL_ADMIN_STAFF);
+            case CAFFE:
+                return CACHE_SERVICE.getLong(TOTAL_CAFFE_STAFF);
+            default:
+                return -1L;
         }
     }
 

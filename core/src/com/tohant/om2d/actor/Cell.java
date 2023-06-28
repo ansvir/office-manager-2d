@@ -22,6 +22,7 @@ import com.tohant.om2d.service.UiActorService;
 import java.util.concurrent.ExecutionException;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.service.ServiceUtil.getCellRoom;
 import static com.tohant.om2d.service.ServiceUtil.getOfficeActorId;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OBJECT_CELL;
 import static com.tohant.om2d.storage.Cache.*;
@@ -29,7 +30,6 @@ import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
 
 public class Cell extends Group implements ToggleActor {
 
-    private Array<Array<ObjectCell>> objectCells;
     private boolean isEmpty;
     private boolean isActive;
     private final Skin skin;
@@ -47,8 +47,12 @@ public class Cell extends Group implements ToggleActor {
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
                 setActive(true);
-                if (!isEmpty) {
-                    objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(true)));
+                if (!isEmpty && hasChildren()) {
+                    getChildren().iterator().forEach(c -> {
+                        if (c instanceof ObjectCell) {
+                            ((ObjectCell) c).setGridVisible(false);
+                        }
+                    });
                 }
             }
 
@@ -56,7 +60,13 @@ public class Cell extends Group implements ToggleActor {
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
                 setActive(false);
-                objectCells.iterator().forEach(c -> c.iterator().forEach(c1 -> c1.setGridVisible(false)));
+                if (isEmpty && hasChildren()) {
+                    getChildren().iterator().forEach(c -> {
+                        if (c instanceof ObjectCell) {
+                            ((ObjectCell) c).setGridVisible(false);
+                        }
+                    });
+                }
             }
 
             @Override
@@ -68,7 +78,6 @@ public class Cell extends Group implements ToggleActor {
                     RuntimeCacheService cacheService = RuntimeCacheService.getInstance();
                     Array<GameException> exceptions = (Array<GameException>) cacheService.getObject(GAME_EXCEPTION);
                     exceptions.add(e);
-                    cacheService.setObject(GAME_EXCEPTION, exceptions);
                 }
                 return false;
             }
@@ -83,18 +92,6 @@ public class Cell extends Group implements ToggleActor {
         super.draw(batch, parentAlpha);
     }
 
-    public void destroyRoom() {
-        clearChildren();
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
-        String officeId = getOfficeActorId(currentOfficeId, currentCompanyId);
-        Office office = (Office) uiActorService.getActorById(officeId);
-        .getRoomInfo().getStaff().forEach(office::removeActor);
-        isEmpty = true;
-    }
-
     public boolean isEmpty() {
         return isEmpty;
     }
@@ -105,6 +102,21 @@ public class Cell extends Group implements ToggleActor {
 
     public boolean isActive() {
         return isActive;
+    }
+
+    public boolean isBuilt() {
+        Room room = getCellRoom(this);
+        if (room == null) {
+            return false;
+        }
+        RuntimeCacheService cacheService = RuntimeCacheService.getInstance();
+        Array<RoomBuildingModel> tasks = (Array<RoomBuildingModel>) cacheService.getObject(BUILD_TASKS);
+        for (RoomBuildingModel m : tasks) {
+            if (m.getRoomInfo().getId().equals(room.getRoomInfo().getId()) && !m.getRoom().isDone()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void setActive(boolean active) {

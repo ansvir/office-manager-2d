@@ -32,19 +32,23 @@ public class UpdatePeopleCommand implements Command {
         AtomicLong caffeAmount = new AtomicLong(0L);
         AtomicLong securityAmount = new AtomicLong(0L);
         cells.forEach(c -> {
-            if (c instanceof Cell && ((Cell) c).getRoomModel() != null) {
-                Room.Type type = ((Cell) c).getRoomModel().getRoomInfo().getType();
-                if (type == Room.Type.CLEANING) {
-                    moodIndex.updateAndGet(f -> Float.sum(f, 0.01f));
-                    cleaningAmount.incrementAndGet();
-                } else if (type == Room.Type.CAFFE) {
-                    moodIndex.updateAndGet(f -> Float.sum(f, 0.03f));
-                    hungerIndex.updateAndGet(f -> Float.sum(f, 0.01f));
-                    caffeAmount.incrementAndGet();
-                } else if (type == Room.Type.SECURITY) {
-                    moodIndex.updateAndGet(f -> Float.sum(f, 0.04f));
-                    securityAmount.incrementAndGet();
-                }
+            if (c instanceof Cell) {
+                ((Cell) c).getChildren().iterator().forEach(r -> {
+                    if (r instanceof Room) {
+                        Room.Type type = ((Room) r).getType();
+                        if (type == Room.Type.CLEANING) {
+                            moodIndex.updateAndGet(f -> Float.sum(f, 0.01f));
+                            cleaningAmount.incrementAndGet();
+                        } else if (type == Room.Type.CAFFE) {
+                            moodIndex.updateAndGet(f -> Float.sum(f, 0.03f));
+                            hungerIndex.updateAndGet(f -> Float.sum(f, 0.01f));
+                            caffeAmount.incrementAndGet();
+                        } else if (type == Room.Type.SECURITY) {
+                            moodIndex.updateAndGet(f -> Float.sum(f, 0.04f));
+                            securityAmount.incrementAndGet();
+                        }
+                    }
+                });
             }
         });
         moodIndex.updateAndGet(f -> Float.sum(f, hungerIndex.get()));

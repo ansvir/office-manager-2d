@@ -34,17 +34,17 @@ public class ChooseRoomCommand implements Command {
         Cell cell = (Cell) UiActorService.getInstance().getActorById(cellId);
         Room.Type nextType = getCurrentRoomType();
         if (cell.isEmpty() && nextType != null) {
-            BuildRoomCommand buildRoomCommand = new BuildRoomCommand(r, c);
+            BuildRoomCommand buildRoomCommand = new BuildRoomCommand(cell);
             buildRoomCommand.execute();
             cache.setValue(CURRENT_CELL, cellId);
             new ForceToggleCommand(ROOM_INFO_MODAL.name(), true).execute();
             cache.setValue(CURRENT_ROOM_TYPE, null);
+        } else if (!cell.isEmpty()) {
+            cache.setValue(CURRENT_CELL, cellId);
+            new ForceToggleCommand(ROOM_INFO_MODAL.name(), true).execute();
         } else if (nextType == null) {
             cache.setValue(CURRENT_CELL, null);
             new ForceToggleCommand(ROOM_INFO_MODAL.name(), false).execute();
-        } else {
-            cache.setValue(CURRENT_CELL, cellId);
-            new ForceToggleCommand(ROOM_INFO_MODAL.name(), true).execute();
         }
     }
 

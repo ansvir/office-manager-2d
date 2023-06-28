@@ -4,18 +4,22 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.model.room.RoomInfo;
+import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
+import com.tohant.om2d.service.RuntimeCacheService;
+
+import static com.tohant.om2d.storage.Cache.BUILD_TASKS;
 
 public abstract class Room extends Actor {
 
     private RoomInfo roomInfo;
     private final AssetService assetService;
 
-    public Room(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
+    public Room(String id, RoomInfo roomInfo, float width, float height) {
         setName(id);
         this.roomInfo = roomInfo;
-        setPosition(x, y);
         setSize(width, height);
         this.assetService = AssetService.getInstance();
     }
@@ -79,6 +83,13 @@ public abstract class Room extends Actor {
             texture = assetService.getCaffeRoomTexture();
         } else {
             texture = assetService.getElevatorRoomTexture();
+        }
+        Array<RoomBuildingModel> buildTasks = (Array<RoomBuildingModel>) RuntimeCacheService.getInstance().getObject(BUILD_TASKS);
+        for (RoomBuildingModel model : buildTasks.iterator()) {
+            if (model.getRoomInfo().getId().equals(getRoomInfo().getId())) {
+                texture = assetService.getRoomConstructionTexture();
+                break;
+            }
         }
         batch.draw(texture, getX(), getY());
     }

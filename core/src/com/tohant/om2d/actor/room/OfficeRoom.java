@@ -10,8 +10,8 @@ public class OfficeRoom extends Room {
     private final Type TYPE = Type.OFFICE;
     private final CompanyInfo companyInfo;
 
-    public OfficeRoom(String id, CompanyInfo companyInfo, RoomInfo roomInfo, float x, float y, float width, float height) {
-        super(id, roomInfo, x, y, width, height);
+    public OfficeRoom(String id, CompanyInfo companyInfo, RoomInfo roomInfo, float width, float height) {
+        super(id, roomInfo, width, height);
         this.companyInfo = companyInfo;
     }
 

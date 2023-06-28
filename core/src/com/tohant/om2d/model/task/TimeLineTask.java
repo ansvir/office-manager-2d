@@ -126,6 +126,10 @@ public class TimeLineTask<T> implements AsyncTask<T> {
         return id;
     }
 
+    public long getWaitTime() {
+        return this.waitTime;
+    }
+
     public long getPrevTime() {
         return this.prevTime;
     }

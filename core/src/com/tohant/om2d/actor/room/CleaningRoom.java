@@ -6,8 +6,8 @@ public class CleaningRoom extends Room {
 
     private static final Room.Type TYPE = Room.Type.CLEANING;
 
-    public CleaningRoom(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
-        super(id, roomInfo, x, y, width, height);
+    public CleaningRoom(String id, RoomInfo roomInfo, float width, float height) {
+        super(id, roomInfo, width, height);
     }
 
     @Override

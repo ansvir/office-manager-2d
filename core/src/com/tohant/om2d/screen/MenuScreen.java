@@ -83,7 +83,6 @@ public class MenuScreen implements Screen {
                 if (CompanyJsonDatabase.getInstance().getAll().size >= 3) {
                     Array<GameException> exceptions = (Array<GameException>) RuntimeCacheService.getInstance().getObject(GAME_EXCEPTION);
                     exceptions.add(new GameException(E400));
-                    RuntimeCacheService.getInstance().setObject(GAME_EXCEPTION, exceptions);
                 } else {
                     new ForceToggleCommand(MENU_NEW_COMPANY_MODAL.name(), true).execute();
                 }
@@ -141,6 +140,7 @@ public class MenuScreen implements Screen {
         menuButtons.row();
         menuButtons.add(start).padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD).padBottom(DEFAULT_PAD).grow().center().colspan(2);
         menuButtons.row();
+        JsonDatabase.clearDatabase();
         if (!JsonDatabase.checkFirstInit()) {
             if (!JsonDatabase.checkDatabaseIsEmpty()) {
                 menuButtons.add(load).padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD).padBottom(DEFAULT_PAD).grow().center().colspan(2);

@@ -20,7 +20,7 @@ public class RoomInfo {
     public RoomInfo(String id, Array<Staff> staff, float price, float cost, TimeLineDate buildTime, Room.Type type) {
         this.id = id;
         this.staff = staff;
-        this.number = this.id.substring(0, 4);
+        this.number = UUID.randomUUID().toString().substring(0, 4);
         this.price = price;
         this.cost = cost;
         this.buildTime = buildTime;

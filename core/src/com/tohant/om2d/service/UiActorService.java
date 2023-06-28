@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -121,15 +122,6 @@ public class UiActorService extends ActorService {
         for (int i = 0; i < rooms.length; i++) {
             Actor room = new GameTextButton(rooms[i].name() + ROOM_BUTTON_POSTFIX,
                     new ChooseRoomTypeCommand(i), rooms[i].name(), skin);
-//            int iCopy = i;
-//            room.addListener(new InputListener() {
-//                @Override
-//                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-//                    super.touchDown(event, x, y, pointer, button);
-//                    runtimeCacheService.setValue(CURRENT_ROOM_TYPE, rooms[iCopy].name());
-//                    return false;
-//                }
-//            });
             roomsButtons.add(room);
         }
         return new DefaultList(ROOMS_LIST.name(), roomsButtons);
@@ -219,8 +211,9 @@ public class UiActorService extends ActorService {
         return Array.with(new Item(Items.PLANT), new Item(Items.COOLER));
     }
 
-    private Cell createCell(int r, int c, int level, String officeId, String companyId, int x, int y) {
-        return new Cell(getCellActorId(r, c, level, officeId, companyId), new ChooseRoomCommand(r, c), x, y, CELL_SIZE, CELL_SIZE);
+    private Cell createCell(int x, int y, int level, String officeId, String companyId) {
+        return new Cell(getCellActorId(x, y, level, officeId, companyId),
+                new ChooseRoomCommand(x, y), x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     }
 
     private Map createMap(String companyId, Array<OfficeEntity> offices) {
@@ -256,7 +249,7 @@ public class UiActorService extends ActorService {
         Grid grid = new Grid(getGridActorId(index, officeId, companyId));
         grid.setSize(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
         grid.setPosition(0, 0);
-        cells.forEach(c -> grid.addActor(createCell(c.getX(), c.getY(), index, officeId, companyId, c.getX() * CELL_SIZE, c.getY() * CELL_SIZE)));
+        cells.forEach(c -> grid.addActor(createCell(c.getX(), c.getY(), index, officeId, companyId)));
         drawBorders(grid);
         return grid;
     }

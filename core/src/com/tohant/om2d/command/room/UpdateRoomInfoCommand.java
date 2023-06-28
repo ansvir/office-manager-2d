@@ -1,5 +1,6 @@
 package com.tohant.om2d.command.room;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.tohant.om2d.actor.Cell;
@@ -16,6 +17,7 @@ import com.tohant.om2d.service.UiActorService;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.tohant.om2d.service.ServiceUtil.getCellRoom;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_LABEL;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
 import static com.tohant.om2d.storage.Cache.*;
@@ -42,42 +44,44 @@ public class UpdateRoomInfoCommand implements Command {
                     buildingModel.set(t);
                 }
             });
-            TimeLineTask<Room> roomBuildingTimeline = buildingModel.get().getTimeLineTask();
             DefaultModal roomInfoModal = (DefaultModal) uiActorService.getActorById(ROOM_INFO_MODAL.name());
+            Room room = getCellRoom(currentCell);
             String title;
             String text;
-            RoomInfo roomInfo = buildingModel.get().getRoomInfo();
-            if (roomBuildingTimeline != null && !roomBuildingTimeline.isFinished()) {
-                long days = roomBuildingTimeline.getDate().getDays();
-                days = roomInfo.getBuildTime().getDays() - days;
-                long months = roomBuildingTimeline.getDate().getMonth();
-                months = months == 1L ? 0 : roomInfo.getBuildTime().getMonth() - months;
-                long years = roomBuildingTimeline.getDate().getYears();
-                years = years == 1L ? 0 : roomInfo.getBuildTime().getYears() - years;
-                title = "Construction " + buildSymbol();
-                text = "Building " + roomInfo.getType()
-                        .name().toLowerCase() + " room\n\nTime left: " + days + " d. " + months + " m. " + years + " y.";
-            } else {
-                title = roomInfo.getType().name().charAt(0) +
-                        roomInfo.getType().name().substring(1).toLowerCase()
-                        + " #" + roomInfo.getNumber();
-                if (roomInfo.getType() == Room.Type.OFFICE) {
-                    text = (!buildingModel.get().getRoom().isDone()) ? ""
-                            : "Company: " + ((OfficeRoom) buildingModel.get().getRoom().get()).getCompanyInfo().getName() + "\n"
-                            + "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
-                            + "Cost: " + Math.round(roomInfo.getCost()) + "$/m\n" + "Workers: "
-                            + roomInfo.getStaff().size;
-                } else if (roomInfo.getType() == Room.Type.HALL) {
-                    text = "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
-                            + "Cost: " + Math.round(roomInfo.getCost()) + "$/m";
+            if (room != null) {
+                RoomInfo roomInfo = room.getRoomInfo();
+                if (buildingModel.get() != null && !buildingModel.get().getTimeLineTask().isFinished()) {
+                    TimeLineTask<Room> roomBuildingTimeline = buildingModel.get().getTimeLineTask();
+                    long days = roomBuildingTimeline.getDate().getDays();
+                    days = roomInfo.getBuildTime().getDays() - days;
+                    long months = roomBuildingTimeline.getDate().getMonth();
+                    months = months == 1L ? 0 : roomInfo.getBuildTime().getMonth() - months;
+                    long years = roomBuildingTimeline.getDate().getYears();
+                    years = years == 1L ? 0 : roomInfo.getBuildTime().getYears() - years;
+                    title = "Construction " + buildSymbol();
+                    text = "Building " + roomInfo.getType()
+                            .name().toLowerCase() + " room\n\nTime left: " + days + " d. " + months + " m. " + years + " y.";
                 } else {
-                    text = "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
-                            + "Cost: " + Math.round(roomInfo.getCost()) + "$/m\n" + "Employees: "
-                            + roomInfo.getStaff().size;
+                    title = roomInfo.getType().name().charAt(0) +
+                            roomInfo.getType().name().substring(1).toLowerCase()
+                            + " #" + roomInfo.getNumber();
+                    if (roomInfo.getType() == Room.Type.OFFICE) {
+                        text = "Company: " + ((OfficeRoom) room).getCompanyInfo().getName() + "\n"
+                                + "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
+                                + "Cost: " + Math.round(roomInfo.getCost()) + "$/m\n" + "Workers: "
+                                + roomInfo.getStaff().size;
+                    } else if (roomInfo.getType() == Room.Type.HALL) {
+                        text = "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
+                                + "Cost: " + Math.round(roomInfo.getCost()) + "$/m";
+                    } else {
+                        text = "Price: " + Math.round(roomInfo.getPrice()) + "$\n"
+                                + "Cost: " + Math.round(roomInfo.getCost()) + "$/m\n" + "Employees: "
+                                + roomInfo.getStaff().size;
+                    }
                 }
+                roomInfoModal.getTitleLabel().setText(title);
+                roomInfoModal.updateContentText(ROOM_INFO_LABEL.name(), text);
             }
-            roomInfoModal.getTitleLabel().setText(title);
-            roomInfoModal.updateContentText(ROOM_INFO_LABEL.name(), text);
         }
     }
 

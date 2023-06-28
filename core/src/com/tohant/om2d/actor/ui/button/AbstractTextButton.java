@@ -4,7 +4,12 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.service.RuntimeCacheService;
+
+import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
 
 public abstract class AbstractTextButton extends TextButton {
 
@@ -15,7 +20,13 @@ public abstract class AbstractTextButton extends TextButton {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
-                command.execute();
+                try {
+                    command.execute();
+                } catch (GameException e) {
+                    RuntimeCacheService cacheService = RuntimeCacheService.getInstance();
+                    Array<GameException> exceptions = (Array<GameException>) cacheService.getObject(GAME_EXCEPTION);
+                    exceptions.add(e);
+                }
                 return false;
             }
         });

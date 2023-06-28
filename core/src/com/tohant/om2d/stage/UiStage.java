@@ -33,34 +33,15 @@ public class UiStage extends AbstractStage {
 
     @Override
     public void act(float delta) {
-        try {
-            super.act(delta);
-            checkForExceptionsAndThrowIfExist(0);
-        } catch (Exception e) {
-            if (e instanceof GameException) {
-                Actor a = null;
-                try {
-                    a = getRoot().findActor(NOTIFICATION_MODAL.name());
-                } catch (NullPointerException i) {
-                }
-                if (a != null) {
-                    getRoot().removeActor(a);
-                    new CreateNotificationCommand((GameException) e).execute();
-                    addActor(uiActorService.getActorById(NOTIFICATION_MODAL.name()));
-                }
-            } else {
-                throw e;
-            }
-        } finally {
-            if (deltaTimestamp * 1000L >= DAY_WAIT_TIME_MILLIS) {
-                deltaTimestamp = 0.0f;
-            } else {
-                deltaTimestamp += Gdx.graphics.getDeltaTime();
-            }
-            setBudget(cacheService.getFloat(CURRENT_BUDGET));
-            new UpdateOfficeInfoCommand().execute();
-            new UpdateRoomInfoCommand(deltaTimestamp).execute();
+        super.act(delta);
+        if (deltaTimestamp * 1000L >= DAY_WAIT_TIME_MILLIS) {
+            deltaTimestamp = 0.0f;
+        } else {
+            deltaTimestamp += Gdx.graphics.getDeltaTime();
         }
+        setBudget(cacheService.getFloat(CURRENT_BUDGET));
+        new UpdateOfficeInfoCommand().execute();
+        new UpdateRoomInfoCommand(deltaTimestamp).execute();
     }
 
     @Override

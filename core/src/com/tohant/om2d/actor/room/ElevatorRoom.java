@@ -6,8 +6,8 @@ public class ElevatorRoom extends Room {
 
     private final Type type = Type.ELEVATOR;
 
-    public ElevatorRoom(String id, RoomInfo roomInfo, float x, float y, float width, float height) {
-        super(id, roomInfo, x, y, width, height);
+    public ElevatorRoom(String id, RoomInfo roomInfo, float width, float height) {
+        super(id, roomInfo, width, height);
     }
 
     @Override
