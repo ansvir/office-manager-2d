@@ -4,16 +4,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.*;
+import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 import com.tohant.om2d.actor.ui.button.GameTextButton;
-import com.tohant.om2d.actor.ui.dropdown.HorizontalDropdown;
+import com.tohant.om2d.actor.ui.dropdown.HorizontalTriggerDropdown;
 import com.tohant.om2d.actor.ui.grid.NamedItemGrid;
 import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.actor.ui.label.GameStandaloneLabel;
@@ -39,14 +44,14 @@ import com.tohant.om2d.util.AssetsUtil;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
+import static com.badlogic.gdx.utils.Align.bottomLeft;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
-import static com.tohant.om2d.storage.Cache.CURRENT_COMPANY_ID;
-import static com.tohant.om2d.storage.Cache.UI_ACTORS;
+import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.util.AssetsUtil.resizeTexture;
 
 public class UiActorService extends ActorService {
 
@@ -80,6 +85,7 @@ public class UiActorService extends ActorService {
         uiActors.add(createOfficeInfoModal());
         uiActors.add(createPeopleInfoModal());
         uiActors.add(createEnvironmentModal());
+        uiActors.add(createWorldModal());
         uiActors.add(createNotificationModal());
         uiActors.add(createBottomPane());
         uiActors.add(createRoomsButtonsMenu());
@@ -94,7 +100,9 @@ public class UiActorService extends ActorService {
         GameStandaloneLabel budget = new GameStandaloneLabel(BUDGET_LABEL.name(), "", skin);
         budget.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3);
         budget.setSize(100 * budget.getFontScaleX(), 50);
-        budget.setColor(Color.GREEN);
+        Color color = Color.GREEN;
+        color.a = 1.0f;
+        budget.setColor(color);
         return budget;
     }
 
@@ -103,16 +111,18 @@ public class UiActorService extends ActorService {
         time.setSize(100 * time.getFontScaleX(), 50);
         time.setPosition(Gdx.graphics.getWidth() - time.getFontScaleX()
                 * time.getWidth() - DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3);
-        time.setColor(Color.BLACK);
+        Color color = Color.BLACK;
+        color.a = 1.0f;
+        time.setColor(color);
         return time;
     }
 
-    private HorizontalDropdown createRoomsButtonsMenu() {
+    private HorizontalTriggerDropdown createRoomsButtonsMenu() {
         AbstractList roomsButtons = createRoomsButtons();
-        HorizontalDropdown dropdown = new HorizontalDropdown(ROOMS_DROP_DOWN.name(), roomsButtons, createToggleRoomsMenuButton());
-        dropdown.setSize(DEFAULT_PAD * 7.45f,
-                200 + DEFAULT_PAD * 2 * roomsButtons.getElements().size);
-        dropdown.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 3.9f - dropdown.getWidth(), Gdx.graphics.getHeight() / 7f);
+        HorizontalTriggerDropdown dropdown = new HorizontalTriggerDropdown(ROOMS_DROP_DOWN.name(), roomsButtons, createToggleRoomsMenuButton());
+        dropdown.setSize(dropdown.getOptions().getElements().get(0).getWidth() + dropdown.getTriggerButton().getWidth() + DEFAULT_PAD * 5f,
+                dropdown.getOptions().getElements().get(0).getHeight() + DEFAULT_PAD * 3 * roomsButtons.getElements().size);
+        dropdown.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2f - dropdown.getWidth(), Gdx.graphics.getHeight() / 8f);
         return dropdown;
     }
 
@@ -155,6 +165,10 @@ public class UiActorService extends ActorService {
         return new GameTextButton(CLOSE_ENVIRONMENT_MODAL_BUTTON.name(), new ToggleCommand(ENVIRONMENT_MODAL.name()), "X", skin);
     }
 
+    private AbstractTextButton createCloseWorldModalButton() {
+        return new GameTextButton(CLOSE_WORLD_MODAL_BUTTON.name(), new ToggleCommand(WORLD_MODAL.name()), "X", skin);
+    }
+
     private AbstractTextButton createCloseNotificationButton() {
         return new GameTextButton(CLOSE_NOTIFICATION_BUTTON.name(), new ToggleCommand(NOTIFICATION_MODAL.name()), "X", skin);
     }
@@ -171,12 +185,17 @@ public class UiActorService extends ActorService {
         return new GameTextButton(TOGGLE_PEOPLE_INFO_BUTTON.name(), new ToggleCommand(PEOPLE_INFO_MODAL.name()), "People", skin);
     }
 
+    private AbstractTextButton createToggleWorldModalButton() {
+        return new GameTextButton(TOGGLE_WORLD_MODAL_BUTTON.name(), new ToggleCommand(WORLD_MODAL.name()), "World", skin);
+    }
+
     private AbstractTextButton createCollapsePaneButton() {
         return new GameTextButton(COLLAPSE_BUTTON.name(), new ToggleCommand(MAIN_PANE.name()), "-", skin);
     }
 
     private AbstractPane createBottomPane() {
-        AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton(), createTogglePeopleInfoButton(), createToggleEnvironmentModalButton()), createCollapsePaneButton(),
+        AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton(), createTogglePeopleInfoButton(),
+                createToggleEnvironmentModalButton(), createToggleWorldModalButton()), createCollapsePaneButton(),
                 AbstractPane.Alignment.BOTTOM, "Office Manager 2D", skin);
         pane.setPosition(0,0);
         return pane;
@@ -196,6 +215,84 @@ public class UiActorService extends ActorService {
         modal.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
         modal.toggle();
         return modal;
+    }
+
+    private DefaultModal createWorldModal() {
+        Texture worldMapTexture = AssetService.getInstance().getWorldMapTexture();
+        Vector2 worldMapRatio = new Vector2(2f, 2f);
+        Vector2 modalSize = new Vector2(MathUtils.clamp(worldMapTexture.getWidth() * 2f, 0, Gdx.graphics.getWidth()),
+                MathUtils.clamp(worldMapTexture.getHeight() * 2f, 0, Gdx.graphics.getHeight()));
+        Vector2 worldMapSize = new Vector2(modalSize.x, modalSize.y);
+//        Texture worldMap = resizeTexture(AssetService.getInstance().getWorldMapTexture(), 700 * 2, 360 * 1.5f);
+        Image image;
+        Texture worldMap = resizeTexture(worldMapTexture, worldMapSize.x, worldMapSize.y);
+        if (modalSize.x > worldMapSize.x || modalSize.y > worldMapSize.y) {
+            Texture worldMapBg = resizeTexture(AssetService.getInstance().getWorldMapBgTexture(), modalSize.x, modalSize.y);
+            Pixmap pixmap = worldMap.getTextureData().consumePixmap();
+            worldMapBg.draw(pixmap, (int) (worldMapBg.getWidth() / 2f - worldMap.getWidth() / 2f), (int) (worldMapBg.getHeight() / 2f) - (int) (worldMap.getHeight() / 2f));
+            pixmap.dispose();
+            image = new Image(worldMapBg);
+        } else {
+            image = new Image(worldMap);
+        }
+        Group group = new Group();
+        group.setSize(image.getWidth(), image.getHeight());
+        group.addActor(image);
+        Arrays.stream(CompanyEntity.Region.values()).forEach(r -> {
+            ImageTextButton regionButton = getRegionButton(r);
+            switch (r) {
+                case ASIA: {
+                    regionButton.setPosition(500 * worldMapRatio.x, worldMapSize.y - 80 * worldMapRatio.y);
+                    group.addActor(regionButton);
+                    break;
+                }
+                case AFRICA: {
+                    regionButton.setPosition(370 * worldMapRatio.x, worldMapSize.y  - 160 * worldMapRatio.y);
+                    group.addActor(regionButton);
+                    break;
+                }
+                case EUROPE: {
+                    regionButton.setPosition(400 * worldMapRatio.x, worldMapSize.y - 70 * worldMapRatio.y);
+                    group.addActor(regionButton);
+                    break;
+                }
+                case AMERICA: {
+                    regionButton.setPosition(170 * worldMapRatio.x, worldMapSize.y - 125 * worldMapRatio.y);
+                    group.addActor(regionButton);
+                    break;
+                }
+                case OCEANIA: {
+                    regionButton.setPosition(570 * worldMapRatio.x, worldMapSize.y - 170 * worldMapRatio.y);
+                    group.addActor(regionButton);
+                    break;
+                }
+                case AUSTRALIA: {
+                    regionButton.setPosition(610 * worldMapRatio.x, worldMapSize.y - 225 * worldMapRatio.y);
+                    group.addActor(regionButton);
+                    break;
+                }
+            }
+        });
+        DefaultModal modal = new DefaultModal(WORLD_MODAL.name(), "World", Array.with(group),
+                createCloseWorldModalButton(), skin);
+        modal.setSize(modalSize.x, modalSize.y);
+        modal.setPosition(Gdx.graphics.getWidth() / 2f - modal.getWidth() / 2f, Gdx.graphics.getHeight() / 2f - modal.getHeight() / 2f);
+        modal.toggle();
+        return modal;
+    }
+
+    private ImageTextButton getRegionButton(CompanyEntity.Region region) {
+        ImageTextButton button = new ImageTextButton(region.name().charAt(0)
+                + region.name().replace("_", " ").substring(1).toLowerCase(), skin);
+        button.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchDown(event, x, y, pointer, button);
+                RuntimeCacheService.getInstance().setValue(CURRENT_REGION, region.name());
+                return false;
+            }
+        });
+        return button;
     }
 
     private DefaultModal createEnvironmentModal() {
@@ -265,7 +362,7 @@ public class UiActorService extends ActorService {
     private GameTextButton createToggleGridButton() {;
         GameTextButton toggleGridButton = new GameTextButton(TOGGLE_GRID_BUTTON.name(), new ToggleGridCommand(), "#", skin);
         toggleGridButton.getLabel().setFontScale(1.5f);
-        toggleGridButton.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 3.68f, Gdx.graphics.getHeight() / 4.08f);
+        toggleGridButton.setPosition(Gdx.graphics.getWidth() - toggleGridButton.getWidth() - DEFAULT_PAD * 1.16f, Gdx.graphics.getHeight() / 4.6f);
         return toggleGridButton;
     }
 
@@ -306,10 +403,11 @@ public class UiActorService extends ActorService {
 
     public enum UiComponentConstant {
         ROOMS_DROP_DOWN, ROOMS_LIST, ROOM_BUTTON_POSTFIX, ROOMS_MENU_TOGGLE_BUTTON, ROOM_INFO_MODAL,
-        CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_PEOPLE_INFO_BUTTON, CLOSE_ENVIRONMENT_MODAL_BUTTON,
+        CLOSE_ROOM_INFO_BUTTON, CLOSE_OFFICE_INFO_BUTTON, CLOSE_PEOPLE_INFO_BUTTON, CLOSE_ENVIRONMENT_MODAL_BUTTON, CLOSE_WORLD_MODAL_BUTTON,
         CLOSE_NOTIFICATION_BUTTON, DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON,
-        ENVIRONMENT_MODAL, PEOPLE_INFO_MODAL,
+        ENVIRONMENT_MODAL, PEOPLE_INFO_MODAL, WORLD_MODAL,
         TOGGLE_ENVIRONMENT_MODAL_BUTTON, ENVIRONMENT_MODAL_ITEM_GRID, TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
+        TOGGLE_WORLD_MODAL_BUTTON,
         OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
         NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL;
 

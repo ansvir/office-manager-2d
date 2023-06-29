@@ -9,8 +9,9 @@ public class CompanyEntity implements Serializable {
     private String id;
     private String name;
     private Array<String> officesIds;
+    private Region region;
 
-    public CompanyEntity(String id, String name, Array<String> officesIds) {
+    public CompanyEntity(String id, String name, Array<String> officesIds, Region region) {
         this.id = id;
         this.name = name;
         this.officesIds = officesIds;
@@ -43,5 +44,17 @@ public class CompanyEntity implements Serializable {
     public void setOfficesIds(Array<String> officesIds) {
         this.officesIds = officesIds;
     }
-    
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public enum Region {
+        EUROPE, AMERICA, ASIA, AFRICA, AUSTRALIA, OCEANIA
+    }
+
 }

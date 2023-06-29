@@ -16,7 +16,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 import com.tohant.om2d.actor.ui.button.GameTextButton;
+import com.tohant.om2d.actor.ui.dropdown.AbstractDropDown;
+import com.tohant.om2d.actor.ui.dropdown.VerticalInputDropDown;
 import com.tohant.om2d.actor.ui.label.GameLabel;
+import com.tohant.om2d.actor.ui.list.AbstractList;
+import com.tohant.om2d.actor.ui.list.DefaultList;
 import com.tohant.om2d.actor.ui.modal.AbstractModal;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.actor.ui.slide.AbstractSlideShow;
@@ -46,6 +50,7 @@ import java.util.stream.IntStream;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.model.entity.CompanyEntity.Region.EUROPE;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
 import static com.tohant.om2d.service.ServiceUtil.buildRandomCompanyName;
 import static com.tohant.om2d.storage.Cache.*;
@@ -116,10 +121,20 @@ public class MenuUiActorService extends ActorService {
                 RuntimeCacheService.getInstance().setValue(COMPANY_NAME, input.getText());
             }
         });
-        input.setWidth(Gdx.graphics.getWidth() / 8f);
         input.setName(MENU_NEW_COMPANY_NAME_INPUT.name());
-        table.add(label).pad(DEFAULT_PAD);
-        table.add(input);
+        Array<Actor> regionsButtons = new Array<>(Arrays.stream(CompanyEntity.Region.values())
+                .map(r -> new GameTextButton("MENU_" + r.name() + "_BUTTON", () -> RuntimeCacheService.getInstance().setValue(CURRENT_REGION, r.name()),
+                        r.name().replace("_", " ").charAt(0)
+                                + r.name().replace("_", " ").substring(1).toLowerCase(), skin)).toArray(GameTextButton[]::new));
+        RuntimeCacheService.getInstance().setValue(CURRENT_REGION, EUROPE.name());
+        AbstractList regionsList = new DefaultList(MENU_NEW_COMPANY_NAME_REGIONS_LIST.name(), regionsButtons);
+        AbstractDropDown regions = new VerticalInputDropDown(MENU_NEW_COMPANY_NAME_REGIONS_DROPDOWN.name(), regionsList);
+        GameLabel regionLabel = new GameLabel(MENU_NEW_COMPANY_REGION_LABEL.name(), "Region", skin);
+        table.add(label).left().padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD);
+        table.add(input).right().growX();
+        table.row().padTop(DEFAULT_PAD);
+        table.add(regionLabel).top().left().padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD);
+        table.add(regions).right();
         return table;
     }
 
@@ -212,7 +227,9 @@ public class MenuUiActorService extends ActorService {
                     RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, Array.with(levelEntity.getId()));
             officeJsonDatabase.save(officeEntity);
             CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
-            CompanyEntity companyEntity = new CompanyEntity(UUID.randomUUID().toString(), RuntimeCacheService.getInstance().getValue(COMPANY_NAME), Array.with(officeEntity.getId()));
+            CompanyEntity companyEntity = new CompanyEntity(UUID.randomUUID().toString(),
+                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), Array.with(officeEntity.getId()),
+                    CompanyEntity.Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
             companyJsonDatabase.save(companyEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_COMPANY_ID, companyEntity.getId());
             RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeEntity.getId());
@@ -229,7 +246,8 @@ public class MenuUiActorService extends ActorService {
         MENU_NOTIFICATION_MODAL, MENU_NOTIFICATION_INFO_LABEL, MENU_CLOSE_NOTIFICATION_BUTTON,
         MENU_NEW_COMPANY_MODAL, MENU_CLOSE_NEW_COMPANY_BUTTON,
         MENU_NEW_COMPANY_SLIDESHOW,
-        MENU_NEW_COMPANY_NAME_LABEL, MENU_NEW_COMPANY_NAME_INPUT,
+        MENU_NEW_COMPANY_NAME_LABEL, MENU_NEW_COMPANY_NAME_INPUT, MENU_NEW_COMPANY_NAME_REGIONS_LIST, MENU_NEW_COMPANY_REGION_LABEL,
+        MENU_NEW_COMPANY_NAME_REGIONS_DROPDOWN,
         MENU_NEW_COMPANY_DIRECTOR_IMAGE, MENU_NEW_COMPANY_DIRECTOR_HAIR_BUTTON, MENU_NEW_COMPANY_DIRECTOR_SKIN_BUTTON,
         MENU_NEW_COMPANY_DIRECTOR_BODY_BUTTON,
         MENU_NEW_COMPANY_START_BUTTON

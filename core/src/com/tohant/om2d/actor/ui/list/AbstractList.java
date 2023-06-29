@@ -13,8 +13,12 @@ public abstract class AbstractList extends Table {
 
     public AbstractList(String id, Array<Actor> elements) {
         setName(id);
-        for (Actor option : elements) {
-            add(option).pad(DEFAULT_PAD / 5f).width(200f).row();
+        for (int i = 0; i < elements.size; i++) {
+            if (i < elements.size - 1) {
+                add(elements.get(i)).padBottom(DEFAULT_PAD / 5f).width(200f).row();
+            } else {
+                add(elements.get(i)).width(200f);
+            }
         }
         this.elements = elements;
         this.selected = -1;

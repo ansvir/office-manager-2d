@@ -1,5 +1,6 @@
 package com.tohant.om2d.actor.ui.dropdown;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -11,9 +12,9 @@ public abstract class AbstractDropDown extends Table implements ToggleActor {
 
     private boolean isExpanded;
     private final AbstractList options;
-    private final AbstractTextButton triggerButton;
+    private final Actor triggerButton;
 
-    public AbstractDropDown(String id, AbstractList options, AbstractTextButton triggerButton) {
+    public AbstractDropDown(String id, AbstractList options, Actor triggerButton) {
         setName(id);
         this.options = options;
         add(options);
@@ -31,21 +32,21 @@ public abstract class AbstractDropDown extends Table implements ToggleActor {
         return options;
     }
 
-    public AbstractTextButton getTriggerButton() {
+    public Actor getTriggerButton() {
         return triggerButton;
     }
 
-    protected void showOptions() {
-        isExpanded = true;
-        getOptions().setVisible(true);
-        triggerButton.setText(">");
+    public boolean isExpanded() {
+        return isExpanded;
     }
 
-    protected void hideOptions() {
-        isExpanded = false;
-        getOptions().setVisible(false);
-        triggerButton.setText("<");
+    public void setExpanded(boolean expanded) {
+        isExpanded = expanded;
     }
+
+    public abstract void showOptions();
+
+    public abstract void hideOptions();
 
     @Override
     public void toggle() {

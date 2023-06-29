@@ -29,6 +29,7 @@ public interface Cache {
     String READY_TO_START = "READY_TO_START";
     String BUILD_TASKS = "BUILD_TASKS";
     String CURRENT_COMPANY_ID = "CURR_COMPANY_ID";
+    String CURRENT_REGION = "CURR_REGION";
     String COMPANY_NAME = "COMPANY_NAME";
     String TOTAL_COSTS = "TOTAL_COSTS";
     String TOTAL_SALARIES = "TOTAL_SALAR";

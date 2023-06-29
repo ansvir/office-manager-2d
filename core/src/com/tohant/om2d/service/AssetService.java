@@ -57,6 +57,8 @@ public class AssetService implements Disposable {
     private final Sound DEMOLISH_SOUND;
     private final Sound CHOOSE_SOUND;
     private final Music MENU_SCREEN_BG_MUSIC;
+    private final Texture WORLD_MAP;
+    private final Texture WORLD_MAP_BG;
 
     private AssetService() {
         this.ACTIVE_EMPTY_CELL = createActiveEmptyCellTexture();
@@ -90,6 +92,8 @@ public class AssetService implements Disposable {
         this.DEMOLISH_SOUND = createDemolishSound();
         this.CHOOSE_SOUND = createChooseSound();
         this.MENU_SCREEN_BG_MUSIC = createMenuScreenBgMusic();
+        this.WORLD_MAP = createWorldMapTexture();
+        this.WORLD_MAP_BG = createWorldMapBgTexture();
     }
 
     public static AssetService getInstance() {
@@ -234,6 +238,14 @@ public class AssetService implements Disposable {
             regions.put(t, directions);
         }
         return regions;
+    }
+
+    private Texture createWorldMapTexture() {
+        return new Texture(Gdx.files.internal("world_map.jpg"));
+    }
+
+    private Texture createWorldMapBgTexture() {
+        return new Texture(Gdx.files.internal("world_map_bg.jpg"));
     }
 
     private Cursor createDefaultCursor() {
@@ -389,6 +401,14 @@ public class AssetService implements Disposable {
 
     public Music getMenuScreenBgMusic() {
         return MENU_SCREEN_BG_MUSIC;
+    }
+
+    public Texture getWorldMapTexture() {
+        return WORLD_MAP;
+    }
+
+    public Texture getWorldMapBgTexture() {
+        return WORLD_MAP_BG;
     }
 
     public enum GameCursor {
@@ -716,6 +736,8 @@ public class AssetService implements Disposable {
         this.NOTIFICATION_SOUND.dispose();
         this.CONSTRUCTION_SOUND.dispose();
         this.DEMOLISH_SOUND.dispose();
+        this.WORLD_MAP.dispose();
+        this.WORLD_MAP_BG.dispose();
         if (this.background != null) {
             this.background.dispose();
         }

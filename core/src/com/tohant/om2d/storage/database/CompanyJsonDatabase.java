@@ -17,6 +17,7 @@ public class CompanyJsonDatabase extends JsonDatabase<CompanyEntity> {
     private CompanyJsonDatabase() {
         json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
+        json.setEnumNames(true);
     }
 
     public static CompanyJsonDatabase getInstance() {

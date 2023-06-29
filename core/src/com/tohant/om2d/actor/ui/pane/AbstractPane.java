@@ -31,7 +31,7 @@ public abstract class AbstractPane extends Window implements ToggleActor {
         setMovable(false);
         setResizable(false);
         for (Actor e : this.elements) {
-            add(e).pad(DEFAULT_PAD);
+            add(e).pad(DEFAULT_PAD).grow();
         }
         switch (this.alignment) {
             case BOTTOM: {
