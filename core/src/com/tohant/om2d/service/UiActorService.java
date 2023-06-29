@@ -30,6 +30,7 @@ import com.tohant.om2d.actor.ui.pane.DefaultPane;
 import com.tohant.om2d.command.room.ChooseRoomCommand;
 import com.tohant.om2d.command.room.ChooseRoomTypeCommand;
 import com.tohant.om2d.command.room.DestroyRoomCommand;
+import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.command.ui.ToggleGridCommand;
 import com.tohant.om2d.model.entity.CellEntity;
@@ -189,13 +190,24 @@ public class UiActorService extends ActorService {
         return new GameTextButton(TOGGLE_WORLD_MODAL_BUTTON.name(), new ToggleCommand(WORLD_MODAL.name()), "World", skin);
     }
 
+    private AbstractTextButton createToggleAllWindowsButton() {
+        return new GameTextButton(TOGGLE_ALL_WINDOWS_BUTTON.name(), () -> {
+            Actor[] actors = new Actor[] { getActorById(OFFICE_INFO_MODAL.name()),
+                    getActorById(ENVIRONMENT_MODAL.name()),
+                    getActorById(PEOPLE_INFO_MODAL.name()),
+                    getActorById(WORLD_MODAL.name()) };
+            boolean isVisible = Arrays.stream(actors).anyMatch(Actor::isVisible);
+            Arrays.stream(actors).forEach(a -> new ForceToggleCommand(a.getName(), !isVisible).execute());
+        }, "VIEW", skin);
+    }
+
     private AbstractTextButton createCollapsePaneButton() {
         return new GameTextButton(COLLAPSE_BUTTON.name(), new ToggleCommand(MAIN_PANE.name()), "-", skin);
     }
 
     private AbstractPane createBottomPane() {
         AbstractPane pane = new DefaultPane(MAIN_PANE.name(), Array.with(createToggleOfficeInfoButton(), createTogglePeopleInfoButton(),
-                createToggleEnvironmentModalButton(), createToggleWorldModalButton()), createCollapsePaneButton(),
+                createToggleEnvironmentModalButton(), createToggleWorldModalButton(), createToggleAllWindowsButton()), createCollapsePaneButton(),
                 AbstractPane.Alignment.BOTTOM, "Office Manager 2D", skin);
         pane.setPosition(0,0);
         return pane;
@@ -407,7 +419,7 @@ public class UiActorService extends ActorService {
         CLOSE_NOTIFICATION_BUTTON, DESTROY_ROOM_BUTTON, NOTIFICATION_MODAL, MAIN_PANE, COLLAPSE_BUTTON, OFFICE_INFO_MODAL, TOGGLE_OFFICE_INFO_BUTTON,
         ENVIRONMENT_MODAL, PEOPLE_INFO_MODAL, WORLD_MODAL,
         TOGGLE_ENVIRONMENT_MODAL_BUTTON, ENVIRONMENT_MODAL_ITEM_GRID, TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
-        TOGGLE_WORLD_MODAL_BUTTON,
+        TOGGLE_WORLD_MODAL_BUTTON, TOGGLE_ALL_WINDOWS_BUTTON,
         OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
         NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL;
 
