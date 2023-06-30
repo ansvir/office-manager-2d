@@ -11,13 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 import com.tohant.om2d.actor.ui.button.GameTextButton;
+import com.tohant.om2d.actor.ui.dropdown.AbstractDropDown;
 import com.tohant.om2d.actor.ui.dropdown.HorizontalTriggerDropdown;
 import com.tohant.om2d.actor.ui.grid.NamedItemGrid;
 import com.tohant.om2d.actor.ui.label.GameLabel;
@@ -120,7 +120,7 @@ public class UiActorService extends ActorService {
 
     private HorizontalTriggerDropdown createRoomsButtonsMenu() {
         AbstractList roomsButtons = createRoomsButtons();
-        HorizontalTriggerDropdown dropdown = new HorizontalTriggerDropdown(ROOMS_DROP_DOWN.name(), roomsButtons, createToggleRoomsMenuButton());
+        HorizontalTriggerDropdown dropdown = new HorizontalTriggerDropdown(ROOMS_DROP_DOWN.name(), roomsButtons, createToggleRoomsMenuButton(), HorizontalTriggerDropdown.TriggerButtonType.RIGHT_BOTTOM);
         dropdown.setSize(dropdown.getOptions().getElements().get(0).getWidth() + dropdown.getTriggerButton().getWidth() + DEFAULT_PAD * 5f,
                 dropdown.getOptions().getElements().get(0).getHeight() + DEFAULT_PAD * 3 * roomsButtons.getElements().size);
         dropdown.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2f - dropdown.getWidth(), Gdx.graphics.getHeight() / 8f);
@@ -235,7 +235,6 @@ public class UiActorService extends ActorService {
         Vector2 modalSize = new Vector2(MathUtils.clamp(worldMapTexture.getWidth() * 2f, 0, Gdx.graphics.getWidth()),
                 MathUtils.clamp(worldMapTexture.getHeight() * 2f, 0, Gdx.graphics.getHeight()));
         Vector2 worldMapSize = new Vector2(modalSize.x, modalSize.y);
-//        Texture worldMap = resizeTexture(AssetService.getInstance().getWorldMapTexture(), 700 * 2, 360 * 1.5f);
         Image image;
         Texture worldMap = resizeTexture(worldMapTexture, worldMapSize.x, worldMapSize.y);
         if (modalSize.x > worldMapSize.x || modalSize.y > worldMapSize.y) {
@@ -252,35 +251,41 @@ public class UiActorService extends ActorService {
         group.addActor(image);
         Arrays.stream(CompanyEntity.Region.values()).forEach(r -> {
             ImageTextButton regionButton = getRegionButton(r);
+            GameTextButton buildOfficeOption = new GameTextButton("BUILD_OFFICE_" + r.name() + "_REGION_BUTTON", () -> {
+
+            }, "Build office", skin);
+            AbstractList regionDetailsList = new DefaultList(r.name() + "_REGION_WORLD_MAP_DETAILS_LIST", Array.with(buildOfficeOption));
+            AbstractDropDown regionDetails = new HorizontalTriggerDropdown(r.name() + "_REGION_WORLD_MAP_DETAILS_DROPDOWN",
+                    regionDetailsList, regionButton, HorizontalTriggerDropdown.TriggerButtonType.LEFT_TOP);
             switch (r) {
                 case ASIA: {
-                    regionButton.setPosition(500 * worldMapRatio.x, worldMapSize.y - 80 * worldMapRatio.y);
-                    group.addActor(regionButton);
+                    regionDetails.setPosition(500 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y - 80 * worldMapRatio.y);
+                    group.addActor(regionDetails);
                     break;
                 }
                 case AFRICA: {
-                    regionButton.setPosition(370 * worldMapRatio.x, worldMapSize.y  - 160 * worldMapRatio.y);
-                    group.addActor(regionButton);
+                    regionDetails.setPosition(370 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y  - 160 * worldMapRatio.y);
+                    group.addActor(regionDetails);
                     break;
                 }
                 case EUROPE: {
-                    regionButton.setPosition(400 * worldMapRatio.x, worldMapSize.y - 70 * worldMapRatio.y);
-                    group.addActor(regionButton);
+                    regionDetails.setPosition(400 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y - 70 * worldMapRatio.y);
+                    group.addActor(regionDetails);
                     break;
                 }
                 case AMERICA: {
-                    regionButton.setPosition(170 * worldMapRatio.x, worldMapSize.y - 125 * worldMapRatio.y);
-                    group.addActor(regionButton);
+                    regionDetails.setPosition(170 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y - 125 * worldMapRatio.y);
+                    group.addActor(regionDetails);
                     break;
                 }
                 case OCEANIA: {
-                    regionButton.setPosition(570 * worldMapRatio.x, worldMapSize.y - 170 * worldMapRatio.y);
-                    group.addActor(regionButton);
+                    regionDetails.setPosition(570 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y - 170 * worldMapRatio.y);
+                    group.addActor(regionDetails);
                     break;
                 }
                 case AUSTRALIA: {
-                    regionButton.setPosition(610 * worldMapRatio.x, worldMapSize.y - 225 * worldMapRatio.y);
-                    group.addActor(regionButton);
+                    regionDetails.setPosition(610 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y - 225 * worldMapRatio.y);
+                    group.addActor(regionDetails);
                     break;
                 }
             }
