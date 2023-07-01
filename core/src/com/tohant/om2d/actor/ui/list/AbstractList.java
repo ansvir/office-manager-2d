@@ -15,9 +15,9 @@ public abstract class AbstractList extends Table {
         setName(id);
         for (int i = 0; i < elements.size; i++) {
             if (i < elements.size - 1) {
-                add(elements.get(i)).padBottom(DEFAULT_PAD / 5f).width(200f).row();
+                add(elements.get(i)).padBottom(DEFAULT_PAD / 5f).growX().row();
             } else {
-                add(elements.get(i)).width(200f);
+                add(elements.get(i)).growX();
             }
         }
         this.elements = elements;

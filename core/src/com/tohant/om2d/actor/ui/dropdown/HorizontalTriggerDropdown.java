@@ -8,12 +8,15 @@ import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
 public class HorizontalTriggerDropdown extends AbstractDropDown {
 
-    public HorizontalTriggerDropdown(String id, AbstractList options, Button triggerButton, TriggerButtonType triggerButtonType) {
+    private final boolean simpleTriggerText;
+
+    public HorizontalTriggerDropdown(String id, AbstractList options, Button triggerButton, TriggerButtonType triggerButtonType, boolean simpleTriggerText) {
         super(id, options, triggerButton);
         switch (triggerButtonType) {
             case RIGHT_BOTTOM: add(triggerButton).bottom().padLeft(DEFAULT_PAD / 5f); break;
             case LEFT_TOP: add(triggerButton).top().padRight(DEFAULT_PAD); getCells().reverse(); break;
         }
+        this.simpleTriggerText = simpleTriggerText;
         hideOptions();
     }
 
@@ -21,7 +24,7 @@ public class HorizontalTriggerDropdown extends AbstractDropDown {
     public void showOptions() {
         setExpanded(true);
         getOptions().setVisible(true);
-        if (getTriggerButton() instanceof TextButton) {
+        if (getTriggerButton() instanceof TextButton && simpleTriggerText) {
             ((TextButton) getTriggerButton()).setText(">");
         }
     }
@@ -30,7 +33,7 @@ public class HorizontalTriggerDropdown extends AbstractDropDown {
     public void hideOptions() {
         setExpanded(false);
         getOptions().setVisible(false);
-        if (getTriggerButton() instanceof TextButton) {
+        if (getTriggerButton() instanceof TextButton && simpleTriggerText) {
             ((TextButton) getTriggerButton()).setText("<");
         }
     }

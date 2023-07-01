@@ -47,7 +47,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
-import static com.badlogic.gdx.utils.Align.bottomLeft;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
@@ -120,7 +119,7 @@ public class UiActorService extends ActorService {
 
     private HorizontalTriggerDropdown createRoomsButtonsMenu() {
         AbstractList roomsButtons = createRoomsButtons();
-        HorizontalTriggerDropdown dropdown = new HorizontalTriggerDropdown(ROOMS_DROP_DOWN.name(), roomsButtons, createToggleRoomsMenuButton(), HorizontalTriggerDropdown.TriggerButtonType.RIGHT_BOTTOM);
+        HorizontalTriggerDropdown dropdown = new HorizontalTriggerDropdown(ROOMS_DROP_DOWN.name(), roomsButtons, createToggleRoomsMenuButton(), HorizontalTriggerDropdown.TriggerButtonType.RIGHT_BOTTOM, true);
         dropdown.setSize(dropdown.getOptions().getElements().get(0).getWidth() + dropdown.getTriggerButton().getWidth() + DEFAULT_PAD * 5f,
                 dropdown.getOptions().getElements().get(0).getHeight() + DEFAULT_PAD * 3 * roomsButtons.getElements().size);
         dropdown.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2f - dropdown.getWidth(), Gdx.graphics.getHeight() / 8f);
@@ -234,18 +233,13 @@ public class UiActorService extends ActorService {
         Vector2 worldMapRatio = new Vector2(2f, 2f);
         Vector2 modalSize = new Vector2(MathUtils.clamp(worldMapTexture.getWidth() * 2f, 0, Gdx.graphics.getWidth()),
                 MathUtils.clamp(worldMapTexture.getHeight() * 2f, 0, Gdx.graphics.getHeight()));
+        GameLabel popularity = new GameLabel("WORLD_MAP_POPULARITY_LABEL", "My Popularity:", skin);
         Vector2 worldMapSize = new Vector2(modalSize.x, modalSize.y);
-        Image image;
         Texture worldMap = resizeTexture(worldMapTexture, worldMapSize.x, worldMapSize.y);
-        if (modalSize.x > worldMapSize.x || modalSize.y > worldMapSize.y) {
-            Texture worldMapBg = resizeTexture(AssetService.getInstance().getWorldMapBgTexture(), modalSize.x, modalSize.y);
-            Pixmap pixmap = worldMap.getTextureData().consumePixmap();
-            worldMapBg.draw(pixmap, (int) (worldMapBg.getWidth() / 2f - worldMap.getWidth() / 2f), (int) (worldMapBg.getHeight() / 2f) - (int) (worldMap.getHeight() / 2f));
-            pixmap.dispose();
-            image = new Image(worldMapBg);
-        } else {
-            image = new Image(worldMap);
-        }
+        Table contentTable = new Table();
+        contentTable.add(popularity).left().pad(DEFAULT_PAD);
+        contentTable.row();
+        Image image = new Image(worldMap);
         Group group = new Group();
         group.setSize(image.getWidth(), image.getHeight());
         group.addActor(image);
@@ -256,7 +250,7 @@ public class UiActorService extends ActorService {
             }, "Build office", skin);
             AbstractList regionDetailsList = new DefaultList(r.name() + "_REGION_WORLD_MAP_DETAILS_LIST", Array.with(buildOfficeOption));
             AbstractDropDown regionDetails = new HorizontalTriggerDropdown(r.name() + "_REGION_WORLD_MAP_DETAILS_DROPDOWN",
-                    regionDetailsList, regionButton, HorizontalTriggerDropdown.TriggerButtonType.LEFT_TOP);
+                    regionDetailsList, regionButton, HorizontalTriggerDropdown.TriggerButtonType.LEFT_TOP, false);
             switch (r) {
                 case ASIA: {
                     regionDetails.setPosition(500 * worldMapRatio.x + buildOfficeOption.getWidth(), worldMapSize.y - 80 * worldMapRatio.y);
@@ -290,9 +284,10 @@ public class UiActorService extends ActorService {
                 }
             }
         });
-        DefaultModal modal = new DefaultModal(WORLD_MODAL.name(), "World", Array.with(group),
+        contentTable.add(group).bottom();
+        DefaultModal modal = new DefaultModal(WORLD_MODAL.name(), "World", Array.with(contentTable),
                 createCloseWorldModalButton(), skin);
-        modal.setSize(modalSize.x, modalSize.y);
+        modal.setSize(modalSize.x, modalSize.y + popularity.getHeight() + DEFAULT_PAD * 3f);
         modal.setPosition(Gdx.graphics.getWidth() / 2f - modal.getWidth() / 2f, Gdx.graphics.getHeight() / 2f - modal.getHeight() / 2f);
         modal.toggle();
         return modal;
@@ -343,7 +338,7 @@ public class UiActorService extends ActorService {
 
     private Office createOffice(String companyId, OfficeEntity officeEntity, float width, float height) {
         LevelJsonDatabase levelJsonDatabase = LevelJsonDatabase.getInstance();
-        Array<LevelEntity> levels = levelJsonDatabase.getAllLevelsByOfficeId(officeEntity.getId());
+        Array<LevelEntity> levels = levelJsonDatabase.getAllByOfficeId(officeEntity.getId());
         Grid grid = createLevel(levels.get(0), companyId, officeEntity.getId(), 0);
         Office office = new Office(getOfficeActorId(officeEntity.getId(), companyId), Array.with(grid));
         office.setPosition(Math.round(width / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),

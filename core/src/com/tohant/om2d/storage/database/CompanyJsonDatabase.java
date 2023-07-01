@@ -37,6 +37,17 @@ public class CompanyJsonDatabase extends JsonDatabase<CompanyEntity> {
         }
     }
 
+    public Optional<CompanyEntity> findCompanyByProgressId(String id) {
+        ProgressJsonDatabase progressJsonDatabase = ProgressJsonDatabase.getInstance();
+        Iterator<CompanyEntity> company = getAll().select(c -> progressJsonDatabase.getAll()
+                .select(p -> p.getCompanyId().equals(c.getId())).iterator().hasNext()).iterator();
+        if (company.hasNext()) {
+            return Optional.of(company.next());
+        } else {
+            return Optional.empty();
+        }
+    }
+
     @Override
     public Array<CompanyEntity> getAll() {
         return json.fromJson(Array.class, CompanyEntity.class, getDbPreferences().getString(COMPANIES_TABLE));

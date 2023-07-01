@@ -28,15 +28,9 @@ import com.tohant.om2d.actor.ui.slide.DefaultSlideShow;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.common.storage.Command;
-import com.tohant.om2d.model.entity.CellEntity;
-import com.tohant.om2d.model.entity.CompanyEntity;
-import com.tohant.om2d.model.entity.LevelEntity;
-import com.tohant.om2d.model.entity.OfficeEntity;
+import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.model.office.CompanyInfo;
-import com.tohant.om2d.storage.database.CellJsonDatabase;
-import com.tohant.om2d.storage.database.CompanyJsonDatabase;
-import com.tohant.om2d.storage.database.LevelJsonDatabase;
-import com.tohant.om2d.storage.database.OfficeJsonDatabase;
+import com.tohant.om2d.storage.database.*;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.Arrays;
@@ -220,7 +214,8 @@ public class MenuUiActorService extends ActorService {
             Array<CellEntity> cells = new Array<>(cellsArray);
             cellJsonDatabase.saveAll(cells);
             LevelJsonDatabase levelJsonDatabase = LevelJsonDatabase.getInstance();
-            LevelEntity levelEntity = new LevelEntity(UUID.randomUUID().toString(), 0L, new Array<>(Arrays.stream(cellsArray).map(CellEntity::getId).toArray(String[]::new)));
+            LevelEntity levelEntity = new LevelEntity(UUID.randomUUID().toString(), 0L, new Array<>(Arrays.stream(cellsArray)
+                    .map(CellEntity::getId).toArray(String[]::new)));
             levelJsonDatabase.save(levelEntity);
             OfficeJsonDatabase officeJsonDatabase = OfficeJsonDatabase.getInstance();
             OfficeEntity officeEntity = new OfficeEntity(UUID.randomUUID().toString(),
@@ -231,6 +226,8 @@ public class MenuUiActorService extends ActorService {
                     RuntimeCacheService.getInstance().getValue(COMPANY_NAME), Array.with(officeEntity.getId()),
                     CompanyEntity.Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
             companyJsonDatabase.save(companyEntity);
+            ProgressEntity progressEntity = new ProgressEntity(UUID.randomUUID().toString(), companyEntity.getId(), officeEntity.getId());
+            ProgressJsonDatabase.getInstance().save(progressEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_COMPANY_ID, companyEntity.getId());
             RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeEntity.getId());
             RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);

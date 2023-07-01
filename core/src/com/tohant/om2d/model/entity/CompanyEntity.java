@@ -15,6 +15,7 @@ public class CompanyEntity implements Serializable {
         this.id = id;
         this.name = name;
         this.officesIds = officesIds;
+        this.region = region;
     }
 
     public CompanyEntity() {

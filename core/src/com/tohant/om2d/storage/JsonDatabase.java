@@ -18,7 +18,7 @@ public abstract class JsonDatabase<T> implements Database<T> {
     private static final Preferences dbPreferences = Gdx.app.getPreferences(DATABASE_NAME);
 
     public JsonDatabase() {
-        if (checkFirstInit()) {
+        if (checkFirstInit() || isInitButEmpty()) {
             init();
         }
     }
@@ -28,6 +28,7 @@ public abstract class JsonDatabase<T> implements Database<T> {
     }
 
     public static void init() {
+        dbPreferences.putString(PROGRESSES_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(COMPANIES_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(OFFICES_TABLE, EMPTY_ARRAY);
         dbPreferences.putString(LEVELS_TABLE, EMPTY_ARRAY);
@@ -47,11 +48,15 @@ public abstract class JsonDatabase<T> implements Database<T> {
                 amountOfEmpty.incrementAndGet();
             }
         });
-        return entries.size() == 8 && amountOfEmpty.get() == 8;
+        return entries.size() == 9 && amountOfEmpty.get() == 9;
     }
 
     public static boolean checkFirstInit() {
         return dbPreferences == null || dbPreferences.get().isEmpty();
+    }
+
+    public static boolean isInitButEmpty() {
+        return dbPreferences != null && dbPreferences.get().isEmpty();
     }
 
     public static void clearDatabase() {

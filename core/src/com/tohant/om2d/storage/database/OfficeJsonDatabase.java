@@ -45,13 +45,8 @@ public class OfficeJsonDatabase extends JsonDatabase<OfficeEntity> {
     public Array<OfficeEntity> getAllByCompanyId(String id) {
         Array<OfficeEntity> result = new Array<>();
         CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
-        companyJsonDatabase.getById(id).ifPresent(c -> {
-            Iterator<String> ids = c.getOfficesIds().select(i -> getById(i).isPresent()).iterator();
-            Array<OfficeEntity> offices = getAll();
-            while (ids.hasNext()) {
-                offices.select(o -> o.getId().equals(ids.next())).forEach(result::add);
-            }
-        });
+        companyJsonDatabase.getById(id)
+                .ifPresent(c -> c.getOfficesIds().iterator().forEach(i -> getById(i).ifPresent(result::add)));
         return result;
     }
 

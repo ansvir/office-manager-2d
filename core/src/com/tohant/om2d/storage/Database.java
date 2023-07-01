@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface Database<T> {
 
+    String PROGRESSES_TABLE = "PROGRESSES_TABLE";
     String COMPANIES_TABLE = "COMPANIES_TABLE";
     String OFFICES_TABLE = "OFFICES_TABLE";
     String LEVELS_TABLE = "LEVELS_TABLE";
