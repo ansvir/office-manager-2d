@@ -14,8 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.tohant.om2d.actor.ui.button.GameTextButton;
-import com.tohant.om2d.actor.ui.dropdown.AbstractDropDown;
-import com.tohant.om2d.actor.ui.dropdown.HorizontalTriggerDropdown;
 import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.actor.ui.list.AbstractList;
 import com.tohant.om2d.actor.ui.list.DefaultList;
@@ -32,9 +30,8 @@ import com.tohant.om2d.storage.database.OfficeJsonDatabase;
 import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 import com.tohant.om2d.util.AssetsUtil;
 
-import java.util.Arrays;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
@@ -42,7 +39,6 @@ import static com.tohant.om2d.exception.GameException.Code.E400;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
 import static com.tohant.om2d.storage.Cache.*;
 import static com.tohant.om2d.util.AssetsUtil.getDefaultSkin;
-import static com.tohant.om2d.util.AssetsUtil.resizePixmap;
 
 public class MenuScreen implements Screen {
 
@@ -129,19 +125,16 @@ public class MenuScreen implements Screen {
         menuButtons.add(title2).padTop(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD * 2f).left();
         menuButtons.row();
         table.add(menuButtons);
-        if (!JsonDatabase.checkFirstInit()) {
-            if (!JsonDatabase.checkDatabaseIsEmpty()) {
-                menuButtons.add(start).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD).grow().center().colspan(2);
-                menuButtons.row();
-                menuButtons.add(load).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD * 2f).grow().center().colspan(2);
-                table.add(savedGames);
-                table.setSize(menuButtons.getWidth() + savedGames.getWidth(), MENU_BUTTON_HEIGHT);
-            }
+        if (!JsonDatabase.checkFirstInit() || !JsonDatabase.isInitButEmpty()) {
+            menuButtons.add(start).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD).grow().center().colspan(2);
+            menuButtons.row();
+            menuButtons.add(load).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD * 2f).grow().center().colspan(2);
+            table.add(savedGames);
         } else {
             menuButtons.add(start).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD * 2f).grow().center().colspan(2);
             menuButtons.row();
-            table.setSize(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
         }
+        table.setSize(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
         load.addListener(new InputListener() {
 
             @Override
@@ -225,20 +218,39 @@ public class MenuScreen implements Screen {
     }
 
     private AbstractList createGamesList() {
-        Array<Actor> gamesButtons = new Array<>();
+        AtomicReference<Table> initTable = new AtomicReference<>(new Table());
         ProgressJsonDatabase progressJsonDatabase = ProgressJsonDatabase.getInstance();
-        progressJsonDatabase.getAll().forEach(p -> Optional.ofNullable(p.getCompanyId()).ifPresent(id -> {
-            CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
-            companyJsonDatabase.getById(id).ifPresent(c ->
-            gamesButtons.add(new GameTextButton(c.getName() + "_GAME_BUTTON",
-                    () -> {
-                        RuntimeCacheService.getInstance().setValue(CURRENT_COMPANY_ID, c.getId());
-                        OfficeJsonDatabase officeJsonDatabase = OfficeJsonDatabase.getInstance();
-                        RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeJsonDatabase.getById(p.getOfficeId()).get().getId());
-                        RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
-                    }, c.getName(), AssetsUtil.getDefaultSkin())));
-        }));
-        return new DefaultList("MENU_SAVED_GAMES_LIST", gamesButtons);
+        Array<ProgressEntity> progresses = progressJsonDatabase.getAll();
+        for (int i = 0; i < progresses.size; i++) {
+            int finalI = i;
+            Optional.ofNullable(progresses.get(i).getCompanyEntity()).ifPresent(c -> {
+                GameTextButton button = new GameTextButton(finalI + "_LOAD_GAME_BUTTON",
+                        () -> {
+                            RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progresses.get(finalI).getId());
+                            RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
+                        }, c.getName(), AssetsUtil.getDefaultSkin());
+                GameTextButton deleteButton = new GameTextButton("DELETE_" + finalI + "_GAME_BUTTON", () -> {
+                    progressJsonDatabase.deleteById(progresses.get(finalI).getId());
+                    Table table = new Table();
+                    for (int j = 0; j < initTable.get().getCells().size; j += 2) {
+                        if ((j != finalI) && ((j + 1) != (finalI + 1))) {
+                            table.add(initTable.get().getCells().get(j).getActor()).growX().padRight(DEFAULT_PAD);
+                            table.add(initTable.get().getCells().get(j + 1).getActor());
+                            table.row();
+                        }
+                    }
+                    Table parent = (Table) initTable.get().getParent();
+                    initTable.get().remove();
+                    parent.add(table);
+                }, "X", skin);
+                deleteButton.setColor(Color.WHITE);
+                deleteButton.getLabel().getStyle().fontColor = Color.RED;
+                initTable.get().add(button).growX().padRight(DEFAULT_PAD);
+                initTable.get().add(deleteButton);
+                initTable.get().row();
+            });
+        }
+        return new DefaultList("MENU_SAVED_GAMES_LIST", Array.with(initTable.get()));
     }
 
     private void processExceptions() {

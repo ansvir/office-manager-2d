@@ -18,7 +18,7 @@ public class RuntimeCacheService {
     
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
-        this.setValue(CURRENT_COMPANY_ID, "");
+        this.setValue(CURRENT_PROGRESS_ID, "");
         this.setValue(COMPANY_NAME, "");
         this.setObject(BUILD_TASKS, new Array<>());
         this.setBoolean(READY_TO_START, false);
@@ -27,7 +27,6 @@ public class RuntimeCacheService {
         this.setObject(UI_ACTORS, new Array<>());
         this.setObject(WORKERS, new Array<>());
         this.setObject(GAME_EXCEPTION, new Array<>());
-        this.setLong(CURRENT_LEVEL, 0L);
         this.setLong(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);
         this.setLong(CURRENT_OFFICE_CELLS_HEIGHT, GRID_HEIGHT);
         this.setFloat(CURRENT_BUDGET, 10000.0f);

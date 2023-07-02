@@ -46,7 +46,7 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.model.entity.CompanyEntity.Region.EUROPE;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
-import static com.tohant.om2d.service.ServiceUtil.buildRandomCompanyName;
+import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.storage.Cache.*;
 
 public class MenuUiActorService extends ActorService {
@@ -205,31 +205,23 @@ public class MenuUiActorService extends ActorService {
     }
 
     private GameTextButton createStartButton() {
+        String officeId = UUID.randomUUID().toString();
+        String companyId = UUID.randomUUID().toString();
+        int level = 0;
         return new GameTextButton(MENU_NEW_COMPANY_START_BUTTON.name(), () -> {
-            CellJsonDatabase cellJsonDatabase = CellJsonDatabase.getInstance();
-            CellEntity[] cellsArray = IntStream.range(0, GRID_HEIGHT).boxed()
+            Array<CellEntity> cells = new Array<>(IntStream.range(0, GRID_HEIGHT).boxed()
                     .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed().map(c ->
-                                    new CellEntity(UUID.randomUUID().toString(), null, null, r, c, Array.with())))
-                    .toArray(CellEntity[]::new);
-            Array<CellEntity> cells = new Array<>(cellsArray);
-            cellJsonDatabase.saveAll(cells);
-            LevelJsonDatabase levelJsonDatabase = LevelJsonDatabase.getInstance();
-            LevelEntity levelEntity = new LevelEntity(UUID.randomUUID().toString(), 0L, new Array<>(Arrays.stream(cellsArray)
-                    .map(CellEntity::getId).toArray(String[]::new)));
-            levelJsonDatabase.save(levelEntity);
-            OfficeJsonDatabase officeJsonDatabase = OfficeJsonDatabase.getInstance();
-            OfficeEntity officeEntity = new OfficeEntity(UUID.randomUUID().toString(),
-                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, Array.with(levelEntity.getId()));
-            officeJsonDatabase.save(officeEntity);
-            CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
-            CompanyEntity companyEntity = new CompanyEntity(UUID.randomUUID().toString(),
-                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), Array.with(officeEntity.getId()),
+                                    new CellEntity(getCellActorId(r, c, level, officeId, companyId), null, null, r, c, Array.with())))
+                    .toArray(CellEntity[]::new));
+            LevelEntity levelEntity = new LevelEntity(getGridActorId(level, officeId, companyId), level, cells);
+            OfficeEntity officeEntity = new OfficeEntity(getOfficeActorId(officeId, companyId),
+                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, Array.with(levelEntity), Array.with());
+            CompanyEntity companyEntity = new CompanyEntity(getCompanyActorId(companyId),
+                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), Array.with(officeEntity),
                     CompanyEntity.Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
-            companyJsonDatabase.save(companyEntity);
-            ProgressEntity progressEntity = new ProgressEntity(UUID.randomUUID().toString(), companyEntity.getId(), officeEntity.getId());
+            ProgressEntity progressEntity = new ProgressEntity(UUID.randomUUID().toString(), companyEntity, officeEntity, levelEntity);
             ProgressJsonDatabase.getInstance().save(progressEntity);
-            RuntimeCacheService.getInstance().setValue(CURRENT_COMPANY_ID, companyEntity.getId());
-            RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeEntity.getId());
+            RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progressEntity.getId());
             RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
         }, "Start", skin);
     }

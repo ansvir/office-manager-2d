@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -17,7 +18,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.office.UpdatePeopleCommand;
-import com.tohant.om2d.model.entity.WorkerEntity;
+import com.tohant.om2d.model.entity.CompanyEntity;
+import com.tohant.om2d.model.entity.OfficeEntity;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.office.OfficeInfo;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.model.task.TimeLineTask;
@@ -29,7 +32,9 @@ import com.tohant.om2d.stage.AbstractStage;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.stage.UiStage;
 import com.tohant.om2d.storage.CachedEventListener;
-import com.tohant.om2d.storage.database.WorkerJsonDatabase;
+import com.tohant.om2d.storage.database.CompanyJsonDatabase;
+import com.tohant.om2d.storage.database.OfficeJsonDatabase;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
 import java.util.*;
 
@@ -213,6 +218,10 @@ public class GameScreen implements Screen {
 
     private void updatePeople() {
         new UpdatePeopleCommand().execute();
+    }
+
+    private void saveData() {
+
     }
 
 }

@@ -9,10 +9,12 @@ import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.entity.ResidentEntity;
 import com.tohant.om2d.model.entity.WorkerEntity;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 import com.tohant.om2d.storage.database.ResidentJsonDatabase;
 import com.tohant.om2d.storage.database.WorkerJsonDatabase;
 
@@ -73,13 +75,13 @@ public class AsyncRoomBuildService {
                 cacheService.setFloat(TOTAL_SALARIES, cacheService.getFloat(TOTAL_SALARIES)
                         + room.getRoomInfo().getStaff().size * staffType.getSalary());
             }
-            Array<WorkerEntity> workers = new Array<>(Arrays.stream(room.getRoomInfo().getStaff().toArray(Staff.class))
+            WorkerEntity[] workers = Arrays.stream(room.getRoomInfo().getStaff().toArray(Staff.class))
                     .map(s -> new WorkerEntity(UUID.randomUUID().toString(), s.getFullName(), s.getManInfo().getMood(), s.getType().name(), s.getSalary()))
-                    .toArray(WorkerEntity[]::new));
+                    .toArray(WorkerEntity[]::new);
             Array<String> staffIds = new Array<>(Arrays.stream(room.getRoomInfo().getStaff().toArray(Staff.class))
                     .map(Actor::getName).toArray(String[]::new));
-            WorkerJsonDatabase workerJsonDatabase = WorkerJsonDatabase.getInstance();
-            workerJsonDatabase.saveAll(workers);
+            ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cacheService.getValue(CURRENT_PROGRESS_ID)).get();
+            progressEntity.getLevelEntity().getCellEntities().iterator().forEach(c -> c.getId().equals.addAll(workers));
             if (room instanceof OfficeRoom) {
                 cacheService.setFloat(TOTAL_INCOMES, cacheService.getFloat(TOTAL_INCOMES) + 100.0f * room.getRoomInfo().getStaff().size);
                 ResidentEntity residentEntity = new ResidentEntity(UUID.randomUUID().toString(), buildRandomCompanyName(), staffIds);
@@ -102,17 +104,6 @@ public class AsyncRoomBuildService {
             }
         });
         return new RoomBuildingModel(task, asyncExecutor.submit(task), room.getRoomInfo());
-    }
-
-    private void addObjectCellsAndStaff(Cell cell, Room room) {
-        getObjectCells(cell, room.getType()).iterator().forEach(c -> c.iterator().forEach(cell::addActor));
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
-        String officeId = getOfficeActorId(currentOfficeId, currentCompanyId);
-        Office office = (Office) uiActorService.getActorById(officeId);
-        room.getRoomInfo().getStaff().forEach(office::addActor);
     }
 
     /*

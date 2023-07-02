@@ -2,17 +2,17 @@ package com.tohant.om2d.command.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.tohant.om2d.actor.constant.Constant.COORD_DELIMITER;
-import static com.tohant.om2d.service.ServiceUtil.getCellActorId;
 import static com.tohant.om2d.service.ServiceUtil.getGridActorId;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.GRID;
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.Cache.CURRENT_PROGRESS_ID;
 
 public class ToggleGridCommand implements Command {
 
@@ -35,9 +35,11 @@ public class ToggleGridCommand implements Command {
     private void toggleGrid() {
         UiActorService uiActorService = UiActorService.getInstance();
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
-        String gridId = getGridActorId((int) cache.getLong(CURRENT_LEVEL), currentOfficeId, currentCompanyId);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(CURRENT_PROGRESS_ID)).get();
+        String companyId = progressEntity.getCompanyEntity().getId();
+        String officeId = progressEntity.getOfficeEntity().getId();
+        int level = (int) progressEntity.getLevelEntity().getLevel();
+        String gridId = getGridActorId(level, officeId, companyId);
         Actor grid = uiActorService.getActorById(gridId);
         new ToggleCommand(grid.getName()).execute();
     }

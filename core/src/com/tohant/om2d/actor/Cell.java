@@ -32,10 +32,19 @@ public class Cell extends Group implements ToggleActor {
 
     private boolean isEmpty;
     private boolean isActive;
-    private final Skin skin;
+    private Skin skin;
     private boolean isGridVisible;
 
+    public Cell(String id, Command command, float x, float y, float width, float height, Room room) {
+        initCell(id, command, x, y, width, height);
+        addActor(room);
+    }
+
     public Cell(String id, Command command, float x, float y, float width, float height) {
+        initCell(id, command, x, y, width, height);
+    }
+
+    private void initCell(String id, Command command, float x, float y, float width, float height) {
         setName(id);
         setPosition(x, y);
         setSize(width, height);

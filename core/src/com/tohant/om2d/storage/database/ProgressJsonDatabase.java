@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.storage.JsonDatabase;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ public class ProgressJsonDatabase extends JsonDatabase<ProgressEntity> {
     private ProgressJsonDatabase() {
         json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
+        json.setEnumNames(true);
     }
 
     public static ProgressJsonDatabase getInstance() {
@@ -38,14 +40,14 @@ public class ProgressJsonDatabase extends JsonDatabase<ProgressEntity> {
 
     @Override
     public Array<ProgressEntity> getAll() {
-        return json.fromJson(Array.class, ProgressEntity.class, getDbPreferences().getString(PROGRESSES_TABLE));
+        return json.fromJson(Array.class, ProgressEntity.class, getDbPreferences().getString(DB_TABLES));
     }
 
     @Override
     public void save(ProgressEntity progressEntity) {
         Array<ProgressEntity> entities = getAll();
         entities.add(progressEntity);
-        getDbPreferences().putString(PROGRESSES_TABLE, json.toJson(entities, Array.class, ProgressEntity.class));
+        getDbPreferences().putString(DB_TABLES, json.toJson(entities, Array.class, ProgressEntity.class));
         getDbPreferences().flush();
     }
 
@@ -53,16 +55,24 @@ public class ProgressJsonDatabase extends JsonDatabase<ProgressEntity> {
     public void saveAll(Array<ProgressEntity> t) {
         Array<ProgressEntity> entities = getAll();
         entities.addAll(t);
-        getDbPreferences().putString(PROGRESSES_TABLE, json.toJson(entities, Array.class, ProgressEntity.class));
+        getDbPreferences().putString(DB_TABLES, json.toJson(entities, Array.class, ProgressEntity.class));
         getDbPreferences().flush();
     }
 
     @Override
     public void deleteById(String id) {
         getById(id).ifPresent(e -> {
-            Array<ProgressEntity> all = getAll();
-            all.removeValue(e, false);
-            saveAll(all);
+            Array<ProgressEntity> filtered = new Array<>(Arrays.stream(getAll().toArray(ProgressEntity.class))
+                    .filter(e1 -> !e1.getId().equals(id)).toArray(ProgressEntity[]::new));
+            deleteAll();
+            saveAll(filtered);
         });
     }
+
+    @Override
+    public void deleteAll() {
+        getDbPreferences().putString(DB_TABLES, EMPTY_ARRAY);
+        getDbPreferences().flush();
+    }
+
 }

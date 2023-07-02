@@ -5,22 +5,20 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.man.ManInfo;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.tohant.om2d.actor.constant.Constant.COORD_DELIMITER;
-import static com.tohant.om2d.actor.constant.Constant.ID_DELIMITER;
-import static com.tohant.om2d.service.ServiceUtil.*;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.OBJECT_CELL;
-import static com.tohant.om2d.storage.Cache.*;
-import static com.tohant.om2d.storage.Cache.CURRENT_LEVEL;
+import static com.tohant.om2d.service.ServiceUtil.getCellActorId;
+import static com.tohant.om2d.service.ServiceUtil.getObjectCellCoordinates;
+import static com.tohant.om2d.storage.Cache.CURRENT_PROGRESS_ID;
 
 public abstract class Staff extends Actor {
 
@@ -156,9 +154,10 @@ public abstract class Staff extends Actor {
         int newRow = (int) cellCoords.x + direction[0];
         int newColumn = (int) cellCoords.y + direction[1];
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
-        String neighborCellId = getCellActorId(newRow, newColumn, (int) cache.getLong(CURRENT_LEVEL), currentOfficeId, currentCompanyId);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(CURRENT_PROGRESS_ID)).get();
+        String neighborCellId = getCellActorId(newRow, newColumn, (int) progressEntity.getLevelEntity().getLevel(),
+                progressEntity.getOfficeEntity().getId(),
+                progressEntity.getCompanyEntity().getId());
         return (ObjectCell) UiActorService.getInstance().getActorById(neighborCellId);
     }
 

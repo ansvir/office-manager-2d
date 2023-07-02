@@ -6,9 +6,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.model.entity.ProgressEntity;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -44,9 +47,10 @@ public class ServiceUtil {
     }
 
     private static Array<Cell> getNeighborCells(Cell cell) {
-        String companyId = CACHE_SERVICE.getValue(CURRENT_COMPANY_ID);
-        String officeId = CACHE_SERVICE.getValue(CURRENT_OFFICE_ID);
-        int level = (int) CACHE_SERVICE.getLong(CURRENT_LEVEL);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(CACHE_SERVICE.getValue(CURRENT_PROGRESS_ID)).get();
+        String companyId = progressEntity.getCompanyEntity().getId();
+        String officeId = progressEntity.getOfficeEntity().getId();
+        int level = (int) progressEntity.getLevelEntity().getLevel();
         UiActorService uiActorService = UiActorService.getInstance();
         Array<Cell> cells = new Array<>();
         cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x - 1, (int) getCellCoordinates(cell).y, level, officeId, companyId)));
@@ -116,6 +120,10 @@ public class ServiceUtil {
         String cellString = ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1);
         String levelString = cellString.substring(cellString.indexOf(ID_DELIMITER) + 1);
         return String.format(levelString.substring(levelString.indexOf(ID_DELIMITER) + 1), officeId, companyId);
+    }
+
+    public static String getCompanyActorId(String companyId) {
+        return "COMPANY" + COORD_DELIMITER + companyId;
     }
 
     public static Vector3 getObjectCellCellCoordinates(ObjectCell cell) {
@@ -241,10 +249,10 @@ public class ServiceUtil {
         Vector3 coords = getCellCoordinates(cell);
         int r = (int) coords.x;
         int c = (int) coords.y;
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String companyId = cache.getValue(CURRENT_COMPANY_ID);
-        String officeId = cache.getValue(CURRENT_OFFICE_ID);
-        int level = (int) cache.getLong(CURRENT_LEVEL);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(CACHE_SERVICE.getValue(CURRENT_PROGRESS_ID)).get();
+        String companyId = progressEntity.getCompanyEntity().getId();
+        String officeId = progressEntity.getOfficeEntity().getId();
+        int level = (int) progressEntity.getLevelEntity().getLevel();
         Array<Array<ObjectCell>> cells = new Array<>();
         switch (room) {
             case HALL: {
@@ -282,6 +290,18 @@ public class ServiceUtil {
             }
         }
         return cells;
+    }
+
+    public static void addObjectCellsAndStaff(Cell cell, Room room) {
+        getObjectCells(cell, room.getType()).iterator().forEach(c -> c.iterator().forEach(cell::addActor));
+        UiActorService uiActorService = UiActorService.getInstance();
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance()
+                .getById(CACHE_SERVICE.getValue(CURRENT_PROGRESS_ID)).get();
+        String currentCompanyId = progressEntity.getCompanyEntity().getId();
+        String currentOfficeId = progressEntity.getOfficeEntity().getId();
+        String officeId = getOfficeActorId(currentOfficeId, currentCompanyId);
+        Office office = (Office) uiActorService.getActorById(officeId);
+        room.getRoomInfo().getStaff().forEach(office::addActor);
     }
 
 }

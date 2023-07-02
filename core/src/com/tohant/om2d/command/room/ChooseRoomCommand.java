@@ -3,17 +3,16 @@ package com.tohant.om2d.command.room;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
-import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.common.storage.Command;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
-import static com.tohant.om2d.actor.constant.Constant.COORD_DELIMITER;
-import static com.tohant.om2d.service.ServiceUtil.*;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
+import static com.tohant.om2d.service.ServiceUtil.getCellActorId;
+import static com.tohant.om2d.service.ServiceUtil.getCurrentRoomType;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
 import static com.tohant.om2d.storage.Cache.*;
-import static com.tohant.om2d.storage.Cache.CURRENT_OFFICE_ID;
 
 public class ChooseRoomCommand implements Command {
 
@@ -28,9 +27,10 @@ public class ChooseRoomCommand implements Command {
     @Override
     public void execute() {
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
-        String cellId = getCellActorId(r, c, (int) cache.getLong(CURRENT_LEVEL), currentOfficeId, currentCompanyId);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(CURRENT_PROGRESS_ID)).get();
+        String cellId = getCellActorId(r, c, (int) progressEntity.getLevelEntity().getLevel(),
+                progressEntity.getOfficeEntity().getId(),
+                progressEntity.getCompanyEntity().getId());
         Cell cell = (Cell) UiActorService.getInstance().getActorById(cellId);
         Room.Type nextType = getCurrentRoomType();
         if (cell.isEmpty() && nextType != null) {

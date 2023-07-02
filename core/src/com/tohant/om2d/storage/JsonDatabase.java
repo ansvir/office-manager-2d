@@ -4,16 +4,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonWriter;
+import com.tohant.om2d.model.entity.CompanyEntity;
+import com.tohant.om2d.model.entity.OfficeEntity;
+import com.tohant.om2d.model.entity.ProgressEntity;
+import com.tohant.om2d.storage.database.CompanyJsonDatabase;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class JsonDatabase<T> implements Database<T> {
 
     private static final String DATABASE_NAME = "OM2D_DB";
-    private static final String EMPTY_ARRAY = "[]";
+    protected static final String EMPTY_ARRAY = "[]";
 
     private static final Preferences dbPreferences = Gdx.app.getPreferences(DATABASE_NAME);
 
@@ -27,28 +32,22 @@ public abstract class JsonDatabase<T> implements Database<T> {
         return dbPreferences;
     }
 
-    public static void init() {
-        dbPreferences.putString(PROGRESSES_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(COMPANIES_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(OFFICES_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(LEVELS_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(CELLS_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(OBJECT_CELLS_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(OBJECT_CELL_ITEM_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(RESIDENTS_TABLE, EMPTY_ARRAY);
-        dbPreferences.putString(WORKERS_TABLE, EMPTY_ARRAY);
+    private static void init() {
+//        dbPreferences.putString(PROGRESSES_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(COMPANIES_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(OFFICES_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(LEVELS_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(CELLS_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(OBJECT_CELLS_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(OBJECT_CELL_ITEM_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(RESIDENTS_TABLE, EMPTY_ARRAY);
+//        dbPreferences.putString(WORKERS_TABLE, EMPTY_ARRAY);
+        dbPreferences.putString(DB_TABLES, EMPTY_ARRAY);
         dbPreferences.flush();
     }
 
-    public static boolean checkDatabaseIsEmpty() {
-        AtomicInteger amountOfEmpty = new AtomicInteger(0);
-        Map<String, ?> entries = dbPreferences.get();
-        entries.values().forEach(v -> {
-            if (v.equals(EMPTY_ARRAY)) {
-                amountOfEmpty.incrementAndGet();
-            }
-        });
-        return entries.size() == 9 && amountOfEmpty.get() == 9;
+    public static void clearDatabase() {
+        init();
     }
 
     public static boolean checkFirstInit() {
@@ -56,12 +55,18 @@ public abstract class JsonDatabase<T> implements Database<T> {
     }
 
     public static boolean isInitButEmpty() {
-        return dbPreferences != null && dbPreferences.get().isEmpty();
+        return dbPreferences != null && (dbPreferences.get().isEmpty() || checkDatabaseIsEmpty());
     }
 
-    public static void clearDatabase() {
+    public static boolean checkDatabaseIsEmpty() {
+        return dbPreferences != null && dbPreferences.get().get(DB_TABLES).equals(EMPTY_ARRAY);
+    }
+
+    public static void deleteDatabase() {
         dbPreferences.clear();
         dbPreferences.flush();
     }
+
+
 
 }

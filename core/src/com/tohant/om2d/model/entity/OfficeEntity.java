@@ -10,14 +10,16 @@ public class OfficeEntity implements Serializable {
     private String name;
     private float popularity;
     private float budget;
-    private Array<String> levelsIds;
+    private Array<LevelEntity> levelEntities;
+    private Array<ResidentEntity> residentEntities;
 
-    public OfficeEntity(String id, String name, float popularity, float budget, Array<String> levelsIds) {
+    public OfficeEntity(String id, String name, float popularity, float budget, Array<LevelEntity> levelEntities, Array<ResidentEntity> residentEntities) {
         this.id = id;
         this.name = name;
         this.popularity = popularity;
         this.budget = budget;
-        this.levelsIds = levelsIds;
+        this.levelEntities = levelEntities;
+        this.residentEntities = residentEntities;
     }
 
     public OfficeEntity() {
@@ -56,12 +58,20 @@ public class OfficeEntity implements Serializable {
         this.budget = budget;
     }
 
-    public Array<String> getLevelsIds() {
-        return levelsIds;
+    public Array<LevelEntity> getLevelEntities() {
+        return levelEntities;
     }
 
-    public void setLevelsIds(Array<String> levelsIds) {
-        this.levelsIds = levelsIds;
+    public void setLevelEntities(Array<LevelEntity> levelEntities) {
+        this.levelEntities = levelEntities;
+    }
+
+    public Array<ResidentEntity> getResidentEntities() {
+        return residentEntities;
+    }
+
+    public void setResidentEntities(Array<ResidentEntity> residentEntities) {
+        this.residentEntities = residentEntities;
     }
 
 }

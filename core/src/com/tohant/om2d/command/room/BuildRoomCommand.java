@@ -12,6 +12,7 @@ import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.RoomBuildingModel;
@@ -20,6 +21,7 @@ import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.Arrays;
@@ -47,9 +49,11 @@ public class BuildRoomCommand implements Command {
     public void execute() {
         UiActorService uiActorService = UiActorService.getInstance();
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
-        String gridId = getGridActorId((int) cache.getLong(CURRENT_LEVEL), currentOfficeId, currentCompanyId);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(CURRENT_PROGRESS_ID)).get();
+        String companyId = progressEntity.getCompanyEntity().getId();
+        String officeId = progressEntity.getOfficeEntity().getId();
+        int level = (int) progressEntity.getLevelEntity().getLevel();
+        String gridId = getGridActorId(level, officeId, companyId);
         Grid grid = (Grid) uiActorService.getActorById(gridId);
         DefaultModal roomInfoModal = (DefaultModal) uiActorService.getActorById(ROOM_INFO_MODAL.name());
         Room nextRoom = null;

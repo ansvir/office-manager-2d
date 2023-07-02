@@ -1,19 +1,19 @@
 package com.tohant.om2d.model.entity;
 
-import com.badlogic.gdx.utils.Array;
-
 import java.io.Serializable;
 
 public class ProgressEntity implements Serializable {
 
     private String id;
-    private String companyId;
-    private String officeId;
+    private CompanyEntity companyEntity;
+    private OfficeEntity officeEntity;
+    private LevelEntity levelEntity;
 
-    public ProgressEntity(String id, String companyId, String officeId) {
+    public ProgressEntity(String id, CompanyEntity companyEntity, OfficeEntity officeEntity, LevelEntity levelEntity) {
         this.id = id;
-        this.companyId = companyId;
-        this.officeId = officeId;
+        this.companyEntity = companyEntity;
+        this.officeEntity = officeEntity;
+        this.levelEntity = levelEntity;
     }
 
     public ProgressEntity() {
@@ -28,19 +28,28 @@ public class ProgressEntity implements Serializable {
         this.id = id;
     }
 
-    public String getCompanyId() {
-        return companyId;
+    public CompanyEntity getCompanyEntity() {
+        return companyEntity;
     }
 
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
+    public void setCompanyEntity(CompanyEntity companyEntity) {
+        this.companyEntity = companyEntity;
     }
 
-    public String getOfficeId() {
-        return officeId;
+    public OfficeEntity getOfficeEntity() {
+        return officeEntity;
     }
 
-    public void setOfficeId(String officeId) {
-        this.officeId = officeId;
+    public void setOfficeEntity(OfficeEntity officeEntity) {
+        this.officeEntity = officeEntity;
     }
+
+    public LevelEntity getLevelEntity() {
+        return levelEntity;
+    }
+
+    public void setLevelEntity(LevelEntity levelEntity) {
+        this.levelEntity = levelEntity;
+    }
+
 }

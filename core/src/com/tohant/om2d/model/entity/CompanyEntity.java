@@ -8,13 +8,13 @@ public class CompanyEntity implements Serializable {
 
     private String id;
     private String name;
-    private Array<String> officesIds;
+    private Array<OfficeEntity> officeEntities;
     private Region region;
 
-    public CompanyEntity(String id, String name, Array<String> officesIds, Region region) {
+    public CompanyEntity(String id, String name, Array<OfficeEntity> officeEntities, Region region) {
         this.id = id;
         this.name = name;
-        this.officesIds = officesIds;
+        this.officeEntities = officeEntities;
         this.region = region;
     }
 
@@ -38,12 +38,12 @@ public class CompanyEntity implements Serializable {
         this.name = name;
     }
 
-    public Array<String> getOfficesIds() {
-        return officesIds;
+    public Array<OfficeEntity> getOfficeEntities() {
+        return officeEntities;
     }
 
-    public void setOfficesIds(Array<String> officesIds) {
-        this.officesIds = officesIds;
+    public void setOfficeEntities(Array<OfficeEntity> officeEntities) {
+        this.officeEntities = officeEntities;
     }
 
     public Region getRegion() {

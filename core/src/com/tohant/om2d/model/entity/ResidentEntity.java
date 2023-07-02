@@ -8,12 +8,12 @@ public class ResidentEntity implements Serializable {
 
     private String id;
     private String businessName;
-    private Array<String> workersIds;
+    private Array<WorkerEntity> workerEntities;
 
-    public ResidentEntity(String id, String businessName, Array<String> workersIds) {
+    public ResidentEntity(String id, String businessName, Array<WorkerEntity> workerEntities) {
         this.id = id;
         this.businessName = businessName;
-        this.workersIds = workersIds;
+        this.workerEntities = workerEntities;
     }
 
     public ResidentEntity() {
@@ -36,12 +36,12 @@ public class ResidentEntity implements Serializable {
         this.businessName = businessName;
     }
 
-    public Array<String> getWorkersIds() {
-        return workersIds;
+    public Array<WorkerEntity> getWorkerEntities() {
+        return workerEntities;
     }
 
-    public void setWorkersIds(Array<String> workersIds) {
-        this.workersIds = workersIds;
+    public void setWorkerEntities(Array<WorkerEntity> workerEntities) {
+        this.workerEntities = workerEntities;
     }
 
 }

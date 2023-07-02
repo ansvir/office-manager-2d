@@ -10,10 +10,12 @@ import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.common.storage.Command;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -98,8 +100,9 @@ public class DestroyRoomCommand implements Command {
     private void destroyBuiltRoom(Cell cell, Room room) {
         UiActorService uiActorService = UiActorService.getInstance();
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String currentCompanyId = cache.getValue(CURRENT_COMPANY_ID);
-        String currentOfficeId = cache.getValue(CURRENT_OFFICE_ID);
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(CURRENT_PROGRESS_ID)).get();
+        String currentCompanyId = progressEntity.getCompanyEntity().getId();
+        String currentOfficeId = progressEntity.getOfficeEntity().getId();
         String officeId = getOfficeActorId(currentOfficeId, currentCompanyId);
         Office office = (Office) uiActorService.getActorById(officeId);
         room.getRoomInfo().getStaff().forEach(office::removeActor);

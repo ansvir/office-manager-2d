@@ -1,15 +1,17 @@
 package com.tohant.om2d.model.entity;
 
+import com.tohant.om2d.actor.ObjectCellItem;
+
 import java.io.Serializable;
 
 public class ObjectCellEntity implements Serializable {
 
     private String id;
-    private String itemId;
+    private ObjectCellItem objectCellItem;
 
-    public ObjectCellEntity(String id, String itemId) {
+    public ObjectCellEntity(String id, ObjectCellItem objectCellItem) {
         this.id = id;
-        this.itemId = itemId;
+        this.objectCellItem = objectCellItem;
     }
 
     public ObjectCellEntity() {
@@ -24,12 +26,12 @@ public class ObjectCellEntity implements Serializable {
         this.id = id;
     }
 
-    public String getItemId() {
-        return itemId;
+    public ObjectCellItem getObjectCellItem() {
+        return objectCellItem;
     }
 
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
+    public void setObjectCellItem(ObjectCellItem objectCellItem) {
+        this.objectCellItem = objectCellItem;
     }
 
 }

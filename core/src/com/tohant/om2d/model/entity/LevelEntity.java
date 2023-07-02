@@ -8,12 +8,12 @@ public class LevelEntity implements Serializable {
 
     private String id;
     private long level;
-    private Array<String> cellsIds;
+    private Array<CellEntity> cellEntities;
 
-    public LevelEntity(String id, long level, Array<String> cellsIds) {
+    public LevelEntity(String id, long level, Array<CellEntity> cellEntities) {
         this.id = id;
         this.level = level;
-        this.cellsIds = cellsIds;
+        this.cellEntities = cellEntities;
     }
 
     public LevelEntity() {
@@ -36,12 +36,12 @@ public class LevelEntity implements Serializable {
         this.level = level;
     }
 
-    public Array<String> getCellsIds() {
-        return cellsIds;
+    public Array<CellEntity> getCellEntities() {
+        return cellEntities;
     }
 
-    public void setCellsIds(Array<String> cellsIds) {
-        this.cellsIds = cellsIds;
+    public void setCellEntities(Array<CellEntity> cellEntities) {
+        this.cellEntities = cellEntities;
     }
 
 }

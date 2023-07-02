@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -33,14 +34,8 @@ import com.tohant.om2d.command.room.DestroyRoomCommand;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.command.ui.ToggleGridCommand;
-import com.tohant.om2d.model.entity.CellEntity;
-import com.tohant.om2d.model.entity.CompanyEntity;
-import com.tohant.om2d.model.entity.LevelEntity;
-import com.tohant.om2d.model.entity.OfficeEntity;
-import com.tohant.om2d.storage.database.CellJsonDatabase;
-import com.tohant.om2d.storage.database.CompanyJsonDatabase;
-import com.tohant.om2d.storage.database.LevelJsonDatabase;
-import com.tohant.om2d.storage.database.OfficeJsonDatabase;
+import com.tohant.om2d.model.entity.*;
+import com.tohant.om2d.storage.database.*;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.math.BigDecimal;
@@ -73,12 +68,9 @@ public class UiActorService extends ActorService {
 
     private void initGameScreen() {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-        CompanyJsonDatabase companyJsonDatabase = CompanyJsonDatabase.getInstance();
-        CompanyEntity companyEntity = companyJsonDatabase.getById(runtimeCache.getValue(CURRENT_COMPANY_ID)).get();
-        OfficeJsonDatabase officeJsonDatabase = OfficeJsonDatabase.getInstance();
-        Array<OfficeEntity> offices = officeJsonDatabase.getAllByCompanyId(companyEntity.getId());
+        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(runtimeCache.getValue(CURRENT_PROGRESS_ID)).get();
         Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(UI_ACTORS);
-        uiActors.add(createMap(companyEntity.getId(), offices));
+        uiActors.add(createMap(progressEntity.getOfficeEntity()));
         uiActors.add(createBudgetLabel());
         uiActors.add(createTimeLabel());
         uiActors.add(createRoomInfoModal());
@@ -320,45 +312,52 @@ public class UiActorService extends ActorService {
         return Array.with(new Item(Items.PLANT), new Item(Items.COOLER));
     }
 
-    private Cell createCell(int x, int y, int level, String officeId, String companyId) {
-        return new Cell(getCellActorId(x, y, level, officeId, companyId),
-                new ChooseRoomCommand(x, y), x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    private Cell createCell(CellEntity cellEntity) {
+        Vector3 coords = getCellCoordinatesByName(cellEntity.getId());
+        Cell cell = new Cell(cellEntity.getId(),
+                new ChooseRoomCommand((int) coords.x, (int) coords.y), coords.x * CELL_SIZE,
+                coords.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        Room room = getCellRoom(cell);
+        if (room != null) {
+            cell.addActor(room);
+            addObjectCellsAndStaff(cell, room);
+        }
+        return cell;
     }
 
-    private Map createMap(String companyId, Array<OfficeEntity> offices) {
+    private Map createMap(OfficeEntity officeEntity) {
         Map map = new Map(MAP.name());
         float width = 3000f;
         float height = 2500f;
         map.setSize(width, height);
         Background background = createBackground(width, height);
         map.addActor(background);
-        map.addActor(createOffice(companyId, offices.get(0), background.getWidth(), background.getHeight()));
+        map.addActor(createOffice(officeEntity, background.getWidth(), background.getHeight()));
         return map;
     }
 
-    private Office createOffice(String companyId, OfficeEntity officeEntity, float width, float height) {
-        LevelJsonDatabase levelJsonDatabase = LevelJsonDatabase.getInstance();
-        Array<LevelEntity> levels = levelJsonDatabase.getAllByOfficeId(officeEntity.getId());
-        Grid grid = createLevel(levels.get(0), companyId, officeEntity.getId(), 0);
-        Office office = new Office(getOfficeActorId(officeEntity.getId(), companyId), Array.with(grid));
+    private Office createOffice(OfficeEntity officeEntity, float width, float height) {
+        Array<Grid> levels = new Array<>(Arrays.stream(officeEntity.getLevelEntities().toArray(LevelEntity.class))
+                .map(this::createLevel)
+                .toArray(Grid[]::new));
+        Office office = new Office(officeEntity.getId(), levels);
         office.setPosition(Math.round(width / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),
                 Math.round(height / 2f - (GRID_HEIGHT * CELL_SIZE) / 2f));
         office.setSize(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
         return office;
     }
 
-    private Grid createLevel(LevelEntity levelEntity, String companyId, String officeId, int index) {
-        CellJsonDatabase cellJsonDatabase = CellJsonDatabase.getInstance();
-        Array<CellEntity> cells = cellJsonDatabase.getAllByLevelId(levelEntity.getId());
+    private Grid createLevel(LevelEntity levelEntity) {
+        Array<CellEntity> cells = levelEntity.getCellEntities();
 //        for (int w = 0; w < GRID_WIDTH; w++) {
 //            for (int h = 0; h < GRID_HEIGHT; h++) {
 //                cells.add(createCell(h, w, index, h * CELL_SIZE, w * CELL_SIZE));
 //            }
 //        }
-        Grid grid = new Grid(getGridActorId(index, officeId, companyId));
+        Grid grid = new Grid(levelEntity.getId());
         grid.setSize(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
         grid.setPosition(0, 0);
-        cells.forEach(c -> grid.addActor(createCell(c.getX(), c.getY(), index, officeId, companyId)));
+        cells.forEach(c -> grid.addActor(createCell(c)));
         drawBorders(grid);
         return grid;
     }
@@ -371,10 +370,10 @@ public class UiActorService extends ActorService {
         return new GameTextButton(DESTROY_ROOM_BUTTON.name(), new DestroyRoomCommand(), "Destroy", skin);
     }
 
-    private GameTextButton createToggleGridButton() {;
+    private GameTextButton createToggleGridButton() {
         GameTextButton toggleGridButton = new GameTextButton(TOGGLE_GRID_BUTTON.name(), new ToggleGridCommand(), "#", skin);
         toggleGridButton.getLabel().setFontScale(1.5f);
-        toggleGridButton.setPosition(Gdx.graphics.getWidth() - toggleGridButton.getWidth() - DEFAULT_PAD * 1.16f, Gdx.graphics.getHeight() / 4.6f);
+        toggleGridButton.setPosition(Gdx.graphics.getWidth() - toggleGridButton.getWidth() - DEFAULT_PAD * 2f, Gdx.graphics.getHeight() / 4.6f);
         return toggleGridButton;
     }
 
