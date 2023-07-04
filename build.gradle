@@ -44,10 +44,10 @@ project(":core") {
 
 
     dependencies {
-        implementation project(":storage")
-        implementation project(":common")
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         implementation 'org.xerial:sqlite-jdbc:3.7.2'
+        implementation 'com.j256.ormlite:ormlite-core:5.6'
+        implementation 'com.j256.ormlite:ormlite-jdbc:5.6' // For JDBC database support
     }
 }
 
@@ -60,20 +60,4 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
-}
-
-project(":storage") {
-    apply plugin: "java-library"
-
-
-    dependencies {
-        implementation project(":common")
-        api "com.badlogicgames.gdx:gdx:$gdxVersion"
-        implementation 'org.xerial:sqlite-jdbc:3.7.2'
-    }
-}
-
-project(":common") {
-    apply plugin: "java-library"
-
 }
