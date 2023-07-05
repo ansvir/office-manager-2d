@@ -8,13 +8,16 @@ import com.tohant.om2d.actor.Item;
 import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.Command;
-import com.tohant.om2d.service.AssetService;
+import com.tohant.om2d.model.entity.CellEntity;
 import com.tohant.om2d.service.RuntimeCacheService;
+import com.tohant.om2d.service.ServiceUtil;
 import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.storage.database.CellDao;
 
 import java.math.BigDecimal;
 
 import static com.tohant.om2d.actor.constant.Constant.ID_DELIMITER;
+import static com.tohant.om2d.service.ServiceUtil.addItemToCell;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.storage.Cache.*;
 
@@ -25,7 +28,8 @@ public class PlaceItemCommand implements Command {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
         Item item = (Item) runtimeCache.getObject(CURRENT_ITEM);
         ObjectCell objectCell = (ObjectCell) runtimeCache.getObject(CURRENT_OBJECT_CELL);
-        if (objectCell != null && item != null) {
+        if (objectCell != null && item != null
+                && Float.compare(runtimeCache.getFloat(CURRENT_BUDGET), item.getType().getPrice().floatValue()) > 0) {
             if (objectCell.hasChildren()) {
                 objectCell.clearChildren();
             }
@@ -41,9 +45,12 @@ public class PlaceItemCommand implements Command {
                     new ForceToggleCommand(c.getName(), false).execute();
                 }
             });
+            CellEntity cellEntity = CellDao.getInstance()
+                    .queryForActorName(objectCell.getName().substring(objectCell.getName().indexOf(ID_DELIMITER) + 1));
+            cellEntity.setItems(addItemToCell(cellEntity.getItems(), item.getType().name()));
+            CellDao.getInstance().update(cellEntity);
         }
         runtimeCache.setObject(CURRENT_ITEM, null);
-        AssetService.getInstance().setCursor(AssetService.GameCursor.MAIN);
     }
 
 }

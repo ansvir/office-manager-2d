@@ -155,9 +155,7 @@ public abstract class Staff extends Actor {
         int newColumn = (int) cellCoords.y + direction[1];
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
         ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(Cache.CURRENT_PROGRESS_ID)).get();
-        String neighborCellId = getCellActorId(newRow, newColumn, (int) progressEntity.getLevelEntity().getLevel(),
-                progressEntity.getOfficeEntity().getActorName(),
-                progressEntity.getCompanyEntity().getActorName());
+        String neighborCellId = getCellActorId(newRow, newColumn, progressEntity.getLevelEntity().getActorName());
         return (ObjectCell) UiActorService.getInstance().getActorById(neighborCellId);
     }
 

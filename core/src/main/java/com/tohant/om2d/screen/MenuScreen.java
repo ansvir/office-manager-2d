@@ -81,7 +81,7 @@ public class MenuScreen implements Screen {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
-                if (ProgressJsonDatabase.getInstance().getAll().size >= 3) {
+                if (ProgressDao.getInstance().countOf() >= 3) {
                     Array<GameException> exceptions = (Array<GameException>) RuntimeCacheService.getInstance().getObject(Cache.GAME_EXCEPTION);
                     exceptions.add(new GameException(GameException.Code.E400));
                 } else {
@@ -139,8 +139,7 @@ public class MenuScreen implements Screen {
                 @Override
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     super.touchDown(event, x, y, pointer, button);
-                    new UpdateLoadGameModalCommand().execute();
-                    new ForceToggleCommand(MENU_LOAD_GAME_MODAL.name(), true);
+                    new ForceToggleCommand(MENU_LOAD_GAME_MODAL.name(), true).execute();
                     return false;
                 }
             });

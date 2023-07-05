@@ -22,13 +22,18 @@ public class Cell extends Group implements ToggleActor {
 
     private boolean isEmpty;
     private boolean isActive;
-    private Skin skin;
     private boolean isGridVisible;
+
+    public Cell(String id, Command command, float x, float y, float width, float height, Room room, Item item) {
+        initCell(id, command, x, y, width, height);
+        addActor(room);
+        addObjectCellsAndStaff(this, room);
+    }
 
     public Cell(String id, Command command, float x, float y, float width, float height, Room room) {
         initCell(id, command, x, y, width, height);
         addActor(room);
-        addObjectCellsAndStaff(this, room);
+        addEmptyObjectCells(this, room);
     }
 
     public Cell(String id, Command command, float x, float y, float width, float height) {
@@ -40,7 +45,6 @@ public class Cell extends Group implements ToggleActor {
         setPosition(x, y);
         setSize(width, height);
         isEmpty = true;
-        this.skin = AssetsUtil.getDefaultSkin();
         addListener(new InputListener() {
 
             @Override

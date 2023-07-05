@@ -9,7 +9,10 @@ import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.storage.Cache;
 import com.tohant.om2d.command.Command;
 import com.tohant.om2d.model.entity.ProgressEntity;
+import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.storage.database.ProgressJsonDatabase;
+
+import java.util.UUID;
 
 public class ChooseRoomCommand implements Command {
 
@@ -24,10 +27,8 @@ public class ChooseRoomCommand implements Command {
     @Override
     public void execute() {
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(Cache.CURRENT_PROGRESS_ID)).get();
-        String cellId = ServiceUtil.getCellActorId(r, c, (int) progressEntity.getLevelEntity().getLevel(),
-                progressEntity.getOfficeEntity().getActorName(),
-                progressEntity.getCompanyEntity().getActorName());
+        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(cache.getValue(Cache.CURRENT_PROGRESS_ID)));
+        String cellId = ServiceUtil.getCellActorId(r, c, progressEntity.getLevelEntity().getActorName());
         Cell cell = (Cell) UiActorService.getInstance().getActorById(cellId);
         Room.Type nextType = ServiceUtil.getCurrentRoomType();
         if (cell.isEmpty() && nextType != null) {

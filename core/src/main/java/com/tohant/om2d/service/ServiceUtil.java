@@ -5,13 +5,16 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.Item;
 import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.actor.Office;
 import com.tohant.om2d.actor.constant.CompanyConstant;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.model.entity.CellEntity;
 import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.database.CellDao;
 import com.tohant.om2d.storage.database.ProgressDao;
 
 import java.util.Arrays;
@@ -19,11 +22,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 
 public class ServiceUtil {
 
     public static final String ID_PATTERN = UiActorService.UiComponentConstant.OBJECT_CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
-            + UiActorService.UiComponentConstant.CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
+            + CELL.name() + COORD_DELIMITER + "%d" + COORD_DELIMITER + "%d" + ID_DELIMITER
             + UiActorService.UiComponentConstant.GRID.name() + COORD_DELIMITER + "%d" + ID_DELIMITER
             + UiActorService.UiComponentConstant.OFFICE.name() + COORD_DELIMITER + "%s" + ID_DELIMITER
             + "COMPANY" + COORD_DELIMITER + "%s";
@@ -45,15 +49,13 @@ public class ServiceUtil {
 
     private static Array<Cell> getNeighborCells(Cell cell) {
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(CACHE_SERVICE.getValue(Cache.CURRENT_PROGRESS_ID)));
-        String companyId = progressEntity.getCompanyEntity().getActorName();
-        String officeId = progressEntity.getOfficeEntity().getActorName();
-        int level = (int) progressEntity.getLevelEntity().getLevel();
+        String level = progressEntity.getLevelEntity().getActorName();
         UiActorService uiActorService = UiActorService.getInstance();
         Array<Cell> cells = new Array<>();
-        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x - 1, (int) getCellCoordinates(cell).y, level, officeId, companyId)));
-        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x + 1, (int) getCellCoordinates(cell).y, level, officeId, companyId)));
-        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x, (int) getCellCoordinates(cell).y - 1, level, officeId, companyId)));
-        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x, (int) getCellCoordinates(cell).y + 1, level, officeId, companyId)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x - 1, (int) getCellCoordinates(cell).y, level)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x + 1, (int) getCellCoordinates(cell).y, level)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x, (int) getCellCoordinates(cell).y - 1, level)));
+        cells.add((Cell) uiActorService.getActorById(getCellActorId((int) getCellCoordinates(cell).x, (int) getCellCoordinates(cell).y + 1, level)));
         return new Array<>(Arrays.stream(cells.toArray(Cell.class)).filter(Objects::nonNull).toArray(Cell[]::new));
     }
 
@@ -100,12 +102,12 @@ public class ServiceUtil {
         return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
     }
 
-    public static String getObjectCellActorId(int objectCellX, int objectCellY, int cellX, int cellY, int level, String officeId, String companyId) {
-        return String.format(ID_PATTERN, objectCellX, objectCellY, cellX, cellY, level, officeId, companyId);
+    public static String getObjectCellActorId(int objectCellX, int objectCellY, String cellId) {
+        return OBJECT_CELL.name() + COORD_DELIMITER + objectCellX + COORD_DELIMITER + objectCellY + ID_DELIMITER + cellId;
     }
 
-    public static String getCellActorId(int cellX, int cellY, int level, String officeId, String companyId) {
-        return String.format(ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1), cellX, cellY, level, officeId, companyId);
+    public static String getCellActorId(int cellX, int cellY, String levelId) {
+        return CELL.name() + COORD_DELIMITER + cellX + COORD_DELIMITER + cellY + ID_DELIMITER + levelId;
     }
 
     public static String getRoomActorId(Room room, String cellId) {
@@ -120,15 +122,12 @@ public class ServiceUtil {
         return "RESIDENT" + COORD_DELIMITER + residentId + ID_DELIMITER + officeId;
     }
 
-    public static String getGridActorId(int level, String officeId, String companyId) {
-        String cellString = ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1);
-        return String.format(cellString.substring(cellString.indexOf(ID_DELIMITER) + 1), level, officeId, companyId);
+    public static String getGridActorId(int level, String officeId) {
+        return GRID.name() + COORD_DELIMITER + level + ID_DELIMITER + officeId;
     }
 
     public static String getOfficeActorId(String officeId, String companyId) {
-        String cellString = ID_PATTERN.substring(ID_PATTERN.indexOf(ID_DELIMITER) + 1);
-        String levelString = cellString.substring(cellString.indexOf(ID_DELIMITER) + 1);
-        return String.format(levelString.substring(levelString.indexOf(ID_DELIMITER) + 1), officeId, companyId);
+        return OFFICE.name() + COORD_DELIMITER + officeId + ID_DELIMITER + "COMPANY" + COORD_DELIMITER + companyId;
     }
 
     public static String getCompanyActorId(String companyId) {
@@ -139,6 +138,14 @@ public class ServiceUtil {
         String objectCellParentName = cell.getName().substring(cell.getName().lastIndexOf(ID_DELIMITER) + 1);
         String[] parentCoords = objectCellParentName.split(COORD_DELIMITER);
         return new Vector3(Long.parseLong(parentCoords[1]), Long.parseLong(parentCoords[2]), Long.parseLong(parentCoords[3]));
+    }
+
+    public static String addItemToCell(String items, String item) {
+        if (items == null) {
+            return item;
+        } else {
+            return items + ";" + item;
+        }
     }
 
     public static boolean checkNoCellOnGrid(Array<Actor> children) {
@@ -259,16 +266,15 @@ public class ServiceUtil {
         int r = (int) coords.x;
         int c = (int) coords.y;
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(CACHE_SERVICE.getValue(Cache.CURRENT_PROGRESS_ID)));
-        String companyId = progressEntity.getCompanyEntity().getActorName();
-        String officeId = progressEntity.getOfficeEntity().getActorName();
-        int level = (int) progressEntity.getLevelEntity().getLevel();
+        String level = progressEntity.getLevelEntity().getActorName();
         Array<Array<ObjectCell>> cells = new Array<>();
+        String cellId = getCellActorId(r, c, level);
         switch (room) {
             case HALL: {
                 for (int i = 0; i <= OBJECT_CELL_SIZE + 1; i++) {
                     cells.insert(i, new Array<>());
                     for (int j = 0; j <= OBJECT_CELL_SIZE + 1; j++) {
-                        cells.get(i).insert(j, new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                        cells.get(i).insert(j, new ObjectCell(getObjectCellActorId(i, j, cellId),
                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
                     }
                 }
@@ -280,18 +286,18 @@ public class ServiceUtil {
                     for (int j = 0; j <= OBJECT_CELL_SIZE + 1; j++) {
                         cells.get(i).insert(j,
                                 i == 0 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
-                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                        new ObjectCell(getObjectCellActorId(i, j, cellId),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
                                         : j == 0 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
-                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                        new ObjectCell(getObjectCellActorId(i, j, cellId),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
                                         : i == OBJECT_CELL_SIZE - 1 && j < OBJECT_CELL_SIZE / 2f && j > OBJECT_CELL_SIZE / 2f ?
-                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                        new ObjectCell(getObjectCellActorId(i, j, cellId),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
                                         : j == OBJECT_CELL_SIZE - 1 && i < OBJECT_CELL_SIZE / 2f && i > OBJECT_CELL_SIZE / 2f ?
-                                        new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                        new ObjectCell(getObjectCellActorId(i, j, cellId),
                                                 i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, true)
-                                        : new ObjectCell(getObjectCellActorId(i, j, r, c, level, officeId, companyId),
+                                        : new ObjectCell(getObjectCellActorId(i, j, cellId),
                                         i * OBJECT_CELL_SIZE, j * OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, OBJECT_CELL_SIZE, false));
                     }
                 }
@@ -302,7 +308,16 @@ public class ServiceUtil {
     }
 
     public static void addObjectCellsAndStaff(Cell cell, Room room) {
-        getObjectCells(cell, room.getType()).iterator().forEach(c -> c.iterator().forEach(cell::addActor));
+        CellEntity cellEntity = CellDao.getInstance().queryForActorName(cell.getName());
+        getObjectCells(cell, room.getType()).iterator().forEach(c -> c.iterator().forEach(c1 -> {
+            Arrays.stream(cellEntity.getItems().split(";"))
+                    .filter(i -> i.substring(i.indexOf(OBJECT_CELL.name())).equals(c1.getName()))
+                    .findFirst().ifPresent(i -> {
+                        Item item = new Item(Items.valueOf(i.substring(0, i.indexOf(COORD_DELIMITER))));
+                        c1.addActor(item);
+                    });
+            cell.addActor(c1);
+        }));
         UiActorService uiActorService = UiActorService.getInstance();
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(CACHE_SERVICE.getValue(Cache.CURRENT_PROGRESS_ID)));
         String currentCompanyId = progressEntity.getCompanyEntity().getActorName();
@@ -310,6 +325,10 @@ public class ServiceUtil {
         String officeId = getOfficeActorId(currentOfficeId, currentCompanyId);
         Office office = (Office) uiActorService.getActorById(officeId);
         room.getRoomInfo().getStaff().forEach(office::addActor);
+    }
+
+    public static void addEmptyObjectCells(Cell cell, Room room) {
+        getObjectCells(cell, room.getType()).iterator().forEach(c -> c.iterator().forEach(cell::addActor));
     }
 
 }

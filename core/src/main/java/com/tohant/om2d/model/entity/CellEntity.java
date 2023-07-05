@@ -2,13 +2,8 @@ package com.tohant.om2d.model.entity;
 
 
 import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import java.io.Serializable;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "CELL")
@@ -17,46 +12,38 @@ public class CellEntity extends AbstractActorEntity {
     @DatabaseField(generatedId = true)
     private UUID id;
     @DatabaseField
-    private String roomId;
-    @DatabaseField
-    private String roomType;
-    @DatabaseField
     private int x;
     @DatabaseField
     private int y;
-    @ForeignCollectionField(eager = true, columnName = "cell_id")
-    private Collection<ObjectCellEntity> objectCellEntities;
+    @DatabaseField
+    private String items;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "room_id")
     private RoomEntity roomEntity;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "level_id")
     private LevelEntity levelEntity;
 
-    public CellEntity(String id, String roomId, String roomType, int x, int y, List<ObjectCellEntity> objectCellEntities, RoomEntity roomEntity) throws SQLException {
-        super(id);
-        this.roomId = roomId;
-        this.roomType = roomType;
+    public CellEntity(String actorName, UUID id, int x, int y, String items, RoomEntity roomEntity) {
+        super(actorName);
+        this.id = id;
         this.x = x;
         this.y = y;
-        this.objectCellEntities = objectCellEntities;
+        this.items = items;
         this.roomEntity = roomEntity;
     }
 
-    public CellEntity(String id, String roomId, String roomType, int x, int y, List<ObjectCellEntity> objectCellEntities) {
+    public CellEntity(String id, int x, int y, String items) {
         super(id);
-        this.roomId = roomId;
-        this.roomType = roomType;
         this.x = x;
         this.y = y;
-        this.objectCellEntities = objectCellEntities;
+        this.items = items;
     }
 
-    public CellEntity(String id, String roomId, String roomType, int x, int y, Collection<ObjectCellEntity> objectCellEntities, RoomEntity roomEntity, LevelEntity levelEntity) {
-        super(id);
-        this.roomId = roomId;
-        this.roomType = roomType;
+    public CellEntity(String actorName, UUID id, int x, int y, String items, RoomEntity roomEntity, LevelEntity levelEntity) {
+        super(actorName);
+        this.id = id;
         this.x = x;
         this.y = y;
-        this.objectCellEntities = objectCellEntities;
+        this.items = items;
         this.roomEntity = roomEntity;
         this.levelEntity = levelEntity;
     }
@@ -72,22 +59,6 @@ public class CellEntity extends AbstractActorEntity {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public String getRoomId() {
-        return roomId;
-    }
-
-    public void setRoomId(String roomId) {
-        this.roomId = roomId;
-    }
-
-    public String getRoomType() {
-        return roomType;
-    }
-
-    public void setRoomType(String roomType) {
-        this.roomType = roomType;
     }
 
     public int getX() {
@@ -106,12 +77,12 @@ public class CellEntity extends AbstractActorEntity {
         this.y = y;
     }
 
-    public Collection<ObjectCellEntity> getObjectCellEntities() {
-        return objectCellEntities;
+    public String getItems() {
+        return items;
     }
 
-    public void setObjectCellEntities(List<ObjectCellEntity> objectCellEntities) {
-        this.objectCellEntities = objectCellEntities;
+    public void setItems(String items) {
+        this.items = items;
     }
 
     public RoomEntity getRoomEntity() {
@@ -120,10 +91,6 @@ public class CellEntity extends AbstractActorEntity {
 
     public void setRoomEntity(RoomEntity roomEntity) {
         this.roomEntity = roomEntity;
-    }
-
-    public void setObjectCellEntities(Collection<ObjectCellEntity> objectCellEntities) {
-        this.objectCellEntities = objectCellEntities;
     }
 
     public LevelEntity getLevelEntity() {

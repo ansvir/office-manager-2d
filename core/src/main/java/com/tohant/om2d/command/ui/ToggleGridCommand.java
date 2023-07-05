@@ -34,10 +34,9 @@ public class ToggleGridCommand implements Command {
         UiActorService uiActorService = UiActorService.getInstance();
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
         ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(Cache.CURRENT_PROGRESS_ID)).get();
-        String companyId = progressEntity.getCompanyEntity().getActorName();
         String officeId = progressEntity.getOfficeEntity().getActorName();
         int level = (int) progressEntity.getLevelEntity().getLevel();
-        String gridId = ServiceUtil.getGridActorId(level, officeId, companyId);
+        String gridId = ServiceUtil.getGridActorId(level, officeId);
         Actor grid = uiActorService.getActorById(gridId);
         new ToggleCommand(grid.getName()).execute();
     }

@@ -87,7 +87,7 @@ public class AsyncRoomBuildService {
                 ResidentDao.getInstance().create(residentEntity);
             }
             cell.addActor(room);
-            addObjectCellsAndStaff(cell, room);
+            addEmptyObjectCells(cell, room);
             Array<RoomBuildingModel> buildingModels = (Array<RoomBuildingModel>) cacheService.getObject(Cache.BUILD_TASKS);
             for (int i = 0; i < buildingModels.size; i++) {
                 if (buildingModels.get(i).getRoomInfo().getId().equals(room.getRoomInfo().getId())) {

@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
-import static com.tohant.om2d.service.ServiceUtil.getCellRoom;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
 
 public class UiActorService extends ActorService {
@@ -82,7 +81,8 @@ public class UiActorService extends ActorService {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(Cache.CURRENT_PROGRESS_ID)));
         Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(Cache.UI_ACTORS);
-        uiActors.add(createMap(progressEntity.getOfficeEntity()));
+        uiActors.add(createMap(progressEntity.getCompanyEntity().getOfficeEntities().stream()
+                .filter(o -> o.getId().equals(progressEntity.getOfficeEntity().getId())).findFirst().get()));
         uiActors.add(createBudgetLabel());
         uiActors.add(createTimeLabel());
         uiActors.add(createRoomInfoModal());
@@ -325,18 +325,15 @@ public class UiActorService extends ActorService {
     }
 
     private Cell createCell(CellEntity cellEntity) {
-        Cell cell = cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getActorName(),
+        return cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getActorName(),
                 new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                : cellEntity.getItems() == null ? new Cell(cellEntity.getActorName(),
+                new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
+                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()))
                 : new Cell(cellEntity.getActorName(),
                 new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()));
-        Room room = getCellRoom(cell);
-        if (room != null) {
-            cell.addActor(room);
-
-        }
-        return cell;
     }
 
     private Room createRoom(RoomEntity roomEntity) {

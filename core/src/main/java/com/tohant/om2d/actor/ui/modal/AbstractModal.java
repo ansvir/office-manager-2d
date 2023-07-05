@@ -30,6 +30,7 @@ public abstract class AbstractModal extends Window implements ToggleActor {
         }*/
     }
 
+    @Override
     public void toggle() {
         this.setVisible(!this.isVisible());
     }

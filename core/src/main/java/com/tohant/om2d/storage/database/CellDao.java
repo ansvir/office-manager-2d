@@ -39,6 +39,16 @@ public class CellDao extends BaseDaoImpl<CellEntity, UUID> {
         }
     }
 
+    public CellEntity queryForActorName(String name) {
+        try {
+            return super.queryForEq("actor_name", name).stream()
+                    .findFirst().orElse(null);
+        } catch (SQLException e) {
+            Gdx.app.error("CANNOT QUERY FOR ACTOR NAME", "CAUSE: " + e.getLocalizedMessage());
+            return null;
+        }
+    }
+
     @Override
     public List<CellEntity> queryForAll() {
         try {
@@ -72,8 +82,6 @@ public class CellDao extends BaseDaoImpl<CellEntity, UUID> {
     @Override
     public int create(CellEntity data) {
         try {
-            ObjectCellDao objectCellDao = ObjectCellDao.getInstance();
-            data.getObjectCellEntities().forEach(objectCellDao::create);
             return super.create(data);
         } catch (SQLException e) {
             Gdx.app.error("CANNOT CREATE", "CAUSE: " + e.getLocalizedMessage());
@@ -81,4 +89,13 @@ public class CellDao extends BaseDaoImpl<CellEntity, UUID> {
         }
     }
 
+    @Override
+    public int update(CellEntity data) {
+        try {
+            return super.update(data);
+        } catch (SQLException e) {
+            Gdx.app.error("CANNOT UPDATE", "CAUSE: " + e.getLocalizedMessage());
+            return 0;
+        }
+    }
 }

@@ -23,7 +23,6 @@ public class SQLiteDatabaseHelper {
             TableUtils.createTableIfNotExists(connectionSource, WorkerEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, RoomEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, ResidentEntity.class);
-            TableUtils.createTableIfNotExists(connectionSource, ObjectCellEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, CellEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, LevelEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, OfficeEntity.class);
@@ -39,10 +38,6 @@ public class SQLiteDatabaseHelper {
             instance = new SQLiteDatabaseHelper();
         }
         return instance;
-    }
-
-    public void isEmpty() {
-
     }
 
     public ConnectionSource getConnectionSource() {

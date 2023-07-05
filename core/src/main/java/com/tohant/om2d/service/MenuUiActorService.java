@@ -28,8 +28,7 @@ import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.storage.Cache;
-import com.tohant.om2d.storage.database.ProgressDao;
-import com.tohant.om2d.storage.database.ProgressJsonDatabase;
+import com.tohant.om2d.storage.database.*;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.*;
@@ -207,15 +206,25 @@ public class MenuUiActorService extends ActorService {
         int level = 0;
         return new GameTextButton(MENU_NEW_COMPANY_START_BUTTON.name(), () -> {
             List<CellEntity> cells = IntStream.range(0, GRID_HEIGHT).boxed()
-                    .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed().map(c ->
-                                    new CellEntity(getCellActorId(r, c, level, officeId, companyId), null, null, r, c, List.of())))
+                    .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed()
+                            .map(c -> new CellEntity(getCellActorId(r, c, getGridActorId(level, getOfficeActorId(officeId, companyId))), r, c, null)))
                     .collect(Collectors.toList());
-            LevelEntity levelEntity = new LevelEntity(getGridActorId(level, officeId, companyId), level, cells);
+            LevelEntity levelEntity = new LevelEntity(getGridActorId(level, getOfficeActorId(officeId, companyId)), level, cells);
             OfficeEntity officeEntity = new OfficeEntity(getOfficeActorId(officeId, companyId),
                     RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, List.of(levelEntity), List.of());
             CompanyEntity companyEntity = new CompanyEntity(getCompanyActorId(companyId),
                     RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity),
                     CompanyEntity.Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
+            CompanyDao.getInstance().create(companyEntity);
+            officeEntity.setCompanyEntity(companyEntity);
+            OfficeDao.getInstance().create(officeEntity);
+            levelEntity.setOfficeEntity(officeEntity);
+            LevelDao.getInstance().create(levelEntity);
+            CellDao cellDao = CellDao.getInstance();
+            cells.forEach(c -> {
+                c.setLevelEntity(levelEntity);
+                cellDao.create(c);
+            });
             ProgressEntity progressEntity = new ProgressEntity(UUID.randomUUID().toString(), companyEntity, officeEntity, levelEntity);
             ProgressDao.getInstance().create(progressEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progressEntity.getId().toString());
@@ -224,7 +233,8 @@ public class MenuUiActorService extends ActorService {
     }
 
     private AbstractModal createGamesModal() {
-        AtomicReference<Table> initTable = new AtomicReference<>(new Table());
+        Table initTable = new Table();
+        initTable.setName(MENU_LOAD_GAME_MODAL_TABLE.name());
         List<ProgressEntity> progresses = ProgressDao.getInstance().queryForAll();
         for (int i = 0; i < progresses.size(); i++) {
             int finalI = i;
@@ -237,27 +247,27 @@ public class MenuUiActorService extends ActorService {
                 GameTextButton deleteButton = new GameTextButton("DELETE_" + finalI + "_GAME_BUTTON", () -> {
                     ProgressDao.getInstance().deleteById(progresses.get(finalI).getId());
                     Table table = new Table();
-                    for (int j = 0; j < initTable.get().getCells().size; j += 2) {
+                    for (int j = 0; j < initTable.getCells().size; j += 2) {
                         if ((j != finalI) && ((j + 1) != (finalI + 1))) {
-                            table.add(initTable.get().getCells().get(j).getActor()).growX().padRight(DEFAULT_PAD);
-                            table.add(initTable.get().getCells().get(j + 1).getActor());
+                            table.add(initTable.getCells().get(j).getActor()).growX().padRight(DEFAULT_PAD);
+                            table.add(initTable.getCells().get(j + 1).getActor());
                             table.row();
                         }
                     }
-                    Table parent = (Table) initTable.get().getParent();
-                    initTable.get().remove();
+                    Table parent = (Table) initTable.getParent();
+                    initTable.remove();
                     parent.add(table);
                 }, "X", skin);
                 deleteButton.setColor(Color.WHITE);
                 deleteButton.getLabel().getStyle().fontColor = Color.RED;
-                initTable.get().add(button).growX().padRight(DEFAULT_PAD);
-                initTable.get().add(deleteButton);
-                initTable.get().row();
+                initTable.add(button).growX().padRight(DEFAULT_PAD);
+                initTable.add(deleteButton);
+                initTable.row();
             });
         }
         AbstractTextButton close = new GameTextButton(MENU_LOAD_GAME_MODAL_CLOSE_BUTTON.name(),
                 new ForceToggleCommand(MENU_LOAD_GAME_MODAL.name(), false), "X", skin);
-        AbstractModal modal = new DefaultModal(MENU_LOAD_GAME_MODAL.name(), "Load game", Array.with(initTable.get()), close, skin);
+        AbstractModal modal = new DefaultModal(MENU_LOAD_GAME_MODAL.name(), "Load game", Array.with(initTable), close, skin);
         modal.setSize(modal.getPrefWidth(), modal.getPrefHeight());
         modal.setPosition(Gdx.graphics.getWidth() / 2f - modal.getWidth() / 2f, Gdx.graphics.getHeight() / 2f - modal.getHeight() / 2f);
         modal.forceToggle(false);
@@ -278,7 +288,7 @@ public class MenuUiActorService extends ActorService {
         MENU_NEW_COMPANY_DIRECTOR_IMAGE, MENU_NEW_COMPANY_DIRECTOR_HAIR_BUTTON, MENU_NEW_COMPANY_DIRECTOR_SKIN_BUTTON,
         MENU_NEW_COMPANY_DIRECTOR_BODY_BUTTON,
         MENU_NEW_COMPANY_START_BUTTON,
-        MENU_LOAD_GAME_MODAL, MENU_LOAD_GAME_MODAL_CLOSE_BUTTON
+        MENU_LOAD_GAME_MODAL, MENU_LOAD_GAME_MODAL_CLOSE_BUTTON, MENU_LOAD_GAME_MODAL_TABLE
     }
 
 }
