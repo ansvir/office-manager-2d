@@ -43,7 +43,7 @@ import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.TimeLineDate;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.util.AssetsUtil;
 

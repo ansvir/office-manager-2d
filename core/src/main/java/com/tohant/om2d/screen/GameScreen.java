@@ -27,11 +27,11 @@ import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.stage.AbstractStage;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.stage.UiStage;
-import com.tohant.om2d.storage.CachedEventListener;
+import com.tohant.om2d.storage.cache.CachedEventListener;
 
 import java.util.*;
 
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.cache.Cache.*;
 
 
 public class GameScreen implements Screen {

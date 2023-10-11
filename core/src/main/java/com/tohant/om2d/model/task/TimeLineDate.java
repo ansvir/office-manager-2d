@@ -70,4 +70,25 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         return 1000L * 60L * 60L * 24L * this.days * this.month * this.years;
     }
 
+    public enum Frequency {
+
+        NEVER("never"),
+        ONCE("once"),
+        ONE_MINUTE("1minute"),
+        ONE_DAY("1day"),
+        ONE_MONTH("1month"),
+        ONE_YEAR("1year");
+
+        private final String value;
+
+        Frequency(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+    }
+
 }

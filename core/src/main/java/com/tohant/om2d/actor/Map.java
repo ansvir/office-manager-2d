@@ -2,7 +2,7 @@ package com.tohant.om2d.actor;
 
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 
 import com.tohant.om2d.service.AssetService;
 

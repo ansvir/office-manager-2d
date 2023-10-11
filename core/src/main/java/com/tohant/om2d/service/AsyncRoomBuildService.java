@@ -11,7 +11,7 @@ import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.CellDao;
 import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.storage.database.ResidentDao;

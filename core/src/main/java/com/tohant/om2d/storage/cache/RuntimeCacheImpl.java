@@ -1,4 +1,4 @@
-package com.tohant.om2d.storage;
+package com.tohant.om2d.storage.cache;
 
 import java.util.HashMap;
 import java.util.Map;

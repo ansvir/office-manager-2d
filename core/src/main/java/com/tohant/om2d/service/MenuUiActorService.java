@@ -27,7 +27,7 @@ import com.tohant.om2d.actor.ui.slide.DefaultSlideShow;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.model.entity.*;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.*;
 import com.tohant.om2d.util.AssetsUtil;
 
@@ -42,7 +42,7 @@ import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.model.entity.CompanyEntity.Region.EUROPE;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
 import static com.tohant.om2d.service.ServiceUtil.*;
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class MenuUiActorService extends ActorService {
 

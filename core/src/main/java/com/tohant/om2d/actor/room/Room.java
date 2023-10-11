@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 

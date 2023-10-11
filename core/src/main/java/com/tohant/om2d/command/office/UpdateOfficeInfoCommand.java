@@ -4,7 +4,7 @@ import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.command.Command;
 
 import static com.tohant.om2d.service.ServiceUtil.getRoomsAmountByType;

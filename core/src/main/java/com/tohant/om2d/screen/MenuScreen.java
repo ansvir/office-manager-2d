@@ -16,26 +16,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.tohant.om2d.actor.ui.button.GameTextButton;
 import com.tohant.om2d.actor.ui.label.GameLabel;
-import com.tohant.om2d.actor.ui.list.AbstractList;
-import com.tohant.om2d.actor.ui.list.DefaultList;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
-import com.tohant.om2d.command.ui.UpdateLoadGameModalCommand;
 import com.tohant.om2d.exception.GameException;
-import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.MenuUiActorService;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.ProgressDao;
-import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 import com.tohant.om2d.util.AssetsUtil;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;

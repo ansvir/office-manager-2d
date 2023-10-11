@@ -19,9 +19,8 @@ import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.ProgressDao;
-import com.tohant.om2d.storage.database.ProgressJsonDatabase;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.Arrays;

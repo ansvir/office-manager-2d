@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.tohant.om2d.service.ServiceUtil.addItemToCell;
 import static com.tohant.om2d.service.ServiceUtil.getObjectCellItemId;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class PlaceItemCommand implements Command {
 

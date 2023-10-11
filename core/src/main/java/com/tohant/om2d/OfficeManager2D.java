@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.async.AsyncResult;
 
 import com.tohant.om2d.screen.MenuScreen;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.storage.CachedEventListener;
+import com.tohant.om2d.storage.cache.CachedEventListener;
 
 public class OfficeManager2D extends Game {
 

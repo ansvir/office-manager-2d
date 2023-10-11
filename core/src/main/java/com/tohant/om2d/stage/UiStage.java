@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tohant.om2d.command.ui.RestoreDefaultsCommand;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.command.office.UpdateBudgetCommand;
 import com.tohant.om2d.command.office.UpdateOfficeInfoCommand;
 import com.tohant.om2d.command.office.UpdateTimeCommand;

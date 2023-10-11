@@ -11,7 +11,7 @@ import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class ObjectCell extends Group {
 

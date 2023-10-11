@@ -10,7 +10,7 @@ import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
-import static com.tohant.om2d.storage.Cache.CURRENT_ITEM;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_ITEM;
 
 public class PickItemCommand implements Command {
 

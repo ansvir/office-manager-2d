@@ -2,7 +2,7 @@ package com.tohant.om2d.command.room;
 
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.command.Command;
 
 public class ChooseRoomTypeCommand implements Command {

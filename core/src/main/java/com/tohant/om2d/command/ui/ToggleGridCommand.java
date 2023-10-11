@@ -6,7 +6,7 @@ import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.ServiceUtil;
 import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.ProgressDao;
 
 import java.util.UUID;

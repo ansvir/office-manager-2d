@@ -1,11 +1,11 @@
 package com.tohant.om2d.service;
 
 import com.badlogic.gdx.utils.Array;
-import com.tohant.om2d.storage.RuntimeCacheImpl;
+import com.tohant.om2d.storage.cache.RuntimeCacheImpl;
 
 import static com.tohant.om2d.actor.constant.Constant.GRID_HEIGHT;
 import static com.tohant.om2d.actor.constant.Constant.GRID_WIDTH;
-import static com.tohant.om2d.storage.Cache.*;
+import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class RuntimeCacheService {
     private static RuntimeCacheService instance;

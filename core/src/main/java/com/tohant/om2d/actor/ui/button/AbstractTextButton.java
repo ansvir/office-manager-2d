@@ -9,7 +9,7 @@ import com.tohant.om2d.command.Command;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.service.RuntimeCacheService;
 
-import static com.tohant.om2d.storage.Cache.GAME_EXCEPTION;
+import static com.tohant.om2d.storage.cache.Cache.GAME_EXCEPTION;
 
 public abstract class AbstractTextButton extends TextButton {
 

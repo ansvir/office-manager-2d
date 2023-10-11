@@ -10,14 +10,14 @@ import java.sql.SQLException;
 
 public class SQLiteDatabaseHelper {
 
-    private static final String DATABASE_URL = "jdbc:sqlite:data/om2d.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:data/db/om2d.db";
     private static SQLiteDatabaseHelper instance;
     private ConnectionSource connectionSource;
 
     private SQLiteDatabaseHelper() {
         try {
-            if (!Gdx.files.local("data").exists()) {
-                Gdx.files.local("data").mkdirs();
+            if (!Gdx.files.local("data/db").exists()) {
+                Gdx.files.local("data/db").mkdirs();
             }
             connectionSource = new JdbcConnectionSource(DATABASE_URL);
             TableUtils.createTableIfNotExists(connectionSource, WorkerEntity.class);

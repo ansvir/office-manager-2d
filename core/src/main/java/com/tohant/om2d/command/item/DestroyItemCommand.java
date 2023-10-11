@@ -4,7 +4,7 @@ import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.command.Command;
 import com.tohant.om2d.service.RuntimeCacheService;
 
-import static com.tohant.om2d.storage.Cache.CURRENT_OBJECT_CELL;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_OBJECT_CELL;
 
 public class DestroyItemCommand implements Command {
 

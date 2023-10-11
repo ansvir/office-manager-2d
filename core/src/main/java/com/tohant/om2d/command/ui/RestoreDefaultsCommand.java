@@ -4,8 +4,8 @@ import com.tohant.om2d.command.Command;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 
-import static com.tohant.om2d.storage.Cache.CURRENT_ITEM;
-import static com.tohant.om2d.storage.Cache.CURRENT_ROOM_TYPE;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_ITEM;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_ROOM_TYPE;
 
 public class RestoreDefaultsCommand implements Command {
 

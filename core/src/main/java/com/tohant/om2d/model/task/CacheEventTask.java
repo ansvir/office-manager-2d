@@ -1,7 +1,7 @@
 package com.tohant.om2d.model.task;
 
 import com.badlogic.gdx.utils.async.AsyncTask;
-import com.tohant.om2d.storage.RuntimeCacheImpl;
+import com.tohant.om2d.storage.cache.RuntimeCacheImpl;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -10,7 +10,7 @@ import com.tohant.om2d.command.ui.CreateNotificationCommand;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 
 public class AbstractStage extends Stage {
 

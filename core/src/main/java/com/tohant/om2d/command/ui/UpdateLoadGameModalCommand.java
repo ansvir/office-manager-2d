@@ -9,13 +9,11 @@ import com.tohant.om2d.command.Command;
 import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.service.MenuUiActorService;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.Cache;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.ProgressDao;
-import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.MENU_LOAD_GAME_MODAL;
