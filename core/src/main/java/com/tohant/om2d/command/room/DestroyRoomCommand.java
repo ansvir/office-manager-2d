@@ -1,11 +1,9 @@
 package com.tohant.om2d.command.room;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
-import com.tohant.om2d.actor.ObjectCell;
-import com.tohant.om2d.actor.ObjectCellItem;
+import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.Command;
@@ -17,7 +15,6 @@ import com.tohant.om2d.model.entity.RoomEntity;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.ServiceUtil;
 import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.storage.Cache;
 import com.tohant.om2d.storage.database.CellDao;
@@ -27,6 +24,7 @@ import com.tohant.om2d.storage.database.RoomDao;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
+import static com.tohant.om2d.service.ServiceUtil.*;
 
 public class DestroyRoomCommand implements Command {
 
@@ -47,7 +45,7 @@ public class DestroyRoomCommand implements Command {
             Room room = roomAtomic.get();
             if (room != null) {
                 if (room.getType() == Room.Type.HALL &&
-                        ServiceUtil.checkHallNextToRoomThatHasNoOtherHalls(currentCell)) {
+                        checkHallNextToRoomThatHasNoOtherHalls(currentCell)) {
                     throw new GameException(GameException.Code.E300);
                 }
                 Staff.Type currentStaffType = null;
@@ -71,14 +69,14 @@ public class DestroyRoomCommand implements Command {
                             * room.getRoomInfo().getStaff().size);
                 }
                 if (currentStaffType != null) {
-                    ServiceUtil.setEmployeesAmountByType(currentStaffType,
-                            ServiceUtil.getEmployeesAmountByType(currentStaffType)
+                    setEmployeesAmountByType(currentStaffType,
+                            getEmployeesAmountByType(currentStaffType)
                                     - room.getRoomInfo().getStaff().size);
                 }
                 cache.setFloat(Cache.TOTAL_SALARIES, cache.getFloat(Cache.TOTAL_SALARIES)
                         - room.getRoomInfo().getStaff().size * currentStaffTypeSalary);
-                ServiceUtil.setRoomsAmountByType(room.getType(),
-                        ServiceUtil.getRoomsAmountByType(room.getType()) - 1L);
+                setRoomsAmountByType(room.getType(),
+                        getRoomsAmountByType(room.getType()) - 1L);
                 Array<RoomBuildingModel> buildingModels = (Array<RoomBuildingModel>) cache.getObject(Cache.BUILD_TASKS);
                 AtomicReference<RoomBuildingModel> buildingModelAtomic = new AtomicReference<>();
                 for (int i = 0; i < buildingModels.size; i++) {
@@ -103,37 +101,43 @@ public class DestroyRoomCommand implements Command {
     }
 
     private void destroyRoom(Cell cell, Room room) {
-        CellEntity cellEntity = CellDao.getInstance().queryForActorName(cell.getName());
         RoomEntity roomEntity = RoomDao.getInstance().queryForActorName(room.getName());
         RoomDao.getInstance().deleteById(roomEntity.getId());
+        CellEntity cellEntity = CellDao.getInstance().queryForActorName(cell.getName());
         if (room.getType() == Room.Type.OFFICE) {
             ResidentEntity residentEntity = roomEntity.getResidentEntity();
             ResidentDao.getInstance().deleteById(residentEntity.getId());
         }
-        room = null;
         Cell newCell = new Cell(cellEntity.getActorName(),
                 new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);
-        newCell.setEmpty(true);
-        Array<Actor> cellChildren = newCell.getChildren();
-        for (int i = 0; i < cellChildren.size; i++) {
-            Actor child = cellChildren.get(i);
-            if (child instanceof ProgressBar) {
-                child.remove();
-            }
-            if (child instanceof Room) {
-                child.remove();
-            }
-            if (child instanceof ObjectCell) {
-                Array<Actor> objectCellActors = ((ObjectCell) child).getChildren();
-                for (int j = 0; j < objectCellActors.size; j++) {
-                    Actor objectCellActor = objectCellActors.get(j);
-                    if (objectCellActor instanceof ObjectCellItem) {
-                        objectCellActor.remove();
-                    }
-                }
+//        Array<Actor> cellChildren = newCell.getChildren();
+//        for (int i = 0; i < cellChildren.size; i++) {
+//            Actor child = cellChildren.get(i);
+//            if (child instanceof ProgressBar) {
+//                child.remove();
+//            }
+//            if (child instanceof Room) {
+//                child.remove();
+//            }
+//            if (child instanceof ObjectCell) {
+//                Array<Actor> objectCellActors = ((ObjectCell) child).getChildren();
+//                for (int j = 0; j < objectCellActors.size; j++) {
+//                    Actor objectCellActor = objectCellActors.get(j);
+//                    if (objectCellActor instanceof ObjectCellItem) {
+//                        objectCellActor.remove();
+//                    }
+//                }
+//            }
+//        }
+        Grid grid = (Grid) UiActorService.getInstance().getActorById(getGridIdByCell(cell));
+        Array<Actor> gridChildren = grid.getChildren();
+        for (int i = 0 ; i < gridChildren.size; i++) {
+            if (gridChildren.get(i) instanceof Cell
+                    && gridChildren.get(i).getName().equals(cell.getName())) {
+                gridChildren.set(i, newCell);
+                break;
             }
         }
-        cell = newCell;
     }
 }

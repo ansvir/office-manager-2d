@@ -104,6 +104,11 @@ public class ServiceUtil {
         return new Vector2(Long.parseLong(nameAndCoords[1]), Long.parseLong(nameAndCoords[2]));
     }
 
+    public static String getGridIdByCell(Cell cell) {
+        String cellName = cell.getName();
+        return cellName.substring(cellName.indexOf(ID_DELIMITER) + 1);
+    }
+
     public static String getObjectCellItemId(int objectCellX, int objectCellY, String itemId, String objectCellId) {
         return itemId + COORD_DELIMITER + objectCellX + COORD_DELIMITER + objectCellY + ID_DELIMITER + objectCellId;
     }
