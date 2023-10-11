@@ -80,7 +80,7 @@ public class UiActorService extends ActorService {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(Cache.CURRENT_PROGRESS_ID)));
         Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(Cache.UI_ACTORS);
-        uiActors.add(createMap(progressEntity, progressEntity.getCompanyEntity().getOfficeEntities().stream()
+        uiActors.add(createMap(progressEntity.getCompanyEntity().getOfficeEntities().stream()
                 .filter(o -> o.getId().equals(progressEntity.getOfficeEntity().getId())).findFirst().get()));
         uiActors.add(createBudgetLabel());
         uiActors.add(createTimeLabel());
@@ -324,58 +324,64 @@ public class UiActorService extends ActorService {
     }
 
     private Cell createCell(CellEntity cellEntity) {
-        return cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getActorName(),
+        Cell cell = cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getActorName(),
                 new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null)
                 : new Cell(cellEntity.getActorName(), new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()), cellEntity.getItems());
+        if (cell.isBuilt()) {
+            cell.setEmpty(false);
+        }
+        return cell;
     }
 
     private Room createRoom(RoomEntity roomEntity) {
+        Room room;
         switch (Room.Type.valueOf(roomEntity.getType())) {
             case SECURITY:
-                return new SecurityRoom(roomEntity.getActorName(),
+                room = new SecurityRoom(roomEntity.getActorName(),
                         new RoomInfo(roomEntity.getActorName(), new Array<>(roomEntity.getWorkerEntities().stream()
                                 .map(w -> new SecurityStaff(w.getActorName(), w.getSalary())).toArray(SecurityStaff[]::new)),
                                 roomEntity.getPrice(), roomEntity.getCost(),
                                 new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
-                                Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE);
-            case HALL: return new HallRoom(roomEntity.getActorName(),
+                                Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
+            case HALL: room = new HallRoom(roomEntity.getActorName(),
                     new RoomInfo(roomEntity.getActorName(), Array.with(),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
-                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE);
-            case CLEANING: return new CleaningRoom(roomEntity.getActorName(),
+                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
+            case CLEANING: room = new CleaningRoom(roomEntity.getActorName(),
                     new RoomInfo(roomEntity.getActorName(), new Array<>(roomEntity.getWorkerEntities().stream()
                             .map(w -> new CleaningStaff(w.getActorName(), w.getSalary())).toArray(CleaningStaff[]::new)),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
-                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE);
+                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
             case OFFICE:
                 ResidentEntity residentEntity = roomEntity.getResidentEntity();
-                    return new OfficeRoom(roomEntity.getActorName(),
+                room = new OfficeRoom(roomEntity.getActorName(),
                             new CompanyInfo(residentEntity.getBusinessName(), roomEntity.getWorkerEntities().stream().map(WorkerEntity::getActorName).collect(Collectors.toList())),
                             new RoomInfo(roomEntity.getActorName(), new Array<>(Arrays.stream(roomEntity.getWorkerEntities().toArray(WorkerEntity[]::new))
                                     .map(w -> new WorkerStaff(w.getActorName())).toArray(WorkerStaff[]::new)),
                                     roomEntity.getPrice(), roomEntity.getCost(),
                                     new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                                     Room.Type.valueOf(roomEntity.getType())),
-                            CELL_SIZE, CELL_SIZE);
-            case CAFFE: return new CaffeRoom(roomEntity.getActorName(),
+                            CELL_SIZE, CELL_SIZE); break;
+            case CAFFE: room = new CaffeRoom(roomEntity.getActorName(),
                     new RoomInfo(roomEntity.getActorName(), new Array<>(roomEntity.getWorkerEntities().stream()
                             .map(w -> new CaffeStaff(w.getActorName(), w.getSalary())).toArray(CaffeStaff[]::new)),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
-                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE);
-            default: return new ElevatorRoom(roomEntity.getActorName(),
+                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
+            default: room = new ElevatorRoom(roomEntity.getActorName(),
                     new RoomInfo(roomEntity.getActorName(), Array.with(),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
-                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE);
+                            Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
         }
+        return room;
     }
 
-    private Map createMap(ProgressEntity progressEntity, OfficeEntity officeEntity) {
+    private Map createMap(OfficeEntity officeEntity) {
         Map map = new Map(MAP.name());
         float width = 3000f;
         float height = 2500f;

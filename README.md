@@ -7,15 +7,17 @@ This is initial version of my project OM2D. Currently supported features you can
 1) Build 4 types of rooms in office.
 2) View your office information
 3) Monitor prices for your rooms
-4) Turn on and turn off the grid
-5) Time passes while playing: days, months and years 
-6) There are textures for environment objects and for 2 rooms
-7) Updated UI
+4) Place few items (currently 2, but one with texture)
+5) Turn on and turn off the grid
+6) Time passes while playing: days, months and years 
+7) There are textures for environment objects and for 2 rooms
+8) Updated UI
 
 ### Project stack:
 
 1) Java 11
 2) LibGDX
+3) SQLite
 
 But this is not the end! I'm actively developing my project to make it very funny!
 

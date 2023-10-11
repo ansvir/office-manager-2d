@@ -31,9 +31,9 @@ public class ServiceUtil {
     public static int nextToHalls(Cell cell) {
         Array<Cell> neighborCells = getNeighborCells(cell);
         int points = 0;
-        for (Cell c : neighborCells) {
-            if (!c.isEmpty() && c.isBuilt()) {
-                Room room = getCellRoom(c);
+        for (int i = 0; i < neighborCells.size; i++) {
+            if (!neighborCells.get(i).isEmpty() && neighborCells.get(i).isBuilt()) {
+                Room room = getCellRoom(neighborCells.get(i));
                 if (room != null && room.getType() == Room.Type.HALL) {
                     points++;
                 }
@@ -67,9 +67,10 @@ public class ServiceUtil {
     }
 
     public static Room getCellRoom(Cell cell) {
-        for (Actor a : cell.getChildren()) {
-            if (a instanceof Room) {
-                return (Room) a;
+        Array<Actor> cells = cell.getChildren();
+        for (int i = 0 ; i < cells.size; i++) {
+            if (cells.get(i) instanceof Room) {
+                return (Room) cells.get(i);
             }
         }
         return null;
