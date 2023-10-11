@@ -3,9 +3,7 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
-import com.tohant.om2d.storage.database.ResidentDao;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -22,10 +20,10 @@ public class ResidentEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "office_id")
     private OfficeEntity officeEntity;
 
-    public ResidentEntity(String id, String businessName, List<RoomEntity> roomEntities) {
+    public ResidentEntity(String id, String businessName, OfficeEntity officeEntity) {
         super(id);
         this.businessName = businessName;
-        this.roomEntities = roomEntities;
+        this.officeEntity = officeEntity;
     }
 
     public ResidentEntity() {

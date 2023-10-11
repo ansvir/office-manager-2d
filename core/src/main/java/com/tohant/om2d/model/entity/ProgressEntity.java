@@ -17,8 +17,8 @@ public class ProgressEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "level_id")
     private LevelEntity levelEntity;
 
-    public ProgressEntity(String id, CompanyEntity companyEntity, OfficeEntity officeEntity, LevelEntity levelEntity) {
-        super(id);
+    public ProgressEntity(CompanyEntity companyEntity, OfficeEntity officeEntity, LevelEntity levelEntity) {
+        super(null);
         this.companyEntity = companyEntity;
         this.officeEntity = officeEntity;
         this.levelEntity = levelEntity;

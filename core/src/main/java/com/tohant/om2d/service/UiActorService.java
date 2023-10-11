@@ -45,7 +45,6 @@ import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.storage.Cache;
 import com.tohant.om2d.storage.database.ProgressDao;
-import com.tohant.om2d.storage.database.ResidentDao;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.math.BigDecimal;
@@ -81,7 +80,7 @@ public class UiActorService extends ActorService {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(Cache.CURRENT_PROGRESS_ID)));
         Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(Cache.UI_ACTORS);
-        uiActors.add(createMap(progressEntity.getCompanyEntity().getOfficeEntities().stream()
+        uiActors.add(createMap(progressEntity, progressEntity.getCompanyEntity().getOfficeEntities().stream()
                 .filter(o -> o.getId().equals(progressEntity.getOfficeEntity().getId())).findFirst().get()));
         uiActors.add(createBudgetLabel());
         uiActors.add(createTimeLabel());
@@ -327,13 +326,9 @@ public class UiActorService extends ActorService {
     private Cell createCell(CellEntity cellEntity) {
         return cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getActorName(),
                 new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
-                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                : cellEntity.getItems() == null ? new Cell(cellEntity.getActorName(),
-                new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
-                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()))
-                : new Cell(cellEntity.getActorName(),
-                new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
-                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()));
+                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null)
+                : new Cell(cellEntity.getActorName(), new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
+                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()), cellEntity.getItems());
     }
 
     private Room createRoom(RoomEntity roomEntity) {
@@ -357,8 +352,7 @@ public class UiActorService extends ActorService {
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                             Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE);
             case OFFICE:
-                ResidentEntity residentEntity = ResidentDao.getInstance().queryForAll().stream()
-                        .filter(r -> r.getRoomEntities().stream().anyMatch(r1 -> r1.getActorName().equals(roomEntity.getActorName()))).findFirst().get();
+                ResidentEntity residentEntity = roomEntity.getResidentEntity();
                     return new OfficeRoom(roomEntity.getActorName(),
                             new CompanyInfo(residentEntity.getBusinessName(), roomEntity.getWorkerEntities().stream().map(WorkerEntity::getActorName).collect(Collectors.toList())),
                             new RoomInfo(roomEntity.getActorName(), new Array<>(Arrays.stream(roomEntity.getWorkerEntities().toArray(WorkerEntity[]::new))
@@ -381,7 +375,7 @@ public class UiActorService extends ActorService {
         }
     }
 
-    private Map createMap(OfficeEntity officeEntity) {
+    private Map createMap(ProgressEntity progressEntity, OfficeEntity officeEntity) {
         Map map = new Map(MAP.name());
         float width = 3000f;
         float height = 2500f;
@@ -475,7 +469,7 @@ public class UiActorService extends ActorService {
         ENVIRONMENT_MODAL, PEOPLE_INFO_MODAL, WORLD_MODAL,
         TOGGLE_ENVIRONMENT_MODAL_BUTTON, ENVIRONMENT_MODAL_ITEM_GRID, TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
         TOGGLE_WORLD_MODAL_BUTTON, TOGGLE_ALL_WINDOWS_BUTTON,
-        OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
+        ITEM, OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
         NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL;
 
         public enum Items {

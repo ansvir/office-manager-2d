@@ -24,20 +24,12 @@ public class Cell extends Group implements ToggleActor {
     private boolean isActive;
     private boolean isGridVisible;
 
-    public Cell(String id, Command command, float x, float y, float width, float height, Room room, Item item) {
+    public Cell(String id, Command command, float x, float y, float width, float height, Room room, String items) {
         initCell(id, command, x, y, width, height);
-        addActor(room);
-        addObjectCellsAndStaff(this, room);
-    }
-
-    public Cell(String id, Command command, float x, float y, float width, float height, Room room) {
-        initCell(id, command, x, y, width, height);
-        addActor(room);
-        addEmptyObjectCells(this, room);
-    }
-
-    public Cell(String id, Command command, float x, float y, float width, float height) {
-        initCell(id, command, x, y, width, height);
+        if (room != null) {
+            addActor(room);
+        }
+        addObjectCellsAndStaff(this, room, items);
     }
 
     private void initCell(String id, Command command, float x, float y, float width, float height) {

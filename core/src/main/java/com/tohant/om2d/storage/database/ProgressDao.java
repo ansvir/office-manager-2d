@@ -2,10 +2,7 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
-import com.tohant.om2d.model.entity.CellEntity;
-import com.tohant.om2d.model.entity.CompanyEntity;
 import com.tohant.om2d.model.entity.ProgressEntity;
-import com.tohant.om2d.model.entity.WorkerEntity;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -77,6 +74,15 @@ public class ProgressDao extends BaseDaoImpl<ProgressEntity, UUID> {
             return super.create(data);
         } catch (SQLException e) {
             Gdx.app.error("CANNOT CREATE", "CAUSE: " + e.getLocalizedMessage());
+            return 0;
+        }
+    }
+
+    public int update(ProgressEntity data) {
+        try {
+            return super.update(data);
+        } catch (SQLException e) {
+            Gdx.app.error("CANNOT UPDATE", "CAUSE: " + e.getLocalizedMessage());
             return 0;
         }
     }

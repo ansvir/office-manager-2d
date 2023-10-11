@@ -3,7 +3,6 @@ package com.tohant.om2d.storage.database;
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
 import com.tohant.om2d.model.entity.CellEntity;
-import com.tohant.om2d.model.entity.ProgressEntity;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -41,7 +40,7 @@ public class CellDao extends BaseDaoImpl<CellEntity, UUID> {
 
     public CellEntity queryForActorName(String name) {
         try {
-            return super.queryForEq("actor_name", name).stream()
+            return super.queryForEq("actorName", name).stream()
                     .findFirst().orElse(null);
         } catch (SQLException e) {
             Gdx.app.error("CANNOT QUERY FOR ACTOR NAME", "CAUSE: " + e.getLocalizedMessage());

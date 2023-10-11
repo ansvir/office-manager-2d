@@ -16,6 +16,9 @@ public class Office extends Group {
 //        }
         for (int i = 0; i < levels.size; i++) {
             addActor(levels.get(i));
+//            if (room != null) {
+//                room.getRoomInfo().getStaff().forEach(office::addActor);
+//            }
         }
     }
 

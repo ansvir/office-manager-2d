@@ -19,7 +19,7 @@ public class Item extends Image {
             case PLANT: this.texture = AssetService.getInstance().getItems().getPlantTexture(); break;
             default: this.texture = AssetService.getInstance().getItems().getCoolerTexture(); break;
         }
-        setDrawable((new TextureRegionDrawable(new TextureRegion(this.texture))));
+        setDrawable(new TextureRegionDrawable(new TextureRegion(this.texture)));
     }
 
     public UiActorService.UiComponentConstant.Items getType() {

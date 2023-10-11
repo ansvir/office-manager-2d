@@ -225,8 +225,10 @@ public class MenuUiActorService extends ActorService {
                 c.setLevelEntity(levelEntity);
                 cellDao.create(c);
             });
-            ProgressEntity progressEntity = new ProgressEntity(UUID.randomUUID().toString(), companyEntity, officeEntity, levelEntity);
+            ProgressEntity progressEntity = new ProgressEntity(companyEntity, officeEntity, levelEntity);
             ProgressDao.getInstance().create(progressEntity);
+            progressEntity.setActorName(progressEntity.getId().toString());
+            ProgressDao.getInstance().update(progressEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progressEntity.getId().toString());
             RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
         }, "Start", skin);
