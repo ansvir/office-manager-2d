@@ -105,7 +105,7 @@ public class AsyncRoomBuildService {
             Array<Actor> cellChildren = cell.getChildren();
             for (int i = 0; i < cellChildren.size; i++) {
                 if (cellChildren.get(i) instanceof ProgressBar) {
-                    cell.getChildren().get(i).remove();
+                    cellChildren.get(i).remove();
                     break;
                 }
             }

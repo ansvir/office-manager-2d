@@ -1,6 +1,7 @@
 package com.tohant.om2d.service;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
@@ -96,6 +97,11 @@ public class ServiceUtil {
         String[] cellCoords = objectsNames[1].split(COORD_DELIMITER);
         String[] levelCoords = objectsNames[2].split(COORD_DELIMITER);
         return new Vector3(Long.parseLong(coords[1]), Long.parseLong(coords[2]), Long.parseLong(levelCoords[1]));
+    }
+
+    public static Vector2 getObjectCellItemCoordinatesByName(String name) {
+        String[] nameAndCoords = name.split(COORD_DELIMITER);
+        return new Vector2(Long.parseLong(nameAndCoords[1]), Long.parseLong(nameAndCoords[2]));
     }
 
     public static String getObjectCellItemId(int objectCellX, int objectCellY, String itemId, String objectCellId) {
@@ -322,11 +328,15 @@ public class ServiceUtil {
         getObjectCells(cell, room == null ? null : room.getType()).iterator().forEach(c -> c.iterator().forEach(c1 -> {
             if (items != null) {
                 Arrays.stream(items.split(";"))
-                        .filter(i -> i.substring(i.indexOf(OBJECT_CELL.name())).equals(c1.getName()))
-                        .findFirst().ifPresent(i -> {
-                            Items itemType = Items.valueOf(i.substring(0, i.indexOf(COORD_DELIMITER)));
-                            ObjectCellItem objectCellItem = new ObjectCellItem(i, itemType);
-                            c1.addActor(objectCellItem);
+                        .forEach(i -> {
+                            Vector2 itemPosition = getObjectCellItemCoordinatesByName(i);
+                            Vector3 objectCellPosition = getObjectCellCoordinates(c1);
+                            if (itemPosition.x == objectCellPosition.x
+                                    && itemPosition.y == objectCellPosition.y) {
+                                Items itemType = Items.valueOf(i.substring(0, i.lastIndexOf("_")));
+                                ObjectCellItem objectCellItem = new ObjectCellItem(i, itemType);
+                                c1.addActor(objectCellItem);
+                            }
                         });
             }
             cell.addActor(c1);

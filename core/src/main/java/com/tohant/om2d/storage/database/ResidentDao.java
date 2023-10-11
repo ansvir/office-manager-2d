@@ -3,8 +3,6 @@ package com.tohant.om2d.storage.database;
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
 import com.tohant.om2d.model.entity.ResidentEntity;
-import com.tohant.om2d.model.entity.ResidentEntity;
-import com.tohant.om2d.model.entity.WorkerEntity;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -56,6 +54,16 @@ public class ResidentDao extends BaseDaoImpl<ResidentEntity, UUID> {
             return super.create(data);
         } catch (SQLException e) {
             Gdx.app.error("CANNOT CREATE", "CAUSE: " + e.getLocalizedMessage());
+            return 0;
+        }
+    }
+
+    @Override
+    public int deleteById(UUID s) {
+        try {
+            return super.deleteById(s);
+        } catch (SQLException e) {
+            Gdx.app.error("CANNOT DELETE BY ID", "CAUSE: " + e.getLocalizedMessage());
             return 0;
         }
     }

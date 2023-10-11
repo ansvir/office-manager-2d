@@ -39,7 +39,7 @@ public class PlaceItemCommand implements Command {
             cells.iterator().forEach(c -> {
                 if (c instanceof ToggleActor) {
                     new ForceToggleCommand(c.getName(), false).execute();
-                    if (c instanceof Cell && c.getName().endsWith(objectCell.getName())) {
+                    if (c instanceof Cell && objectCell.getName().endsWith(c.getName())) {
                         currentCell.set((Cell) c);
                     }
                 }

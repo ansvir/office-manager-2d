@@ -1,23 +1,32 @@
 package com.tohant.om2d.command.room;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
-import com.tohant.om2d.actor.Office;
+import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.actor.ObjectCellItem;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
+import com.tohant.om2d.command.Command;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.model.entity.CellEntity;
+import com.tohant.om2d.model.entity.ResidentEntity;
+import com.tohant.om2d.model.entity.RoomEntity;
+import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.ServiceUtil;
 import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.storage.Cache;
-import com.tohant.om2d.command.Command;
-import com.tohant.om2d.model.entity.ProgressEntity;
-import com.tohant.om2d.model.task.RoomBuildingModel;
-import com.tohant.om2d.storage.database.ProgressJsonDatabase;
+import com.tohant.om2d.storage.database.CellDao;
+import com.tohant.om2d.storage.database.ResidentDao;
+import com.tohant.om2d.storage.database.RoomDao;
 
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
 
 public class DestroyRoomCommand implements Command {
 
@@ -29,11 +38,12 @@ public class DestroyRoomCommand implements Command {
         Cell currentCell = (Cell) uiActorService.getActorById(cellId);
         if (currentCell != null && !currentCell.isEmpty()) {
             AtomicReference<Room> roomAtomic = new AtomicReference<>();
-            currentCell.getChildren().iterator().forEach(c -> {
-                if (c instanceof Room) {
-                    roomAtomic.set((Room) c);
+            Array<Actor> children = currentCell.getChildren();
+            for (int i = 0; i < children.size; i++) {
+                if (children.get(i) instanceof Room) {
+                    roomAtomic.set((Room) children.get(i));
                 }
-            });
+            }
             Room room = roomAtomic.get();
             if (room != null) {
                 if (room.getType() == Room.Type.HALL &&
@@ -71,19 +81,19 @@ public class DestroyRoomCommand implements Command {
                         ServiceUtil.getRoomsAmountByType(room.getType()) - 1L);
                 Array<RoomBuildingModel> buildingModels = (Array<RoomBuildingModel>) cache.getObject(Cache.BUILD_TASKS);
                 AtomicReference<RoomBuildingModel> buildingModelAtomic = new AtomicReference<>();
-                buildingModels.iterator().forEach(b -> {
+                for (int i = 0; i < buildingModels.size; i++) {
+                    RoomBuildingModel b = buildingModels.get(i);
                     if (b.getRoomInfo().getId().equals(room.getRoomInfo().getId())) {
                         buildingModelAtomic.set(b);
                     }
-                });
+                }
                 RoomBuildingModel buildingModel = buildingModelAtomic.get();
                 if (buildingModel != null) {
                     if (!buildingModel.getTimeLineTask().isFinished()) {
                         buildingModels.removeValue(buildingModel, false);
-                        destroyNonBuiltRoom(currentCell);
                     }
                 } else {
-                    destroyBuiltRoom(currentCell, room);
+                    destroyRoom(currentCell, room);
                 }
             }
             cache.setValue(Cache.CURRENT_CELL, null);
@@ -92,21 +102,38 @@ public class DestroyRoomCommand implements Command {
         }
     }
 
-    private void destroyBuiltRoom(Cell cell, Room room) {
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        ProgressEntity progressEntity = ProgressJsonDatabase.getInstance().getById(cache.getValue(Cache.CURRENT_PROGRESS_ID)).get();
-        String currentCompanyId = progressEntity.getCompanyEntity().getActorName();
-        String currentOfficeId = progressEntity.getOfficeEntity().getActorName();
-        String officeId = ServiceUtil.getOfficeActorId(currentOfficeId, currentCompanyId);
-        Office office = (Office) uiActorService.getActorById(officeId);
-        room.getRoomInfo().getStaff().forEach(office::removeActor);
-        cell.clearChildren();
-        cell.setEmpty(true);
-    }
-
-    private void destroyNonBuiltRoom(Cell cell) {
-        cell.clearChildren();
-        cell.setEmpty(true);
+    private void destroyRoom(Cell cell, Room room) {
+        CellEntity cellEntity = CellDao.getInstance().queryForActorName(cell.getName());
+        RoomEntity roomEntity = RoomDao.getInstance().queryForActorName(room.getName());
+        RoomDao.getInstance().deleteById(roomEntity.getId());
+        if (room.getType() == Room.Type.OFFICE) {
+            ResidentEntity residentEntity = roomEntity.getResidentEntity();
+            ResidentDao.getInstance().deleteById(residentEntity.getId());
+        }
+        room = null;
+        Cell newCell = new Cell(cellEntity.getActorName(),
+                new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
+                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);
+        newCell.setEmpty(true);
+        Array<Actor> cellChildren = newCell.getChildren();
+        for (int i = 0; i < cellChildren.size; i++) {
+            Actor child = cellChildren.get(i);
+            if (child instanceof ProgressBar) {
+                child.remove();
+            }
+            if (child instanceof Room) {
+                child.remove();
+            }
+            if (child instanceof ObjectCell) {
+                Array<Actor> objectCellActors = ((ObjectCell) child).getChildren();
+                for (int j = 0; j < objectCellActors.size; j++) {
+                    Actor objectCellActor = objectCellActors.get(j);
+                    if (objectCellActor instanceof ObjectCellItem) {
+                        objectCellActor.remove();
+                    }
+                }
+            }
+        }
+        cell = newCell;
     }
 }
