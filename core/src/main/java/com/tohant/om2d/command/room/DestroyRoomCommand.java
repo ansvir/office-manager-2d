@@ -108,6 +108,9 @@ public class DestroyRoomCommand implements Command {
             ResidentEntity residentEntity = roomEntity.getResidentEntity();
             ResidentDao.getInstance().deleteById(residentEntity.getId());
         }
+        cellEntity.setRoomEntity(null);
+        cellEntity.setItems(null);
+        CellDao.getInstance().update(cellEntity);
         Cell newCell = new Cell(cellEntity.getActorName(),
                 new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);

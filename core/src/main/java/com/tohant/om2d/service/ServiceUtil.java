@@ -109,8 +109,8 @@ public class ServiceUtil {
         return cellName.substring(cellName.indexOf(ID_DELIMITER) + 1);
     }
 
-    public static String getObjectCellItemId(int objectCellX, int objectCellY, String itemId, String objectCellId) {
-        return itemId + COORD_DELIMITER + objectCellX + COORD_DELIMITER + objectCellY + ID_DELIMITER + objectCellId;
+    public static String getObjectCellItemId(String itemType, String objectCellId) {
+        return itemType + ID_DELIMITER + objectCellId;
     }
 
     public static String getObjectCellActorId(int objectCellX, int objectCellY, String cellId) {
@@ -334,11 +334,8 @@ public class ServiceUtil {
             if (items != null) {
                 Arrays.stream(items.split(";"))
                         .forEach(i -> {
-                            Vector2 itemPosition = getObjectCellItemCoordinatesByName(i);
-                            Vector3 objectCellPosition = getObjectCellCoordinates(c1);
-                            if (itemPosition.x == objectCellPosition.x
-                                    && itemPosition.y == objectCellPosition.y) {
-                                Items itemType = Items.valueOf(i.substring(0, i.lastIndexOf("_")));
+                            if (i.endsWith(c1.getName())) {
+                                Items itemType = Items.valueOf(i.substring(0, i.indexOf(ID_DELIMITER)));
                                 ObjectCellItem objectCellItem = new ObjectCellItem(i, itemType);
                                 c1.addActor(objectCellItem);
                             }

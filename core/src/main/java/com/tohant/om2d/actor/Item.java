@@ -13,7 +13,7 @@ public class Item extends Image {
     private final UiActorService.UiComponentConstant.Items type;
 
     public Item(UiActorService.UiComponentConstant.Items type) {
-        setName(type.name() + "_ITEM");
+        setName(type.name());
         this.type = type;
         switch (this.type) {
             case PLANT: this.texture = AssetService.getInstance().getItems().getPlantTexture(); break;

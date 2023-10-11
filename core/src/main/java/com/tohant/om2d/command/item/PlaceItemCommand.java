@@ -13,7 +13,6 @@ import com.tohant.om2d.storage.database.CellDao;
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.tohant.om2d.actor.constant.Constant.ID_DELIMITER;
 import static com.tohant.om2d.service.ServiceUtil.addItemToCell;
 import static com.tohant.om2d.service.ServiceUtil.getObjectCellItemId;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
@@ -45,12 +44,11 @@ public class PlaceItemCommand implements Command {
                 }
             });
             CellEntity cellEntity = CellDao.getInstance().queryForActorName(currentCell.get().getName());
-            String itemId = getObjectCellItemId((int) objectCell.getX(), (int) objectCell.getY(),
-                    item.getName(), objectCell.getName());
+            String itemId = getObjectCellItemId(item.getName(), objectCell.getName());
             ObjectCellItem cellItem = new ObjectCellItem(itemId, item.getType());
             objectCell.addActor(cellItem);
             objectCell.setObstacle(true);
-            cellEntity.setItems(addItemToCell(cellEntity.getItems(), itemId.substring(0, itemId.indexOf(ID_DELIMITER))));
+            cellEntity.setItems(addItemToCell(cellEntity.getItems(), itemId));
             CellDao.getInstance().update(cellEntity);
         }
         runtimeCache.setObject(CURRENT_ITEM, null);
