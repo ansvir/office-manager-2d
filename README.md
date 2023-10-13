@@ -17,7 +17,7 @@ This is initial version of my project OM2D. Currently supported features you can
 
 #### Project stack:
 
-1) Java 11
+1) Java 11 (recommended Adopt)
 2) LibGDX
 3) SQLite (ORMLite)
 
