@@ -19,7 +19,7 @@ This is initial version of my project OM2D. Currently supported features you can
 
 1) Java 11
 2) LibGDX
-3) SQLite
+3) SQLite (ORMLite)
 
 But this is not the end! I'm actively developing my project to make it very funny!
 
