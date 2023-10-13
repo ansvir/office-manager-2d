@@ -47,7 +47,7 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         implementation 'org.xerial:sqlite-jdbc:3.7.2'
         implementation 'com.j256.ormlite:ormlite-core:5.6'
-        implementation 'com.j256.ormlite:ormlite-jdbc:5.6' // For JDBC database support
+        implementation 'com.j256.ormlite:ormlite-jdbc:5.6'
     }
 }
 
