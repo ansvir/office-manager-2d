@@ -27,9 +27,7 @@ jobs:
       - name: ProGuard Obfuscation
         run: |
           # Run ProGuard with your custom configuration
-          wget https://sourceforge.net/projects/proguard/files/proguard/7.1.1/proguard7.1.1.tar.gz
-          tar -xvzf proguard7.1.1.tar.gz
-          proguard @desktop/proguard-rules.pro
+          ./gradlew runProguard
 
       - name: Create Release Assets
         run: |

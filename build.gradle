@@ -1,6 +1,6 @@
-buildscript {
-    
+import proguard.gradle.ProGuardTask
 
+buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
@@ -9,8 +9,7 @@ buildscript {
         google()
     }
     dependencies {
-        
-
+        classpath 'com.guardsquare:proguard-gradle:7.1.0'
     }
 }
 
@@ -60,4 +59,19 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
+}
+
+task runProguard(type: ProGuardTask) {
+
+    configuration 'desktop/proguard.pro'
+
+    if (System.getProperty('java.version').startsWith('1.')) {
+        // Before Java 9, the runtime classes were packaged in a single jar file.
+        libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    } else {
+        // As of Java 9, the runtime classes are packaged in modular jmod files.
+        libraryjars "${System.getProperty('java.home')}/jmods/java.base.jmod", jarfilter: '!**.jar', filter: '!module-info.class'
+        //libraryjars "${System.getProperty('java.home')}/jmods/....."
+    }
+
 }

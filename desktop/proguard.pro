@@ -1,6 +1,6 @@
 # Specify input and output files.
 -injars build/libs/desktop-1.0.jar
--outjars build/libs/desktop-1.0-proguard.jar
+-outjars build/libs/desktop-1.0-minified.jar
 
 # Don't optimize or shrink classes.
 -dontobfuscate
