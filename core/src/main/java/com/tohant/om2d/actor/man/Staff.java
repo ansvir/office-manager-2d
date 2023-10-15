@@ -20,6 +20,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static com.tohant.om2d.service.ServiceUtil.getCellActorId;
 import static com.tohant.om2d.service.ServiceUtil.getObjectCellCoordinates;
 
+/**
+ * Actor, representing any staff member on the game stage.
+ * Class defines common properties and behaviour for staff, i.e. administrator,
+ * security, worker or other.
+ */
 public abstract class Staff extends Actor {
 
     private static final float speed = 1.0f;
@@ -69,6 +74,11 @@ public abstract class Staff extends Actor {
         batch.draw(texture, getX(), getY());
     }
 
+    /**
+     * Method that adds next {@link ObjectCell} to staff's movement path.
+     * @param source Starting object cell.
+     * @param destination Destination object cell.
+     */
     public void addPath(ObjectCell source, ObjectCell destination) {
         this.pathsQueue.add(findPath(source, destination));
     }

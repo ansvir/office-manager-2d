@@ -9,6 +9,9 @@ import com.tohant.om2d.actor.Item;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.actor.constant.Constant.TEXTURE_SIZE;
 
+/**
+ * Grid for listing items with it's {@link Item}(s) inside.
+ */
 public abstract class AbstractItemGrid extends Table {
 
     public AbstractItemGrid(String id, Array<Item> items) {

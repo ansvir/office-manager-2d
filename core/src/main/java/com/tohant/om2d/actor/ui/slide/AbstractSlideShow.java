@@ -9,6 +9,11 @@ import com.tohant.om2d.actor.ui.button.GameTextButton;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
+/**
+ * Slideshow that has "slides", i.e. other UI actors inside and change from first to second etc. one by one.
+ * Rule is that slideshow controlled only by trigger(s) that change actor, placed in array on {@link currentIndex},
+ * decrementing it or incrementing by one.
+ */
 public abstract class AbstractSlideShow extends Table implements ToggleActor {
 
     private int currentIndex;

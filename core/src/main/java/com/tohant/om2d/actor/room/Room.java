@@ -11,6 +11,10 @@ import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 
+/**
+ * Room actor. It's, primarily, room, where staff can be located, where some events happen
+ * and actor that plays its concrete {@link Room.Type} role.
+ */
 public abstract class Room extends Actor {
 
     private RoomInfo roomInfo;
@@ -66,6 +70,13 @@ public abstract class Room extends Actor {
 
     }
 
+    /**
+     * Method defines which room texture to draw and whether to draw build texture, if room
+     * is under construction.
+     * @param batch Batch used to draw room's texture.
+     * @param parentAlpha The parent alpha, to be multiplied with this actor's alpha, allowing the parent's alpha to affect all
+     *           children.
+     */
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);

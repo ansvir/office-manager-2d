@@ -12,6 +12,10 @@ import com.tohant.om2d.actor.ToggleActor;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
+/**
+ * Pane with any UI actor(s) on it that can be collapsed and aligned on the left,
+ * right, top or bottom side of the screen {@link Alignment}.
+ */
 public abstract class AbstractPane extends Window implements ToggleActor {
 
     private boolean isCollapsed;

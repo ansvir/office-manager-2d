@@ -1,5 +1,8 @@
 package com.tohant.om2d.actor.environment;
 
+/**
+ * Linear car path. It has only 2D coordinates of start and end of a line.
+ */
 public class CarPath {
 
     private int xStart;

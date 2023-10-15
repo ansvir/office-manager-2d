@@ -7,6 +7,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.tohant.om2d.actor.ToggleActor;
 import com.tohant.om2d.actor.ui.list.AbstractList;
 
+/**
+ * Dropdown UI actor.
+ */
 public abstract class AbstractDropDown extends Table implements ToggleActor {
 
     private boolean isExpanded;

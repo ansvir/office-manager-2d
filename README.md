@@ -52,3 +52,4 @@ Here you can view the screenshot from current version:
 
 #### Work process:
 1) No unused imports!
+2) In JavaDoc write only description, parameters and return type for methods

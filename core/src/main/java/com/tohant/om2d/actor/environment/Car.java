@@ -4,6 +4,9 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.service.AssetService;
 
+/**
+ * Actor, represents a Car in game stage
+ */
 public class Car extends Actor {
 
     private final Type type;
@@ -30,10 +33,22 @@ public class Car extends Actor {
         return type;
     }
 
+    /**
+     * Types of car actor. Serves as enum and contain path to its raster pictures in vertical
+     * and horizontal alignment.
+     */
     public enum Type {
 
         RED("car.png", "car_h.png");
+
+        /**
+         * Path to PNG picture for vertical car type.
+         */
         private final String pathV;
+
+        /**
+         * Path to PNG picture for horizontal car type.
+         */
         private final String pathH;
 
         Type(String pathV, String pathH) {
