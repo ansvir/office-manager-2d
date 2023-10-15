@@ -1,7 +1,7 @@
 name: CI/CD Development
 
 on:
-  pull_request:
+  push:
     branches-ignore:
       - master
 
@@ -26,8 +26,6 @@ jobs:
 
       - name: Create Release Assets
         run: |
-          # Upload your obfuscated game executable or JAR to the release assets
-          # Example: Upload the generated JAR file
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             --data-binary @"desktop/build/libs/desktop-1.0.jar" \
