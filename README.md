@@ -44,9 +44,11 @@ Here you can view the screenshot from current version:
 - Add new textures
 - Add new actor
 ```
+3) It's recommended to name branch in manner `#123-add-new-character`
 
 #### Pull Requests:
 1) PRs must be reviewed and tested. For PR must be at lease 2 PRs
+2) PRs can be connected to issues using `Issue name #123`, where #123 issue number in Github issues
 
 #### Work process:
 1) No unused imports!

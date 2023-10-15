@@ -2,9 +2,6 @@ name: CI/CD Development
 
 on:
   pull_request:
-    branches:
-      - 'bug/*'
-      - 'feature/*'
     branches-ignore:
       - master
 
