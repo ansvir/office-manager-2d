@@ -1,0 +1,37 @@
+name: CI/CD Development
+
+on:
+  pull_request:
+    branches:
+      - 'bug/*'
+      - 'feature/*'
+    branches-ignore:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Build and Package Release
+        run: |
+          chmod u+x ./gradlew
+          ./gradlew clean build
+          ./gradlew desktop:dist
+
+      - name: Create Release Assets
+        run: |
+          # Upload your obfuscated game executable or JAR to the release assets
+          # Example: Upload the generated JAR file
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            --data-binary @"desktop/build/libs/desktop-1.0.jar" \
+            "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$GITHUB_RUN_ID/assets?name=desktop-1.0.jar"

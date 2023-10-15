@@ -35,8 +35,15 @@ Here you can view the screenshot from current version:
 
 ### For developers:
 
-#### Branching
+#### Branching and committing
 1) When creating new feature/bag, please, create branch from master starting with according keyword ("feature/", "bug/")
+2) Commits should be started with task name and after 2 lines must be commit details. For example
+```
+#123 Add new character
+
+- Add new textures
+- Add new actor
+```
 
 #### Pull Requests:
 1) PRs must be reviewed and tested. For PR must be at lease 2 PRs
