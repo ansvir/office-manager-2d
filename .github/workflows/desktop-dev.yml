@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  release:
+  development:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
           ./gradlew clean build
           ./gradlew desktop:dist
 
-      - name: Create Release Assets
+      - name: Create Assets
         run: |
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
