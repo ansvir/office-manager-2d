@@ -26,6 +26,7 @@ import com.tohant.om2d.actor.ui.slide.AbstractSlideShow;
 import com.tohant.om2d.actor.ui.slide.DefaultSlideShow;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
+import com.tohant.om2d.model.Region;
 import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.*;
@@ -39,7 +40,7 @@ import java.util.stream.IntStream;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
-import static com.tohant.om2d.model.entity.CompanyEntity.Region.EUROPE;
+import static com.tohant.om2d.model.Region.EUROPE;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
 import static com.tohant.om2d.service.ServiceUtil.*;
 import static com.tohant.om2d.storage.cache.Cache.*;
@@ -112,7 +113,7 @@ public class MenuUiActorService extends ActorService {
             }
         });
         input.setName(MENU_NEW_COMPANY_NAME_INPUT.name());
-        Array<Actor> regionsButtons = new Array<>(Arrays.stream(CompanyEntity.Region.values())
+        Array<Actor> regionsButtons = new Array<>(Arrays.stream(Region.values())
                 .map(r -> new GameTextButton("MENU_" + r.name() + "_BUTTON", () -> RuntimeCacheService.getInstance().setValue(CURRENT_REGION, r.name()),
                         r.name().replace("_", " ").charAt(0)
                                 + r.name().replace("_", " ").substring(1).toLowerCase(), skin)).toArray(GameTextButton[]::new));
@@ -211,10 +212,10 @@ public class MenuUiActorService extends ActorService {
                     .collect(Collectors.toList());
             LevelEntity levelEntity = new LevelEntity(getGridActorId(level, getOfficeActorId(officeId, companyId)), level, cells);
             OfficeEntity officeEntity = new OfficeEntity(getOfficeActorId(officeId, companyId),
-                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, List.of(levelEntity), List.of());
+                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, List.of(levelEntity), List.of(),
+                    Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
             CompanyEntity companyEntity = new CompanyEntity(getCompanyActorId(companyId),
-                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity),
-                    CompanyEntity.Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
+                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity));
             CompanyDao.getInstance().create(companyEntity);
             officeEntity.setCompanyEntity(companyEntity);
             OfficeDao.getInstance().create(officeEntity);
@@ -225,7 +226,7 @@ public class MenuUiActorService extends ActorService {
                 c.setLevelEntity(levelEntity);
                 cellDao.create(c);
             });
-            ProgressEntity progressEntity = new ProgressEntity(companyEntity, officeEntity, levelEntity);
+            ProgressEntity progressEntity = new ProgressEntity(companyEntity);
             ProgressDao.getInstance().create(progressEntity);
             progressEntity.setActorName(progressEntity.getId().toString());
             ProgressDao.getInstance().update(progressEntity);

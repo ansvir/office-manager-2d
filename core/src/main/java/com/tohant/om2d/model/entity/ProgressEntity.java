@@ -12,16 +12,10 @@ public class ProgressEntity extends AbstractActorEntity {
     private UUID id;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "company_id")
     private CompanyEntity companyEntity;
-    @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "office_id")
-    private OfficeEntity officeEntity;
-    @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "level_id")
-    private LevelEntity levelEntity;
 
-    public ProgressEntity(CompanyEntity companyEntity, OfficeEntity officeEntity, LevelEntity levelEntity) {
+    public ProgressEntity(CompanyEntity companyEntity) {
         super(null);
         this.companyEntity = companyEntity;
-        this.officeEntity = officeEntity;
-        this.levelEntity = levelEntity;
     }
 
     public ProgressEntity() {
@@ -43,22 +37,6 @@ public class ProgressEntity extends AbstractActorEntity {
 
     public void setCompanyEntity(CompanyEntity companyEntity) {
         this.companyEntity = companyEntity;
-    }
-
-    public OfficeEntity getOfficeEntity() {
-        return officeEntity;
-    }
-
-    public void setOfficeEntity(OfficeEntity officeEntity) {
-        this.officeEntity = officeEntity;
-    }
-
-    public LevelEntity getLevelEntity() {
-        return levelEntity;
-    }
-
-    public void setLevelEntity(LevelEntity levelEntity) {
-        this.levelEntity = levelEntity;
     }
 
 }

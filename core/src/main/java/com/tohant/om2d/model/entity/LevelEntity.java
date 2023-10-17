@@ -7,9 +7,16 @@ import com.tohant.om2d.storage.database.CompanyDao;
 import com.tohant.om2d.storage.database.LevelDao;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static com.tohant.om2d.actor.constant.Constant.GRID_HEIGHT;
+import static com.tohant.om2d.actor.constant.Constant.GRID_WIDTH;
+import static com.tohant.om2d.service.ServiceUtil.*;
 
 @DatabaseTable(tableName = "LEVEL")
 public class LevelEntity extends AbstractActorEntity {
@@ -75,6 +82,15 @@ public class LevelEntity extends AbstractActorEntity {
 
     public void setOfficeEntity(OfficeEntity officeEntity) {
         this.officeEntity = officeEntity;
+    }
+
+    public static LevelEntity createEmpty() {
+        int level = 0;
+        List<CellEntity> cellEntities = IntStream.range(0, GRID_HEIGHT).boxed()
+                .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed()
+                        .map(c -> new CellEntity(null, r, c, null)))
+                .collect(Collectors.toList());
+        return new LevelEntity(null, level, cellEntities);
     }
 
 }

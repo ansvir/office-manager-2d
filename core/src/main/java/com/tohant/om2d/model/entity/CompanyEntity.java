@@ -20,14 +20,12 @@ public class CompanyEntity extends AbstractActorEntity {
     private String name;
     @ForeignCollectionField(eager = true, columnName = "office_id")
     private Collection<OfficeEntity> officeEntities;
-    @DatabaseField
-    private Region region;
 
-    public CompanyEntity(String id, String name, Collection<OfficeEntity> officeEntities, Region region) {
+
+    public CompanyEntity(String id, String name, Collection<OfficeEntity> officeEntities) {
         super(id);
         this.name = name;
         this.officeEntities = officeEntities;
-        this.region = region;
     }
 
     public CompanyEntity() {
@@ -57,18 +55,6 @@ public class CompanyEntity extends AbstractActorEntity {
 
     public void setOfficeEntities(List<OfficeEntity> officeEntities) {
         this.officeEntities = officeEntities;
-    }
-
-    public Region getRegion() {
-        return region;
-    }
-
-    public void setRegion(Region region) {
-        this.region = region;
-    }
-
-    public enum Region {
-        EUROPE, AMERICA, ASIA, AFRICA, AUSTRALIA, OCEANIA
     }
 
 }
