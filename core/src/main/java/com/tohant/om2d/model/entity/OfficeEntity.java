@@ -27,7 +27,6 @@ public class OfficeEntity implements Serializable {
     private Collection<ResidentEntity> residentEntities;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "company_id")
     private CompanyEntity companyEntity;
-
     @DatabaseField
     private Region region;
 
@@ -117,4 +116,17 @@ public class OfficeEntity implements Serializable {
     public void setCompanyEntity(CompanyEntity companyEntity) {
         this.companyEntity = companyEntity;
     }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public static OfficeEntity createEmpty() {
+        return new OfficeEntity(null, "Office Inc.", 0.0f, 2000.0f, LevelEntity.createEmpty())
+    }
+
 }

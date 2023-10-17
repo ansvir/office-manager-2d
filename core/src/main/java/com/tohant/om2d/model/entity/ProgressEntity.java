@@ -24,7 +24,6 @@ public class ProgressEntity implements Serializable {
         this.companyEntity = companyEntity;
         this.currentOfficeId = currentOfficeId;
         this.currentLevelId = currentLevelId;
-    }
 
     public ProgressEntity() {
         // serialization constructor

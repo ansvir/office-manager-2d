@@ -5,6 +5,7 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.stream.IntStream;
 
 import static com.tohant.om2d.actor.constant.Constant.GRID_HEIGHT;
 import static com.tohant.om2d.actor.constant.Constant.GRID_WIDTH;
+import static com.tohant.om2d.service.ServiceUtil.*;
 
 @DatabaseTable(tableName = "LEVEL")
 public class LevelEntity implements Serializable {
