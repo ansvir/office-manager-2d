@@ -23,8 +23,7 @@ public class CellEntity implements Serializable {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "level_id")
     private LevelEntity levelEntity;
 
-    public CellEntity(UUID id, int x, int y, String items, RoomEntity roomEntity) {
-        this.id = id;
+    public CellEntity(int x, int y, String items, RoomEntity roomEntity) {
         this.x = x;
         this.y = y;
         this.items = items;
@@ -37,8 +36,7 @@ public class CellEntity implements Serializable {
         this.items = items;
     }
 
-    public CellEntity(UUID id, int x, int y, String items, RoomEntity roomEntity, LevelEntity levelEntity) {
-        this.id = id;
+    public CellEntity(int x, int y, String items, RoomEntity roomEntity, LevelEntity levelEntity) {
         this.x = x;
         this.y = y;
         this.items = items;
