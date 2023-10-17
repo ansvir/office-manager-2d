@@ -1,21 +1,19 @@
 package com.tohant.om2d.command.item;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.utils.Array;
-import com.tohant.om2d.actor.*;
+import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.Item;
+import com.tohant.om2d.actor.ObjectCell;
+import com.tohant.om2d.actor.ObjectCellItem;
 import com.tohant.om2d.command.Command;
-import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.model.entity.CellEntity;
 import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.storage.database.CellDao;
 
 import java.math.BigDecimal;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.UUID;
 
 import static com.tohant.om2d.service.ServiceUtil.addItemToCell;
 import static com.tohant.om2d.service.ServiceUtil.getObjectCellItemId;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CELL;
 import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class PlaceItemCommand implements Command {
@@ -33,17 +31,8 @@ public class PlaceItemCommand implements Command {
             runtimeCache.setFloat(CURRENT_BUDGET,
                     BigDecimal.valueOf(runtimeCache.getFloat(CURRENT_BUDGET))
                             .subtract(item.getType().getPrice()).floatValue());
-            Array<Actor> cells = UiActorService.getInstance().getActorsByIdPrefix(CELL.name());
-            AtomicReference<Cell> currentCell = new AtomicReference<>();
-            cells.iterator().forEach(c -> {
-                if (c instanceof ToggleActor) {
-                    new ForceToggleCommand(c.getName(), false).execute();
-                    if (c instanceof Cell && objectCell.getName().endsWith(c.getName())) {
-                        currentCell.set((Cell) c);
-                    }
-                }
-            });
-            CellEntity cellEntity = CellDao.getInstance().queryForActorName(currentCell.get().getName());
+            Cell currentCell = (Cell) objectCell.getParent();
+            CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(currentCell.getName()));
             String itemId = getObjectCellItemId(item.getName(), objectCell.getName());
             ObjectCellItem cellItem = new ObjectCellItem(itemId, item.getType());
             objectCell.addActor(cellItem);

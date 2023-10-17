@@ -4,10 +4,11 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "CELL")
-public class CellEntity extends AbstractActorEntity {
+public class CellEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -22,8 +23,7 @@ public class CellEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "level_id")
     private LevelEntity levelEntity;
 
-    public CellEntity(String actorName, UUID id, int x, int y, String items, RoomEntity roomEntity) {
-        super(actorName);
+    public CellEntity(UUID id, int x, int y, String items, RoomEntity roomEntity) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -31,15 +31,13 @@ public class CellEntity extends AbstractActorEntity {
         this.roomEntity = roomEntity;
     }
 
-    public CellEntity(String id, int x, int y, String items) {
-        super(id);
+    public CellEntity(int x, int y, String items) {
         this.x = x;
         this.y = y;
         this.items = items;
     }
 
-    public CellEntity(String actorName, UUID id, int x, int y, String items, RoomEntity roomEntity, LevelEntity levelEntity) {
-        super(actorName);
+    public CellEntity(UUID id, int x, int y, String items, RoomEntity roomEntity, LevelEntity levelEntity) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -49,7 +47,6 @@ public class CellEntity extends AbstractActorEntity {
     }
 
     public CellEntity() {
-        super(null);
         // serialization constructor
     }
 

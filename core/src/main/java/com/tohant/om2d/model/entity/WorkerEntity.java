@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "WORKER")
-public class WorkerEntity extends AbstractActorEntity {
+public class WorkerEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -22,16 +22,14 @@ public class WorkerEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true,  columnName = "room_id")
     private RoomEntity roomEntity;
 
-    public WorkerEntity(String id, String name, float mood, String type, float salary) {
-        super(id);
+    public WorkerEntity(String name, float mood, String type, float salary) {
         this.name = name;
         this.mood = mood;
         this.type = type;
         this.salary = salary;
     }
 
-    public WorkerEntity(String id, String name, float mood, String type, float salary, RoomEntity roomEntity) {
-        super(id);
+    public WorkerEntity(String name, float mood, String type, float salary, RoomEntity roomEntity) {
         this.name = name;
         this.mood = mood;
         this.type = type;
@@ -40,7 +38,6 @@ public class WorkerEntity extends AbstractActorEntity {
     }
 
     public WorkerEntity() {
-        super(null);
         // serialization constructor
     }
 

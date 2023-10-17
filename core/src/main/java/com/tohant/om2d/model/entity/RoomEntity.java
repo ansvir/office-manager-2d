@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "ROOM")
-public class RoomEntity extends AbstractActorEntity {
+public class RoomEntity implements Serializable  {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -33,8 +33,7 @@ public class RoomEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "resident_id")
     private ResidentEntity residentEntity;
 
-    public RoomEntity(String id, String type, float price, float cost, String number, int days, int months, int years, List<WorkerEntity> workerEntities) {
-        super(id);
+    public RoomEntity(String type, float price, float cost, String number, int days, int months, int years, List<WorkerEntity> workerEntities) {
         this.type = type;
         this.price = price;
         this.cost = cost;
@@ -45,8 +44,7 @@ public class RoomEntity extends AbstractActorEntity {
         this.workerEntities = workerEntities;
     }
 
-    public RoomEntity(String id, String type, float price, float cost, String number, int days, int months, int years, Collection<WorkerEntity> workerEntities, ResidentEntity residentEntity) {
-        super(id);
+    public RoomEntity(String type, float price, float cost, String number, int days, int months, int years, Collection<WorkerEntity> workerEntities, ResidentEntity residentEntity) {
         this.type = type;
         this.price = price;
         this.cost = cost;
@@ -59,7 +57,6 @@ public class RoomEntity extends AbstractActorEntity {
     }
 
     public RoomEntity() {
-        super(null);
         // serialization constructor
     }
 

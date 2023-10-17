@@ -3,29 +3,30 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "PROGRESS")
-public class ProgressEntity extends AbstractActorEntity {
+public class ProgressEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "company_id")
     private CompanyEntity companyEntity;
-    @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "office_id")
-    private OfficeEntity officeEntity;
-    @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "level_id")
-    private LevelEntity levelEntity;
 
-    public ProgressEntity(CompanyEntity companyEntity, OfficeEntity officeEntity, LevelEntity levelEntity) {
-        super(null);
+    @DatabaseField
+    private String currentOfficeId;
+
+    @DatabaseField
+    private String currentLevelId;
+
+    public ProgressEntity(CompanyEntity companyEntity, String currentOfficeId, String currentLevelId) {
         this.companyEntity = companyEntity;
-        this.officeEntity = officeEntity;
-        this.levelEntity = levelEntity;
+        this.currentOfficeId = currentOfficeId;
+        this.currentLevelId = currentLevelId;
     }
 
     public ProgressEntity() {
-        super(null);
         // serialization constructor
     }
 
@@ -45,20 +46,19 @@ public class ProgressEntity extends AbstractActorEntity {
         this.companyEntity = companyEntity;
     }
 
-    public OfficeEntity getOfficeEntity() {
-        return officeEntity;
+    public String getCurrentOfficeId() {
+        return currentOfficeId;
     }
 
-    public void setOfficeEntity(OfficeEntity officeEntity) {
-        this.officeEntity = officeEntity;
+    public void setCurrentOfficeId(String currentOfficeId) {
+        this.currentOfficeId = currentOfficeId;
     }
 
-    public LevelEntity getLevelEntity() {
-        return levelEntity;
+    public String getCurrentLevelId() {
+        return currentLevelId;
     }
 
-    public void setLevelEntity(LevelEntity levelEntity) {
-        this.levelEntity = levelEntity;
+    public void setCurrentLevelId(String currentLevelId) {
+        this.currentLevelId = currentLevelId;
     }
-
 }

@@ -5,6 +5,7 @@ import com.j256.ormlite.dao.BaseDaoImpl;
 import com.tohant.om2d.model.entity.WorkerEntity;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,4 +58,25 @@ public class WorkerDao extends BaseDaoImpl<WorkerEntity, UUID> {
             return 0;
         }
     }
+
+    @Override
+    public int create(Collection<WorkerEntity> datas) {
+        try {
+            return super.create(datas);
+        } catch (SQLException e) {
+            Gdx.app.error("CANNOT CREATE", "CAUSE: " + e.getLocalizedMessage());
+            return 0;
+        }
+    }
+
+    @Override
+    public int deleteIds(Collection<UUID> uuids) {
+        try {
+            return super.deleteIds(uuids);
+        } catch (SQLException e) {
+            Gdx.app.error("CANNOT DELETE IDS", "CAUSE: " + e.getLocalizedMessage());
+            return 0;
+        }
+    }
+
 }

@@ -12,10 +12,7 @@ import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.storage.cache.Cache;
-import com.tohant.om2d.storage.database.CellDao;
-import com.tohant.om2d.storage.database.ProgressDao;
-import com.tohant.om2d.storage.database.ResidentDao;
-import com.tohant.om2d.storage.database.RoomDao;
+import com.tohant.om2d.storage.database.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -74,24 +71,21 @@ public class AsyncRoomBuildService {
             List<WorkerEntity> workers = new LinkedList<>();
             Array<Staff> staff = room.getRoomInfo().getStaff();
             for (int i = 0; i < staff.size; i++) {
-                workers.add(new WorkerEntity(getStaffActorId(staff.get(i), i, room.getRoomInfo().getId()),
+                workers.add(new WorkerEntity(
                         staff.get(i).getFullName(), staff.get(i).getManInfo().getMood(),
                         staff.get(i).getType().name(), staff.get(i).getSalary()));
             }
-            ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(cacheService.getValue(Cache.CURRENT_PROGRESS_ID)));
-            OfficeEntity officeEntity = progressEntity.getOfficeEntity();
+            OfficeEntity officeEntity = OfficeDao.getInstance().queryForId(UUID.fromString(cacheService.getValue(Cache.CURRENT_OFFICE_ID)));
             RoomEntity roomEntity;
             if (room instanceof OfficeRoom) {
                 cacheService.setFloat(Cache.TOTAL_INCOMES, cacheService.getFloat(Cache.TOTAL_INCOMES) + 100.0f * room.getRoomInfo().getStaff().size);
-                ResidentEntity residentEntity = new ResidentEntity(getResidentActorId(UUID.randomUUID().toString(), officeEntity.getActorName()),
-                        buildRandomCompanyName(), officeEntity);
+                ResidentEntity residentEntity = new ResidentEntity(buildRandomCompanyName(), officeEntity);
                 ResidentDao.getInstance().create(residentEntity);
-                roomEntity = new RoomEntity(room.getRoomInfo().getId(), room.getType().name(),
+                roomEntity = new RoomEntity(room.getType().name(),
                         room.getRoomInfo().getPrice(), room.getRoomInfo().getCost(), room.getRoomInfo().getNumber(), (int) room.getRoomInfo().getBuildTime().getDays(),
                         (int) room.getRoomInfo().getBuildTime().getMonth(), (int) room.getRoomInfo().getBuildTime().getYears(), workers, residentEntity);
             } else {
-                roomEntity = new RoomEntity(room.getRoomInfo().getId(), room.getType().name(),
-                        room.getRoomInfo().getPrice(), room.getRoomInfo().getCost(), room.getRoomInfo().getNumber(), (int) room.getRoomInfo().getBuildTime().getDays(),
+                roomEntity = new RoomEntity(room.getType().name(), room.getRoomInfo().getPrice(), room.getRoomInfo().getCost(), room.getRoomInfo().getNumber(), (int) room.getRoomInfo().getBuildTime().getDays(),
                         (int) room.getRoomInfo().getBuildTime().getMonth(), (int) room.getRoomInfo().getBuildTime().getYears(), workers);
             }
             cell.addActor(room);
@@ -110,9 +104,12 @@ public class AsyncRoomBuildService {
                 }
             }
             RoomDao.getInstance().create(roomEntity);
-            CellEntity cellEntity = CellDao.getInstance().queryForActorName(cell.getName());
+            room.getRoomInfo().setId(roomEntity.getId().toString());
+            room.setName(roomEntity.getId().toString());
+            CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
             cellEntity.setRoomEntity(roomEntity);
             CellDao.getInstance().update(cellEntity);
+            WorkerDao.getInstance().create(workers);
         });
         return new RoomBuildingModel(task, asyncExecutor.submit(task), room.getRoomInfo());
     }

@@ -12,6 +12,7 @@ import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.model.entity.CellEntity;
 import com.tohant.om2d.model.entity.ResidentEntity;
 import com.tohant.om2d.model.entity.RoomEntity;
+import com.tohant.om2d.model.entity.WorkerEntity;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
 import com.tohant.om2d.service.RuntimeCacheService;
@@ -20,8 +21,11 @@ import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.database.CellDao;
 import com.tohant.om2d.storage.database.ResidentDao;
 import com.tohant.om2d.storage.database.RoomDao;
+import com.tohant.om2d.storage.database.WorkerDao;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
 import static com.tohant.om2d.service.ServiceUtil.*;
@@ -89,6 +93,7 @@ public class DestroyRoomCommand implements Command {
                 if (buildingModel != null) {
                     if (!buildingModel.getTimeLineTask().isFinished()) {
                         buildingModels.removeValue(buildingModel, false);
+                        destroyBuildingRoom(currentCell);
                     }
                 } else {
                     destroyRoom(currentCell, room);
@@ -101,9 +106,11 @@ public class DestroyRoomCommand implements Command {
     }
 
     private void destroyRoom(Cell cell, Room room) {
-        RoomEntity roomEntity = RoomDao.getInstance().queryForActorName(room.getName());
+        RoomEntity roomEntity = RoomDao.getInstance().queryForId(UUID.fromString(room.getName()));
+        WorkerDao.getInstance().deleteIds(roomEntity.getWorkerEntities().stream().map(WorkerEntity::getId)
+                .collect(Collectors.toList()));
         RoomDao.getInstance().deleteById(roomEntity.getId());
-        CellEntity cellEntity = CellDao.getInstance().queryForActorName(cell.getName());
+        CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
         if (room.getType() == Room.Type.OFFICE) {
             ResidentEntity residentEntity = roomEntity.getResidentEntity();
             ResidentDao.getInstance().deleteById(residentEntity.getId());
@@ -111,29 +118,29 @@ public class DestroyRoomCommand implements Command {
         cellEntity.setRoomEntity(null);
         cellEntity.setItems(null);
         CellDao.getInstance().update(cellEntity);
-        Cell newCell = new Cell(cellEntity.getActorName(),
-                new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
+        Cell newCell = new Cell(cellEntity.getId().toString(),
+                new ChooseRoomCommand(cellEntity.getId().toString()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);
-//        Array<Actor> cellChildren = newCell.getChildren();
-//        for (int i = 0; i < cellChildren.size; i++) {
-//            Actor child = cellChildren.get(i);
-//            if (child instanceof ProgressBar) {
-//                child.remove();
-//            }
-//            if (child instanceof Room) {
-//                child.remove();
-//            }
-//            if (child instanceof ObjectCell) {
-//                Array<Actor> objectCellActors = ((ObjectCell) child).getChildren();
-//                for (int j = 0; j < objectCellActors.size; j++) {
-//                    Actor objectCellActor = objectCellActors.get(j);
-//                    if (objectCellActor instanceof ObjectCellItem) {
-//                        objectCellActor.remove();
-//                    }
-//                }
-//            }
-//        }
-        Grid grid = (Grid) UiActorService.getInstance().getActorById(getGridIdByCell(cell));
+        Grid grid = (Grid) UiActorService.getInstance().getActorById(RuntimeCacheService.getInstance().getValue(Cache.CURRENT_LEVEL_ID));
+        Array<Actor> gridChildren = grid.getChildren();
+        for (int i = 0 ; i < gridChildren.size; i++) {
+            if (gridChildren.get(i) instanceof Cell
+                    && gridChildren.get(i).getName().equals(cell.getName())) {
+                gridChildren.set(i, newCell);
+                break;
+            }
+        }
+    }
+
+    private void destroyBuildingRoom(Cell cell) {
+        CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
+        cellEntity.setRoomEntity(null);
+        cellEntity.setItems(null);
+        CellDao.getInstance().update(cellEntity);
+        Cell newCell = new Cell(cellEntity.getId().toString(),
+                new ChooseRoomCommand(cellEntity.getId().toString()), cellEntity.getX() * CELL_SIZE,
+                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);
+        Grid grid = (Grid) UiActorService.getInstance().getActorById(RuntimeCacheService.getInstance().getValue(Cache.CURRENT_LEVEL_ID));
         Array<Actor> gridChildren = grid.getChildren();
         for (int i = 0 ; i < gridChildren.size; i++) {
             if (gridChildren.get(i) instanceof Cell

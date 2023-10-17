@@ -38,16 +38,6 @@ public class CellDao extends BaseDaoImpl<CellEntity, UUID> {
         }
     }
 
-    public CellEntity queryForActorName(String name) {
-        try {
-            return super.queryForEq("actorName", name).stream()
-                    .findFirst().orElse(null);
-        } catch (SQLException e) {
-            Gdx.app.error("CANNOT QUERY FOR ACTOR NAME", "CAUSE: " + e.getLocalizedMessage());
-            return null;
-        }
-    }
-
     @Override
     public List<CellEntity> queryForAll() {
         try {

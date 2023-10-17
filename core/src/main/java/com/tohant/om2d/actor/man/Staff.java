@@ -3,22 +3,17 @@ package com.tohant.om2d.actor.man;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.actor.ObjectCell;
-import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.man.ManInfo;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.cache.Cache;
-import com.tohant.om2d.storage.database.ProgressDao;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.tohant.om2d.service.ServiceUtil.getCellActorId;
-import static com.tohant.om2d.service.ServiceUtil.getObjectCellCoordinates;
+import static com.tohant.om2d.service.ServiceUtil.*;
 
 public abstract class Staff extends Actor {
 
@@ -135,7 +130,7 @@ public abstract class Staff extends Actor {
             }
 
             for (int[] direction : DIRECTIONS) {
-                ObjectCell neighborCell = getNeighborCellId(currentCell, direction);
+                ObjectCell neighborCell = getNeighborObjectCell(currentCell, direction);
 
                 if (neighborCell != null && !visited.contains(neighborCell) && !neighborCell.isObstacle()) {
                     queue.offer(neighborCell);
@@ -148,17 +143,13 @@ public abstract class Staff extends Actor {
         return null;
     }
 
-    private ObjectCell getNeighborCellId(ObjectCell cell, int[] direction) {
-        Vector3 cellCoords = getObjectCellCoordinates(cell);
-
+    private ObjectCell getNeighborObjectCell(ObjectCell cell, int[] direction) {
+        Vector2 cellCoords = getObjectCellCoordinates(cell);
+        String cellId = getObjectCellCellName(cell);
         int newRow = (int) cellCoords.x + direction[0];
         int newColumn = (int) cellCoords.y + direction[1];
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        // todo monitor change from ProgressJsonFileDao to ProgressDao
-        ProgressEntity progressEntity = ProgressDao.getInstance()
-                .queryForId(UUID.fromString(cache.getValue(Cache.CURRENT_PROGRESS_ID)));
-        String neighborCellId = getCellActorId(newRow, newColumn, progressEntity.getLevelEntity().getActorName());
-        return (ObjectCell) UiActorService.getInstance().getActorById(neighborCellId);
+        String neighborObjectCellId = getObjectCellActorId(newRow, newColumn, cellId);
+        return (ObjectCell) UiActorService.getInstance().getActorById(neighborObjectCellId);
     }
 
     public ManInfo getManInfo() {

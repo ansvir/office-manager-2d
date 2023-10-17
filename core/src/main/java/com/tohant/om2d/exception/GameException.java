@@ -14,6 +14,7 @@ public class GameException extends RuntimeException {
     }
 
     public enum Code {
+        E000("Room must be destroyed before!", Type.WARNING),
         E100("Room can be placed only next to hall!", Type.WARNING),
         E200("At least one hall is required!", Type.WARNING),
         E300("One single hall near room cannot be destroyed!", Type.WARNING),

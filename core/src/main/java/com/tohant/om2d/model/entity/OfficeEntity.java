@@ -3,13 +3,15 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.tohant.om2d.model.Region;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "OFFICE")
-public class OfficeEntity extends AbstractActorEntity {
+public class OfficeEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -26,27 +28,29 @@ public class OfficeEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "company_id")
     private CompanyEntity companyEntity;
 
-    public OfficeEntity(String id, String name, float popularity, float budget, List<LevelEntity> levelEntities, List<ResidentEntity> residentEntities) {
-        super(id);
+    @DatabaseField
+    private Region region;
+
+    public OfficeEntity(String name, float popularity, float budget, List<LevelEntity> levelEntities, List<ResidentEntity> residentEntities, Region region) {
         this.name = name;
         this.popularity = popularity;
         this.budget = budget;
         this.levelEntities = levelEntities;
         this.residentEntities = residentEntities;
+        this.region = region;
     }
 
-    public OfficeEntity(String id, String name, float popularity, float budget, Collection<LevelEntity> levelEntities, Collection<ResidentEntity> residentEntities, CompanyEntity companyEntity) {
-        super(id);
+    public OfficeEntity(String name, float popularity, float budget, Collection<LevelEntity> levelEntities, Collection<ResidentEntity> residentEntities, CompanyEntity companyEntity, Region region) {
         this.name = name;
         this.popularity = popularity;
         this.budget = budget;
         this.levelEntities = levelEntities;
         this.residentEntities = residentEntities;
         this.companyEntity = companyEntity;
+        this.region = region;
     }
 
     public OfficeEntity() {
-        super(null);
         // for serialization
     }
 
