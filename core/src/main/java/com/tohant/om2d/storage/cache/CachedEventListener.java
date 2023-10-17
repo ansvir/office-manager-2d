@@ -4,8 +4,10 @@ import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.badlogic.gdx.utils.async.AsyncTask;
 import com.tohant.om2d.model.task.CacheEventTask;
+import com.tohant.om2d.service.CacheSnapshotService;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class CachedEventListener implements AsyncTask<Boolean> {
 
@@ -51,6 +53,24 @@ public class CachedEventListener implements AsyncTask<Boolean> {
         } else {
             return null;
         }
+    }
+
+    public synchronized void onEventConditional(Consumer<CacheSnapshotService> onConsume, Runnable onPost, boolean condition) {
+        if (condition) {
+            Map<String, ?> cacheSnapshot = consume();
+            CacheSnapshotService snapshotService = new CacheSnapshotService(cacheSnapshot);
+            onConsume.accept(snapshotService);
+        } else {
+            onPost.run();
+            post();
+        }
+    }
+
+    public synchronized void onEvent(Consumer<CacheSnapshotService> onConsume) {
+        Map<String, ?> cacheSnapshot = consume();
+        CacheSnapshotService snapshotService = new CacheSnapshotService(cacheSnapshot);
+        onConsume.accept(snapshotService);
+        post();
     }
 
     public synchronized void stop() {

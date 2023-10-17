@@ -39,11 +39,14 @@ import com.tohant.om2d.command.room.DestroyRoomCommand;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.command.ui.ToggleGridCommand;
+import com.tohant.om2d.exception.GameException;
+import com.tohant.om2d.model.Region;
 import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.storage.cache.CachedEventListener;
 import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.util.AssetsUtil;
 
@@ -57,6 +60,8 @@ import java.util.stream.Collectors;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_BUDGET;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_PROGRESS_ID;
 
 public class UiActorService extends ActorService {
 
@@ -78,7 +83,7 @@ public class UiActorService extends ActorService {
 
     private void initGameScreen() {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(Cache.CURRENT_PROGRESS_ID)));
+        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(CURRENT_PROGRESS_ID)));
         Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(Cache.UI_ACTORS);
         uiActors.add(createMap(progressEntity.getCompanyEntity().getOfficeEntities().stream()
                 .filter(o -> o.getId().equals(progressEntity.getOfficeEntity().getId())).findFirst().get()));
@@ -246,10 +251,26 @@ public class UiActorService extends ActorService {
         Group group = new Group();
         group.setSize(image.getWidth(), image.getHeight());
         group.addActor(image);
-        Arrays.stream(CompanyEntity.Region.values()).forEach(r -> {
+        Arrays.stream(Region.values()).forEach(r -> {
             ImageTextButton regionButton = getRegionButton(r);
             GameTextButton buildOfficeOption = new GameTextButton("BUILD_OFFICE_" + r.name() + "_REGION_BUTTON", () -> {
-
+                CachedEventListener cachedEventListener = CachedEventListener.getInstance();
+                cachedEventListener.onEvent(snapshot -> {
+                    float budget = snapshot.getFloat(CURRENT_BUDGET);
+                    if (budget <= 20_000) {
+                        throw new GameException(GameException.Code.E500);
+                    } else {
+                        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(snapshot.getValue(CURRENT_PROGRESS_ID)));
+                        progressEntity.getCompanyEntity()
+                                .getOfficeEntities().stream()
+                                .filter(o -> o.getRegion() == r)
+                                .findFirst()
+                                .map(z -> new GameException(GameException.Code.E600));
+                        OfficeEntity officeEntity = new OfficeEntity(null, "Office Inc. " + r.name(), 0.0f, 2000.0f, List.of(), List.of(), r);
+                        officeEntity.setLevelEntities(List.of(LevelEntity.createEmpty()));
+                        CompanyEntity companyEntity = new CompanyEntity(null, "Office Inc. " + r.name(), 0.0f, 2000.0f,);
+                    }
+                });
             }, "Build office", skin);
             AbstractList regionDetailsList = new DefaultList(r.name() + "_REGION_WORLD_MAP_DETAILS_LIST", Array.with(buildOfficeOption));
             AbstractDropDown regionDetails = new HorizontalTriggerDropdown(r.name() + "_REGION_WORLD_MAP_DETAILS_DROPDOWN",
@@ -296,7 +317,7 @@ public class UiActorService extends ActorService {
         return modal;
     }
 
-    private ImageTextButton getRegionButton(CompanyEntity.Region region) {
+    private ImageTextButton getRegionButton(Region region) {
         ImageTextButton button = new ImageTextButton(region.name().charAt(0)
                 + region.name().replace("_", " ").substring(1).toLowerCase(), skin);
         button.addListener(new InputListener() {

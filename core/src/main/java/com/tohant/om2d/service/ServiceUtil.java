@@ -121,8 +121,8 @@ public class ServiceUtil {
         return CELL.name() + COORD_DELIMITER + cellX + COORD_DELIMITER + cellY + ID_DELIMITER + levelId;
     }
 
-    public static String getRoomActorId(Room room, String cellId) {
-        return "ROOM" + COORD_DELIMITER + room.getType().name() + ID_DELIMITER + cellId;
+    public static String getRoomActorId(String type, String cellId) {
+        return "ROOM" + COORD_DELIMITER + type + ID_DELIMITER + cellId;
     }
 
     public static String getStaffActorId(Staff staff, int index, String roomId) {
