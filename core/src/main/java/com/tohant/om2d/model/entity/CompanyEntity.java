@@ -19,7 +19,6 @@ public class CompanyEntity implements Serializable {
     @ForeignCollectionField(eager = true, columnName = "office_id")
     private Collection<OfficeEntity> officeEntities;
 
-
     public CompanyEntity(String name, Collection<OfficeEntity> officeEntities) {
         this.name = name;
         this.officeEntities = officeEntities;
