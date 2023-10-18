@@ -19,13 +19,10 @@ public class ToggleCommand implements Command {
     @Override
     public void execute() {
         Actor component = null;
-        String componentId = id.split(COORD_DELIMITER)[0];
         try {
-            UiActorService.UiComponentConstant.valueOf(componentId);
             component = UiActorService.getInstance().getActorById(id);
         } catch (IllegalArgumentException e) {
             try {
-                MenuUiActorService.MenuUiComponentConstant.valueOf(componentId);
                 component = MenuUiActorService.getInstance().getActorById(id);
             } catch (IllegalArgumentException ignored) {
 
