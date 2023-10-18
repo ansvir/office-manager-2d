@@ -8,6 +8,8 @@ public interface Cache {
     String CURRENT_SCREEN = "CURR_SCREEN";
     String CURRENT_ITEM = "CURRENT_ITEM";
     String CURRENT_PROGRESS_ID = "CURR_PROGRESS_ID";
+    String CURRENT_OFFICE_ID = "CURR_OFFICE_ID";
+    String CURRENT_LEVEL_ID = "CURR_LEVEL_ID";
     String UI_ACTORS = "UI_ACTORS";
     String MENU_UI_ACTORS = "MENU_UI_ACTORS";
     String WORKERS = "WORKERS";

@@ -3,23 +3,30 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "PROGRESS")
-public class ProgressEntity extends AbstractActorEntity {
+public class ProgressEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "company_id")
     private CompanyEntity companyEntity;
 
-    public ProgressEntity(CompanyEntity companyEntity) {
-        super(null);
+    @DatabaseField
+    private String currentOfficeId;
+
+    @DatabaseField
+    private String currentLevelId;
+
+    public ProgressEntity(CompanyEntity companyEntity, String currentOfficeId, String currentLevelId) {
         this.companyEntity = companyEntity;
+        this.currentOfficeId = currentOfficeId;
+        this.currentLevelId = currentLevelId;
     }
 
     public ProgressEntity() {
-        super(null);
         // serialization constructor
     }
 
@@ -39,4 +46,19 @@ public class ProgressEntity extends AbstractActorEntity {
         this.companyEntity = companyEntity;
     }
 
+    public String getCurrentOfficeId() {
+        return currentOfficeId;
+    }
+
+    public void setCurrentOfficeId(String currentOfficeId) {
+        this.currentOfficeId = currentOfficeId;
+    }
+
+    public String getCurrentLevelId() {
+        return currentLevelId;
+    }
+
+    public void setCurrentLevelId(String currentLevelId) {
+        this.currentLevelId = currentLevelId;
+    }
 }

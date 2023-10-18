@@ -7,10 +7,11 @@ import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.man.*;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.Command;
+import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.exception.GameException;
-import com.tohant.om2d.model.entity.ProgressEntity;
+import com.tohant.om2d.model.entity.CellEntity;
+import com.tohant.om2d.model.entity.LevelEntity;
 import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.RoomBuildingModel;
@@ -20,7 +21,8 @@ import com.tohant.om2d.service.AsyncRoomBuildService;
 import com.tohant.om2d.service.RuntimeCacheService;
 import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.storage.cache.Cache;
-import com.tohant.om2d.storage.database.ProgressDao;
+import com.tohant.om2d.storage.database.CellDao;
+import com.tohant.om2d.storage.database.LevelDao;
 import com.tohant.om2d.util.AssetsUtil;
 
 import java.util.Arrays;
@@ -30,9 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.service.ServiceUtil.*;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
 
 public class BuildRoomCommand implements Command {
@@ -45,12 +46,15 @@ public class BuildRoomCommand implements Command {
 
     @Override
     public void execute() {
+        CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
+        if (cellEntity.getRoomEntity() != null) {
+            throw new GameException(GameException.Code.E000);
+        }
         UiActorService uiActorService = UiActorService.getInstance();
         RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(cache.getValue(Cache.CURRENT_PROGRESS_ID)));
-        String officeId = progressEntity.getOfficeEntity().getActorName();
-        int level = (int) progressEntity.getLevelEntity().getLevel();
-        String gridId = getGridActorId(level, officeId);
+        LevelEntity levelEntity = LevelDao.getInstance()
+                .queryForId(UUID.fromString(cache.getValue(Cache.CURRENT_LEVEL_ID)));
+        String gridId = levelEntity.getId().toString();
         Grid grid = (Grid) uiActorService.getActorById(gridId);
         DefaultModal roomInfoModal = (DefaultModal) uiActorService.getActorById(ROOM_INFO_MODAL.name());
         Room nextRoom = null;
@@ -66,11 +70,9 @@ public class BuildRoomCommand implements Command {
             }
             float budget = cache.getFloat(Cache.CURRENT_BUDGET);
             if (budget >= price) {
-                String roomId = ROOM.name() + ID_DELIMITER + cell.getName();
-                String staffId = "STAFF" + COORD_DELIMITER + "%d" + ID_DELIMITER + roomId;
                 switch (nextType) {
                     case HALL: {
-                        nextRoom = new HallRoom(roomId, new RoomInfo(roomId, Array.with(), 100f, 20f, new TimeLineDate(12L, 1L, 1L), Room.Type.HALL),
+                        nextRoom = new HallRoom(null, new RoomInfo(cell.getName(), Array.with(), 100f, 20f, new TimeLineDate(12L, 1L, 1L), Room.Type.HALL),
                                 cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();
                         cost += nextRoom.getRoomInfo().getCost();
@@ -78,11 +80,11 @@ public class BuildRoomCommand implements Command {
                     }
                     case OFFICE: {
                         Array<Staff> workers = Array.with(IntStream.range(0, 7).boxed()
-                                .map(i -> new WorkerStaff(String.format(staffId, i))).toArray(WorkerStaff[]::new));
+                                .map(i -> new WorkerStaff(null)).toArray(WorkerStaff[]::new));
                         List<String> workersIds = Arrays.stream(workers.toArray(Staff.class))
                                 .map(Staff::getName).collect(Collectors.toList());
-                        nextRoom = new OfficeRoom(roomId, new CompanyInfo(buildRandomCompanyName(), workersIds),
-                                new RoomInfo(roomId, workers, 550f, 50f, new TimeLineDate(15L, 1L, 1L), Room.Type.OFFICE),
+                        nextRoom = new OfficeRoom(null, new CompanyInfo(buildRandomCompanyName(), workersIds),
+                                new RoomInfo(cell.getName(), workers, 550f, 50f, new TimeLineDate(15L, 1L, 1L), Room.Type.OFFICE),
                                 cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();
                         cost += nextRoom.getRoomInfo().getCost();
@@ -90,13 +92,13 @@ public class BuildRoomCommand implements Command {
                     }
                     case SECURITY: {
                         Array<Staff> security = Array.with(IntStream.range(0, 4).boxed()
-                                .map(i -> new SecurityStaff(String.format(staffId, i), 1200.0f))
-                                .map(s -> {
+                                .map(i -> {
+                                    SecurityStaff s = new SecurityStaff(null, 1200.0f);
                                     salaries.updateAndGet(v -> v + s.getSalary());
                                     return s;
                                 })
                                 .toArray(SecurityStaff[]::new));
-                        nextRoom = new SecurityRoom(roomId, new RoomInfo(roomId, security, 910f, 100f, new TimeLineDate(25L, 1L, 1L), Room.Type.SECURITY),
+                        nextRoom = new SecurityRoom(null, new RoomInfo(cell.getName(), security, 910f, 100f, new TimeLineDate(25L, 1L, 1L), Room.Type.SECURITY),
                                 cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();
                         cost += nextRoom.getRoomInfo().getCost();
@@ -104,13 +106,13 @@ public class BuildRoomCommand implements Command {
                     }
                     case CLEANING: {
                         Array<Staff> cleaning = Array.with(IntStream.range(0, 2).boxed()
-                                .map(i -> new CleaningStaff(String.format(staffId, i), 500.0f))
+                                .map(i -> new CleaningStaff(null, 500.0f))
                                 .map(s -> {
                                     salaries.updateAndGet(v -> v + s.getSalary());
                                     return s;
                                 })
                                 .toArray(CleaningStaff[]::new));
-                        nextRoom = new CleaningRoom(roomId, new RoomInfo(roomId, cleaning, 430f, 45f, new TimeLineDate(18L, 1L, 1L), Room.Type.CLEANING),
+                        nextRoom = new CleaningRoom(null, new RoomInfo(cell.getName(), cleaning, 430f, 45f, new TimeLineDate(18L, 1L, 1L), Room.Type.CLEANING),
                                 cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();
                         cost += nextRoom.getRoomInfo().getCost();
@@ -118,13 +120,13 @@ public class BuildRoomCommand implements Command {
                     }
                     case CAFFE: {
                         Array<Staff> caffe = Array.with(IntStream.range(0, 1).boxed()
-                                .map(i -> new CaffeStaff(String.format(staffId, i), Staff.Type.CAFFE.getSalary()))
+                                .map(i -> new CaffeStaff(null, Staff.Type.CAFFE.getSalary()))
                                 .map(s -> {
                                     salaries.updateAndGet(v -> v + s.getSalary());
                                     return s;
                                 })
                                 .toArray(CaffeStaff[]::new));
-                        nextRoom = new CaffeRoom(roomId, new RoomInfo(roomId, caffe, Room.Type.CAFFE.getPrice(),
+                        nextRoom = new CaffeRoom(null, new RoomInfo(cell.getName(), caffe, Room.Type.CAFFE.getPrice(),
                                 Room.Type.CAFFE.getCost(), new TimeLineDate(19L, 1L, 1L), Room.Type.CAFFE),
                                 cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();
@@ -132,7 +134,7 @@ public class BuildRoomCommand implements Command {
                         break;
                     }
                     case ELEVATOR: {
-                        nextRoom = new ElevatorRoom(roomId, new RoomInfo(roomId, Array.with(), Room.Type.ELEVATOR.getPrice(),
+                        nextRoom = new ElevatorRoom(null, new RoomInfo(cell.getName(), Array.with(), Room.Type.ELEVATOR.getPrice(),
                                 Room.Type.ELEVATOR.getCost(), new TimeLineDate(14L, 1L, 1L), Room.Type.ELEVATOR),
                                 cell.getWidth(), cell.getHeight());
                         price = nextRoom.getRoomInfo().getPrice();

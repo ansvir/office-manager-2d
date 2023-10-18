@@ -39,14 +39,12 @@ import com.tohant.om2d.command.room.DestroyRoomCommand;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.command.ui.ToggleGridCommand;
-import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.model.Region;
 import com.tohant.om2d.model.entity.*;
 import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.TimeLineDate;
 import com.tohant.om2d.storage.cache.Cache;
-import com.tohant.om2d.storage.cache.CachedEventListener;
 import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.util.AssetsUtil;
 
@@ -60,8 +58,6 @@ import java.util.stream.Collectors;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
-import static com.tohant.om2d.storage.cache.Cache.CURRENT_BUDGET;
-import static com.tohant.om2d.storage.cache.Cache.CURRENT_PROGRESS_ID;
 
 public class UiActorService extends ActorService {
 
@@ -83,10 +79,11 @@ public class UiActorService extends ActorService {
 
     private void initGameScreen() {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(CURRENT_PROGRESS_ID)));
+        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(Cache.CURRENT_PROGRESS_ID)));
+        String officeId = RuntimeCacheService.getInstance().getValue(Cache.CURRENT_OFFICE_ID);
         Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(Cache.UI_ACTORS);
         uiActors.add(createMap(progressEntity.getCompanyEntity().getOfficeEntities().stream()
-                .filter(o -> o.getId().equals(progressEntity.getOfficeEntity().getId())).findFirst().get()));
+                .filter(o -> o.getId().toString().equals(officeId)).findFirst().get()));
         uiActors.add(createBudgetLabel());
         uiActors.add(createTimeLabel());
         uiActors.add(createRoomInfoModal());
@@ -98,10 +95,6 @@ public class UiActorService extends ActorService {
         uiActors.add(createBottomPane());
         uiActors.add(createRoomsButtonsMenu());
         uiActors.add(createToggleGridButton());
-//        reorder(this.uiActors, 3, 1, 2, 0, 4, 5, 6, 7, 8, 9, 10, 11);
-//        Array<AbstractUiActor> before = slice(this.uiActors, 0, 1);
-//        Array<AbstractUiActor> after = slice(this.uiActors, 4, this.uiActors.size - 1);
-//        this.uiActors = merge(before, after);
     }
 
     private GameStandaloneLabel createBudgetLabel() {
@@ -254,23 +247,7 @@ public class UiActorService extends ActorService {
         Arrays.stream(Region.values()).forEach(r -> {
             ImageTextButton regionButton = getRegionButton(r);
             GameTextButton buildOfficeOption = new GameTextButton("BUILD_OFFICE_" + r.name() + "_REGION_BUTTON", () -> {
-                CachedEventListener cachedEventListener = CachedEventListener.getInstance();
-                cachedEventListener.onEvent(snapshot -> {
-                    float budget = snapshot.getFloat(CURRENT_BUDGET);
-                    if (budget <= 20_000) {
-                        throw new GameException(GameException.Code.E500);
-                    } else {
-                        ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(snapshot.getValue(CURRENT_PROGRESS_ID)));
-                        progressEntity.getCompanyEntity()
-                                .getOfficeEntities().stream()
-                                .filter(o -> o.getRegion() == r)
-                                .findFirst()
-                                .map(z -> new GameException(GameException.Code.E600));
-                        OfficeEntity officeEntity = new OfficeEntity(null, "Office Inc. " + r.name(), 0.0f, 2000.0f, List.of(), List.of(), r);
-                        officeEntity.setLevelEntities(List.of(LevelEntity.createEmpty()));
-                        CompanyEntity companyEntity = new CompanyEntity(null, "Office Inc. " + r.name(), 0.0f, 2000.0f,);
-                    }
-                });
+
             }, "Build office", skin);
             AbstractList regionDetailsList = new DefaultList(r.name() + "_REGION_WORLD_MAP_DETAILS_LIST", Array.with(buildOfficeOption));
             AbstractDropDown regionDetails = new HorizontalTriggerDropdown(r.name() + "_REGION_WORLD_MAP_DETAILS_DROPDOWN",
@@ -345,10 +322,10 @@ public class UiActorService extends ActorService {
     }
 
     private Cell createCell(CellEntity cellEntity) {
-        Cell cell = cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getActorName(),
-                new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
+        Cell cell = cellEntity.getRoomEntity() == null ? new Cell(cellEntity.getId().toString(),
+                new ChooseRoomCommand(cellEntity.getId().toString()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null)
-                : new Cell(cellEntity.getActorName(), new ChooseRoomCommand(cellEntity.getX(), cellEntity.getY()), cellEntity.getX() * CELL_SIZE,
+                : new Cell(cellEntity.getId().toString(), new ChooseRoomCommand(cellEntity.getId().toString()), cellEntity.getX() * CELL_SIZE,
                 cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, createRoom(cellEntity.getRoomEntity()), cellEntity.getItems());
         if (cell.isBuilt()) {
             cell.setEmpty(false);
@@ -360,41 +337,41 @@ public class UiActorService extends ActorService {
         Room room;
         switch (Room.Type.valueOf(roomEntity.getType())) {
             case SECURITY:
-                room = new SecurityRoom(roomEntity.getActorName(),
-                        new RoomInfo(roomEntity.getActorName(), new Array<>(roomEntity.getWorkerEntities().stream()
-                                .map(w -> new SecurityStaff(w.getActorName(), w.getSalary())).toArray(SecurityStaff[]::new)),
+                room = new SecurityRoom(roomEntity.getId().toString(),
+                        new RoomInfo(roomEntity.getId().toString(), new Array<>(roomEntity.getWorkerEntities().stream()
+                                .map(w -> new SecurityStaff(w.getId().toString(), w.getSalary())).toArray(SecurityStaff[]::new)),
                                 roomEntity.getPrice(), roomEntity.getCost(),
                                 new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                                 Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
-            case HALL: room = new HallRoom(roomEntity.getActorName(),
-                    new RoomInfo(roomEntity.getActorName(), Array.with(),
+            case HALL: room = new HallRoom(roomEntity.getId().toString(),
+                    new RoomInfo(roomEntity.getId().toString(), Array.with(),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                             Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
-            case CLEANING: room = new CleaningRoom(roomEntity.getActorName(),
-                    new RoomInfo(roomEntity.getActorName(), new Array<>(roomEntity.getWorkerEntities().stream()
-                            .map(w -> new CleaningStaff(w.getActorName(), w.getSalary())).toArray(CleaningStaff[]::new)),
+            case CLEANING: room = new CleaningRoom(roomEntity.getId().toString(),
+                    new RoomInfo(roomEntity.getId().toString(), new Array<>(roomEntity.getWorkerEntities().stream()
+                            .map(w -> new CleaningStaff(w.getId().toString(), w.getSalary())).toArray(CleaningStaff[]::new)),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                             Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
             case OFFICE:
                 ResidentEntity residentEntity = roomEntity.getResidentEntity();
-                room = new OfficeRoom(roomEntity.getActorName(),
-                            new CompanyInfo(residentEntity.getBusinessName(), roomEntity.getWorkerEntities().stream().map(WorkerEntity::getActorName).collect(Collectors.toList())),
-                            new RoomInfo(roomEntity.getActorName(), new Array<>(Arrays.stream(roomEntity.getWorkerEntities().toArray(WorkerEntity[]::new))
-                                    .map(w -> new WorkerStaff(w.getActorName())).toArray(WorkerStaff[]::new)),
+                room = new OfficeRoom(roomEntity.getId().toString(),
+                            new CompanyInfo(residentEntity.getBusinessName(), roomEntity.getWorkerEntities().stream().map(w -> w.getId().toString()).collect(Collectors.toList())),
+                            new RoomInfo(roomEntity.getId().toString(), new Array<>(Arrays.stream(roomEntity.getWorkerEntities().toArray(WorkerEntity[]::new))
+                                    .map(w -> new WorkerStaff(w.getId().toString())).toArray(WorkerStaff[]::new)),
                                     roomEntity.getPrice(), roomEntity.getCost(),
                                     new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                                     Room.Type.valueOf(roomEntity.getType())),
                             CELL_SIZE, CELL_SIZE); break;
-            case CAFFE: room = new CaffeRoom(roomEntity.getActorName(),
-                    new RoomInfo(roomEntity.getActorName(), new Array<>(roomEntity.getWorkerEntities().stream()
-                            .map(w -> new CaffeStaff(w.getActorName(), w.getSalary())).toArray(CaffeStaff[]::new)),
+            case CAFFE: room = new CaffeRoom(roomEntity.getId().toString(),
+                    new RoomInfo(roomEntity.getId().toString(), new Array<>(roomEntity.getWorkerEntities().stream()
+                            .map(w -> new CaffeStaff(w.getId().toString(), w.getSalary())).toArray(CaffeStaff[]::new)),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                             Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
-            default: room = new ElevatorRoom(roomEntity.getActorName(),
-                    new RoomInfo(roomEntity.getActorName(), Array.with(),
+            default: room = new ElevatorRoom(roomEntity.getId().toString(),
+                    new RoomInfo(roomEntity.getId().toString(), Array.with(),
                             roomEntity.getPrice(), roomEntity.getCost(),
                             new TimeLineDate(roomEntity.getDays(), roomEntity.getMonths(), roomEntity.getYears()),
                             Room.Type.valueOf(roomEntity.getType())), CELL_SIZE, CELL_SIZE); break;
@@ -417,7 +394,7 @@ public class UiActorService extends ActorService {
         Array<Grid> levels = new Array<>(officeEntity.getLevelEntities().stream()
                 .map(this::createLevel)
                 .toArray(Grid[]::new));
-        Office office = new Office(officeEntity.getActorName(), levels);
+        Office office = new Office(officeEntity.getId().toString(), levels);
         office.setPosition(Math.round(width / 2f - (GRID_WIDTH * CELL_SIZE) / 2f),
                 Math.round(height / 2f - (GRID_HEIGHT * CELL_SIZE) / 2f));
         office.setSize(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
@@ -431,7 +408,7 @@ public class UiActorService extends ActorService {
 //                cells.add(createCell(h, w, index, h * CELL_SIZE, w * CELL_SIZE));
 //            }
 //        }
-        Grid grid = new Grid(levelEntity.getActorName());
+        Grid grid = new Grid(levelEntity.getId().toString());
         grid.setSize(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
         grid.setPosition(0, 0);
         cells.forEach(c -> grid.addActor(createCell(c)));

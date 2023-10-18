@@ -37,7 +37,7 @@ public class UpdateLoadGameModalCommand implements Command {
                     Optional.ofNullable(progresses.get(i).getCompanyEntity()).ifPresent(c2 -> {
                         GameTextButton button = new GameTextButton(finalI + "_LOAD_GAME_BUTTON",
                                 () -> {
-                                    RuntimeCacheService.getInstance().setValue(Cache.CURRENT_PROGRESS_ID, progresses.get(finalI).getActorName());
+                                    RuntimeCacheService.getInstance().setValue(Cache.CURRENT_PROGRESS_ID, progresses.get(finalI).getId().toString());
                                     RuntimeCacheService.getInstance().setBoolean(Cache.READY_TO_START, true);
                                 }, c2.getName(), skin);
                         GameTextButton deleteButton = new GameTextButton("DELETE_" + finalI + "_GAME_BUTTON", () -> {

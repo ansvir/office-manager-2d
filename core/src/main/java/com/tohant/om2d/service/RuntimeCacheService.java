@@ -15,6 +15,9 @@ public class RuntimeCacheService {
     private RuntimeCacheService() {
         this.runtimeCache = RuntimeCacheImpl.getInstance();
         this.setValue(CURRENT_PROGRESS_ID, "");
+        this.setValue(CURRENT_OFFICE_ID, "");
+        this.setValue(CURRENT_LEVEL_ID, "");
+        this.setValue(CURRENT_REGION, "");
         this.setValue(COMPANY_NAME, "");
         this.setObject(BUILD_TASKS, new Array<>());
         this.setBoolean(READY_TO_START, false);

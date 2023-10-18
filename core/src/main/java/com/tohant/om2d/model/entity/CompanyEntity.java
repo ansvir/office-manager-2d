@@ -3,8 +3,6 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
-import com.tohant.om2d.storage.database.CellDao;
-import com.tohant.om2d.storage.database.CompanyDao;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -12,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "COMPANY")
-public class CompanyEntity extends AbstractActorEntity {
+public class CompanyEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -21,15 +19,12 @@ public class CompanyEntity extends AbstractActorEntity {
     @ForeignCollectionField(eager = true, columnName = "office_id")
     private Collection<OfficeEntity> officeEntities;
 
-
-    public CompanyEntity(String id, String name, Collection<OfficeEntity> officeEntities) {
-        super(id);
+    public CompanyEntity(String name, Collection<OfficeEntity> officeEntities) {
         this.name = name;
         this.officeEntities = officeEntities;
     }
 
     public CompanyEntity() {
-        super(null);
         // serialization constructor
     }
 

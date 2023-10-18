@@ -5,12 +5,13 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.tohant.om2d.model.Region;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "OFFICE")
-public class OfficeEntity extends AbstractActorEntity {
+public class OfficeEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -26,11 +27,11 @@ public class OfficeEntity extends AbstractActorEntity {
     private Collection<ResidentEntity> residentEntities;
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "company_id")
     private CompanyEntity companyEntity;
+
     @DatabaseField
     private Region region;
 
-    public OfficeEntity(String id, String name, float popularity, float budget, List<LevelEntity> levelEntities, List<ResidentEntity> residentEntities, Region region) {
-        super(id);
+    public OfficeEntity(String name, float popularity, float budget, List<LevelEntity> levelEntities, List<ResidentEntity> residentEntities, Region region) {
         this.name = name;
         this.popularity = popularity;
         this.budget = budget;
@@ -39,8 +40,7 @@ public class OfficeEntity extends AbstractActorEntity {
         this.region = region;
     }
 
-    public OfficeEntity(String id, String name, float popularity, float budget, Collection<LevelEntity> levelEntities, Collection<ResidentEntity> residentEntities, CompanyEntity companyEntity, Region region) {
-        super(id);
+    public OfficeEntity(String name, float popularity, float budget, Collection<LevelEntity> levelEntities, Collection<ResidentEntity> residentEntities, CompanyEntity companyEntity, Region region) {
         this.name = name;
         this.popularity = popularity;
         this.budget = budget;
@@ -51,7 +51,6 @@ public class OfficeEntity extends AbstractActorEntity {
     }
 
     public OfficeEntity() {
-        super(null);
         // for serialization
     }
 
@@ -118,17 +117,4 @@ public class OfficeEntity extends AbstractActorEntity {
     public void setCompanyEntity(CompanyEntity companyEntity) {
         this.companyEntity = companyEntity;
     }
-
-    public Region getRegion() {
-        return region;
-    }
-
-    public void setRegion(Region region) {
-        this.region = region;
-    }
-
-    public static OfficeEntity createEmpty() {
-        return new OfficeEntity(null, "Office Inc.", 0.0f, 2000.0f, LevelEntity.createEmpty())
-    }
-
 }

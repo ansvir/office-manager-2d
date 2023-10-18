@@ -3,11 +3,8 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
-import com.tohant.om2d.storage.database.CompanyDao;
-import com.tohant.om2d.storage.database.LevelDao;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -16,10 +13,9 @@ import java.util.stream.IntStream;
 
 import static com.tohant.om2d.actor.constant.Constant.GRID_HEIGHT;
 import static com.tohant.om2d.actor.constant.Constant.GRID_WIDTH;
-import static com.tohant.om2d.service.ServiceUtil.*;
 
 @DatabaseTable(tableName = "LEVEL")
-public class LevelEntity extends AbstractActorEntity {
+public class LevelEntity implements Serializable {
 
     @DatabaseField(generatedId = true)
     private UUID id;
@@ -30,21 +26,18 @@ public class LevelEntity extends AbstractActorEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "office_id")
     private OfficeEntity officeEntity;
 
-    public LevelEntity(String id, long level, List<CellEntity> cellEntities) {
-        super(id);
+    public LevelEntity(long level, List<CellEntity> cellEntities) {
         this.level = level;
         this.cellEntities = cellEntities;
     }
 
-    public LevelEntity(String id, long level, Collection<CellEntity> cellEntities, OfficeEntity officeEntity) {
-        super(id);
+    public LevelEntity(long level, Collection<CellEntity> cellEntities, OfficeEntity officeEntity) {
         this.level = level;
         this.cellEntities = cellEntities;
         this.officeEntity = officeEntity;
     }
 
     public LevelEntity() {
-        super(null);
         // serialization constructor
     }
 
@@ -88,9 +81,9 @@ public class LevelEntity extends AbstractActorEntity {
         int level = 0;
         List<CellEntity> cellEntities = IntStream.range(0, GRID_HEIGHT).boxed()
                 .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed()
-                        .map(c -> new CellEntity(null, r, c, null)))
+                        .map(c -> new CellEntity(r, c, null)))
                 .collect(Collectors.toList());
-        return new LevelEntity(null, level, cellEntities);
+        return new LevelEntity(level, cellEntities);
     }
 
 }

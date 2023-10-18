@@ -202,20 +202,16 @@ public class MenuUiActorService extends ActorService {
     }
 
     private GameTextButton createStartButton() {
-        String officeId = UUID.randomUUID().toString();
-        String companyId = UUID.randomUUID().toString();
         int level = 0;
         return new GameTextButton(MENU_NEW_COMPANY_START_BUTTON.name(), () -> {
             List<CellEntity> cells = IntStream.range(0, GRID_HEIGHT).boxed()
                     .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed()
-                            .map(c -> new CellEntity(getCellActorId(r, c, getGridActorId(level, getOfficeActorId(officeId, companyId))), r, c, null)))
+                            .map(c -> new CellEntity(r, c, null)))
                     .collect(Collectors.toList());
-            LevelEntity levelEntity = new LevelEntity(getGridActorId(level, getOfficeActorId(officeId, companyId)), level, cells);
-            OfficeEntity officeEntity = new OfficeEntity(getOfficeActorId(officeId, companyId),
-                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, List.of(levelEntity), List.of(),
+            LevelEntity levelEntity = new LevelEntity(level, cells);
+            OfficeEntity officeEntity = new OfficeEntity(RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, List.of(levelEntity), List.of(),
                     Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
-            CompanyEntity companyEntity = new CompanyEntity(getCompanyActorId(companyId),
-                    RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity));
+            CompanyEntity companyEntity = new CompanyEntity(RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity));
             CompanyDao.getInstance().create(companyEntity);
             officeEntity.setCompanyEntity(companyEntity);
             OfficeDao.getInstance().create(officeEntity);
@@ -226,11 +222,11 @@ public class MenuUiActorService extends ActorService {
                 c.setLevelEntity(levelEntity);
                 cellDao.create(c);
             });
-            ProgressEntity progressEntity = new ProgressEntity(companyEntity);
+            ProgressEntity progressEntity = new ProgressEntity(companyEntity, officeEntity.getId().toString(), levelEntity.getId().toString());
             ProgressDao.getInstance().create(progressEntity);
-            progressEntity.setActorName(progressEntity.getId().toString());
-            ProgressDao.getInstance().update(progressEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progressEntity.getId().toString());
+            RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeEntity.getId().toString());
+            RuntimeCacheService.getInstance().setValue(CURRENT_LEVEL_ID, levelEntity.getId().toString());
             RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
         }, "Start", skin);
     }
@@ -244,7 +240,10 @@ public class MenuUiActorService extends ActorService {
             Optional.ofNullable(progresses.get(i).getCompanyEntity()).ifPresent(c -> {
                 GameTextButton button = new GameTextButton(finalI + "_LOAD_GAME_BUTTON",
                         () -> {
-                            RuntimeCacheService.getInstance().setValue(Cache.CURRENT_PROGRESS_ID, progresses.get(finalI).getId().toString());
+                            ProgressEntity progressEntity = progresses.get(finalI);
+                            RuntimeCacheService.getInstance().setValue(Cache.CURRENT_PROGRESS_ID, progressEntity.getId().toString());
+                            RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, progressEntity.getCurrentOfficeId());
+                            RuntimeCacheService.getInstance().setValue(CURRENT_LEVEL_ID, progressEntity.getCurrentLevelId());
                             RuntimeCacheService.getInstance().setBoolean(Cache.READY_TO_START, true);
                         }, c.getName(), AssetsUtil.getDefaultSkin());
                 GameTextButton deleteButton = new GameTextButton("DELETE_" + finalI + "_GAME_BUTTON", () -> {
