@@ -14,6 +14,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tohant.om2d.model.entity.CompanyEntity;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
@@ -27,11 +29,12 @@ import com.tohant.om2d.service.UiActorService;
 import com.tohant.om2d.stage.AbstractStage;
 import com.tohant.om2d.stage.GameStage;
 import com.tohant.om2d.stage.UiStage;
+import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.storage.cache.CachedEventListener;
+import com.tohant.om2d.storage.database.CompanyDao;
+import com.tohant.om2d.storage.database.ProgressDao;
 
 import java.util.*;
-
-import static com.tohant.om2d.storage.cache.Cache.*;
 
 
 public class GameScreen implements Screen {
@@ -81,7 +84,7 @@ public class GameScreen implements Screen {
         executor = new AsyncExecutor(1);
         AssetService.getInstance().getBgMusic().play();
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-        runtimeCache.setObject(OFFICE_INFO, new OfficeInfo("Office Inc."));
+        runtimeCache.setObject(Cache.OFFICE_INFO, new OfficeInfo("Office Inc."));
 //        men = new Staff[1];
     }
 
@@ -153,16 +156,26 @@ public class GameScreen implements Screen {
     private void update() {
         processTimeLine();
         updateOfficeInfo();
+        updateEntities();
+        checkIsReadyToSwitch();
     }
 
     private void processTimeLine() {
         if (timeline != null && !timeline.isFinished()) {
             time = timeline.getDateString();
-            gameCache.setValue(CURRENT_TIME, time);
+            gameCache.setValue(Cache.CURRENT_TIME, time);
             ((UiStage) uiStage).setTime(time);
         } else {
-            timeline = new TimeLineTask<>(500L, this::updatePeople, true);
-            executor.submit(timeline);
+            ProgressEntity progressEntity = ProgressDao.getInstance()
+                    .queryForId(UUID.fromString(gameCache.getValue(Cache.CURRENT_PROGRESS_ID)));
+            TimeLineDate timeLineDate = new TimeLineDate(progressEntity.getTimeline());
+            if (timeLineDate.equals(new TimeLineDate("01/01/0001"))) {
+                timeline = new TimeLineTask<>(500L, this::updatePeople, true);
+                executor.submit(timeline);
+            } else {
+                timeline = new TimeLineTask<>(timeLineDate, 500L, this::updatePeople, true);
+                executor.submit(timeline);
+            }
         }
     }
 
@@ -171,11 +184,11 @@ public class GameScreen implements Screen {
                 && !this.timeline.getDate().equals(new TimeLineDate(1L, 1L, 1L)) && !isPayDay) {
             Map<String, ?> cacheSnapshot = eventListener.consume();
             CacheSnapshotService snapshotService = new CacheSnapshotService(cacheSnapshot);
-            float budget = snapshotService.getFloat(CURRENT_BUDGET);
+            float budget = snapshotService.getFloat(Cache.CURRENT_BUDGET);
             float salaries = calculateSalaries(snapshotService);
             float costs = calculateCosts(snapshotService);
             float incomes = calculateIncomes(snapshotService);
-            gameCache.setFloat(CURRENT_BUDGET, budget - costs - salaries + incomes);
+            gameCache.setFloat(Cache.CURRENT_BUDGET, budget - costs - salaries + incomes);
             isPayDay = true;
         } else {
             isPayDay = false;
@@ -183,38 +196,50 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void updateBudget(CacheSnapshotService snapshotService) {
-
-    }
-
     private float calculateCosts(CacheSnapshotService snapshotService) {
-        float cleaningCost = snapshotService.getLong(CLEANING_AMOUNT) * Room.Type.CLEANING.getCost();
-        float securityCost = snapshotService.getLong(SECURITY_AMOUNT) * Room.Type.SECURITY.getCost();
-        float officeCost = snapshotService.getLong(OFFICES_AMOUNT) * Room.Type.OFFICE.getCost();
-        float hallCost = snapshotService.getLong(HALLS_AMOUNT) * Room.Type.HALL.getCost();
-        float caffeCost = snapshotService.getLong(CAFFE_AMOUNT) * Room.Type.CAFFE.getCost();
-        float elevatorCost = snapshotService.getLong(ELEVATOR_AMOUNT) * Room.Type.ELEVATOR.getCost();
+        float cleaningCost = snapshotService.getLong(Cache.CLEANING_AMOUNT) * Room.Type.CLEANING.getCost();
+        float securityCost = snapshotService.getLong(Cache.SECURITY_AMOUNT) * Room.Type.SECURITY.getCost();
+        float officeCost = snapshotService.getLong(Cache.OFFICES_AMOUNT) * Room.Type.OFFICE.getCost();
+        float hallCost = snapshotService.getLong(Cache.HALLS_AMOUNT) * Room.Type.HALL.getCost();
+        float caffeCost = snapshotService.getLong(Cache.CAFFE_AMOUNT) * Room.Type.CAFFE.getCost();
+        float elevatorCost = snapshotService.getLong(Cache.ELEVATOR_AMOUNT) * Room.Type.ELEVATOR.getCost();
         return cleaningCost + securityCost + officeCost + hallCost + caffeCost + elevatorCost;
     }
 
     private float calculateSalaries(CacheSnapshotService snapshotService) {
-        float securitySalaries = snapshotService.getLong(TOTAL_SECURITY_STAFF) * Staff.Type.SECURITY.getSalary();
-        float cleaningSalaries = snapshotService.getLong(TOTAL_CLEANING_STAFF) * Staff.Type.CLEANING.getSalary();
-        float caffeSalaries = snapshotService.getLong(TOTAL_CAFFE_STAFF) * Staff.Type.CAFFE.getSalary();
+        float securitySalaries = snapshotService.getLong(Cache.TOTAL_SECURITY_STAFF) * Staff.Type.SECURITY.getSalary();
+        float cleaningSalaries = snapshotService.getLong(Cache.TOTAL_CLEANING_STAFF) * Staff.Type.CLEANING.getSalary();
+        float caffeSalaries = snapshotService.getLong(Cache.TOTAL_CAFFE_STAFF) * Staff.Type.CAFFE.getSalary();
         return securitySalaries + cleaningSalaries + caffeSalaries;
     }
 
     private float calculateIncomes(CacheSnapshotService snapshotService) {
-        return snapshotService.getLong(TOTAL_WORKERS) * 100.0f;
+        return snapshotService.getLong(Cache.TOTAL_WORKERS) * 100.0f;
     }
 
+    private void updateEntities() {
+        ProgressEntity progressEntity = ProgressDao.getInstance()
+                .queryForId(UUID.fromString(gameCache.getValue(Cache.CURRENT_PROGRESS_ID)));
+        float budget = gameCache.getFloat(Cache.CURRENT_BUDGET);
+        String currentTimeline = gameCache.getValue(Cache.CURRENT_TIME);
+        CompanyEntity companyEntity = CompanyDao.getInstance().queryForId(progressEntity.getCompanyEntity().getId());
+        companyEntity.setBudget(budget);
+        CompanyDao.getInstance().update(companyEntity);
+        progressEntity.setTimeline(currentTimeline);
+        ProgressDao.getInstance().update(progressEntity);
+    }
 
     private void updatePeople() {
         new UpdatePeopleCommand().execute();
     }
 
-    private void saveData() {
-
+    private void checkIsReadyToSwitch() {
+        RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
+        if (runtimeCache.getBoolean(Cache.READY_TO_START)) {
+            runtimeCache.setBoolean(Cache.READY_TO_START, false);
+            AssetService.getInstance().getBgMusic().stop();
+            game.setScreen(new GameScreen(game));
+        }
     }
 
 }

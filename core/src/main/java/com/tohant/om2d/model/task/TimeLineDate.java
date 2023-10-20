@@ -20,6 +20,13 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         this.years = date.getYears();
     }
 
+    public TimeLineDate(String date) {
+        String[] parts = date.split("/");
+        this.days = Long.parseLong(parts[0]);
+        this.month = Long.parseLong(parts[1]);
+        this.years = Long.parseLong(parts[2]);
+    }
+
     public long getDays() {
         return days;
     }
@@ -66,8 +73,35 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         return Long.compare(first, second);
     }
 
-    public long getDateMillis() {
-        return 1000L * 60L * 60L * 24L * this.days * this.month * this.years;
+    public long toMillis() {
+
+        long millis = 0;
+        millis += (this.years - 1) * 365L * 24L * 60L * 60L * 1000L;
+        millis += (this.month - 1) * 30L * 24L * 60L * 60L * 1000L;
+        millis += (this.days - 1) * 24L * 60L * 60L * 1000L;
+
+        return millis;
+    }
+
+
+    public static TimeLineDate fromMillis(long millis) {
+        long years = millis / (365L * 24L * 60L * 60L * 1000L);
+        millis -= years * (365L * 24L * 60L * 60L * 1000L);
+        long months = millis / (30L * 24L * 60L * 60L * 1000L);
+        millis -= months * (30L * 24L * 60L * 60L * 1000L);
+        long days = millis / (24L * 60L * 60L * 1000L);
+        days = Math.max(1, Math.min(days, 30));
+        months = Math.max(1, Math.min(months, 12));
+        years = Math.max(1, years);
+        return new TimeLineDate(days, months, years);
+    }
+
+    public static TimeLineDate fromDateString(String date) {
+        String[] parts = date.split("/");
+        long days = Long.parseLong(parts[0]);
+        long months = Long.parseLong(parts[1]);
+        long years = Long.parseLong(parts[2]);
+        return new TimeLineDate(days, months, years);
     }
 
     public enum Frequency {

@@ -10,11 +10,10 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
+import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.*;
 import com.tohant.om2d.actor.man.CaffeStaff;
 import com.tohant.om2d.actor.man.CleaningStaff;
@@ -33,6 +32,8 @@ import com.tohant.om2d.actor.ui.list.DefaultList;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.actor.ui.pane.AbstractPane;
 import com.tohant.om2d.actor.ui.pane.DefaultPane;
+import com.tohant.om2d.command.office.BuildNewOfficeCommand;
+import com.tohant.om2d.command.office.ChooseBuildNewOfficeCommand;
 import com.tohant.om2d.command.room.ChooseRoomCommand;
 import com.tohant.om2d.command.room.ChooseRoomTypeCommand;
 import com.tohant.om2d.command.room.DestroyRoomCommand;
@@ -57,7 +58,11 @@ import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.model.Region.EUROPE;
+import static com.tohant.om2d.service.ServiceUtil.buildRandomCompanyName;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
+import static com.tohant.om2d.storage.cache.Cache.COMPANY_NAME;
+import static com.tohant.om2d.storage.cache.Cache.CURRENT_REGION;
 
 public class UiActorService extends ActorService {
 
@@ -95,6 +100,7 @@ public class UiActorService extends ActorService {
         uiActors.add(createBottomPane());
         uiActors.add(createRoomsButtonsMenu());
         uiActors.add(createToggleGridButton());
+        uiActors.add(createBuildNewOfficeModal());
     }
 
     private GameStandaloneLabel createBudgetLabel() {
@@ -164,6 +170,10 @@ public class UiActorService extends ActorService {
 
     private AbstractTextButton createCloseEnvironmentModalButton() {
         return new GameTextButton(CLOSE_ENVIRONMENT_MODAL_BUTTON.name(), new ToggleCommand(ENVIRONMENT_MODAL.name()), "X", skin);
+    }
+
+    private AbstractTextButton createCloseBuildNewOfficeModalButton() {
+        return new GameTextButton(CLOSE_BUILD_NEW_OFFICE_MODAL_BUTTON.name(), new ForceToggleCommand(BUILD_NEW_OFFICE_MODAL.name(), false), "X", skin);
     }
 
     private AbstractTextButton createCloseWorldModalButton() {
@@ -247,7 +257,7 @@ public class UiActorService extends ActorService {
         Arrays.stream(Region.values()).forEach(r -> {
             ImageTextButton regionButton = getRegionButton(r);
             GameTextButton buildOfficeOption = new GameTextButton("BUILD_OFFICE_" + r.name() + "_REGION_BUTTON", () -> {
-
+                new ChooseBuildNewOfficeCommand(r).execute();
             }, "Build office", skin);
             AbstractList regionDetailsList = new DefaultList(r.name() + "_REGION_WORLD_MAP_DETAILS_LIST", Array.with(buildOfficeOption));
             AbstractDropDown regionDetails = new HorizontalTriggerDropdown(r.name() + "_REGION_WORLD_MAP_DETAILS_DROPDOWN",
@@ -319,6 +329,40 @@ public class UiActorService extends ActorService {
 
     private Array<Item> getItems() {
         return Array.with(new Item(Items.PLANT), new Item(Items.COOLER));
+    }
+
+    private DefaultModal createBuildNewOfficeModal() {
+        Table table = new Table();
+        GameLabel label = new GameLabel(BUILD_NEW_OFFICE_NAME_LABEL.name(), "Name", skin);
+        String placeholder = buildRandomCompanyName();
+        TextField input = new TextField(placeholder, skin);
+        RuntimeCacheService.getInstance().setValue(COMPANY_NAME, placeholder);
+        input.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                RuntimeCacheService.getInstance().setValue(COMPANY_NAME, input.getText());
+            }
+        });
+        input.setName(BUILD_NEW_OFFICE_NAME_INPUT.name());
+        RuntimeCacheService.getInstance().setValue(CURRENT_REGION, EUROPE.name());
+        table.add(label).left().padLeft(DEFAULT_PAD).padRight(DEFAULT_PAD);
+        table.add(input).right().growX();
+        table.row().padTop(DEFAULT_PAD);
+        table.add(createConfirmBuildNewOfficeButton()).center();
+        table.row().padTop(DEFAULT_PAD);
+        DefaultModal modal = new DefaultModal(BUILD_NEW_OFFICE_MODAL.name(), "New Office",
+                Array.with(table), createCloseBuildNewOfficeModalButton(), skin);
+        modal.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2, Gdx.graphics.getHeight() / 2f);
+        modal.setSize(modal.getPrefWidth(), modal.getPrefHeight());
+        modal.forceToggle(false);
+        return modal;
+    }
+
+    private GameTextButton createConfirmBuildNewOfficeButton() {
+        return new GameTextButton(BUILD_NEW_OFFICE_CONFIRM_BUTTON.name(), () -> {
+            Region region = Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION));
+            new BuildNewOfficeCommand(false, region).execute();
+        }, "Confirm", skin);
     }
 
     private Cell createCell(CellEntity cellEntity) {
@@ -474,7 +518,10 @@ public class UiActorService extends ActorService {
         TOGGLE_ENVIRONMENT_MODAL_BUTTON, ENVIRONMENT_MODAL_ITEM_GRID, TOGGLE_PEOPLE_INFO_BUTTON, PEOPLE_INFO_LABEL,
         TOGGLE_WORLD_MODAL_BUTTON, TOGGLE_ALL_WINDOWS_BUTTON,
         ITEM, OBJECT_CELL, CELL, ROOM, MAP, OFFICE, GRID, OBJECT_GRID, BACKGROUND, STAFF, TOGGLE_GRID_BUTTON, ROOM_INFO_LABEL, OFFICE_INFO_LABEL,
-        NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL;
+        NOTIFICATION_INFO_LABEL, ROAD, CAR, BUDGET_LABEL, TIMELINE_LABEL,
+
+        BUILD_NEW_OFFICE_MODAL, BUILD_NEW_OFFICE_NAME_LABEL, BUILD_NEW_OFFICE_NAME_INPUT,
+        BUILD_NEW_OFFICE_CONFIRM_BUTTON, CLOSE_BUILD_NEW_OFFICE_MODAL_BUTTON;
 
         public enum Items {
             PLANT(BigDecimal.valueOf(15.0f)), COOLER(BigDecimal.valueOf(35.0f));

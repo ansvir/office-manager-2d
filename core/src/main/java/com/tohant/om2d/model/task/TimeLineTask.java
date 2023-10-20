@@ -18,6 +18,18 @@ public class TimeLineTask<T> implements AsyncTask<T> {
     private final Predicate<TimeLineDate> stopCondition;
     private final Runnable successCallback;
 
+    public TimeLineTask(TimeLineDate date, long waitTime, Runnable updateCallback, T result) {
+        this.id = UUID.randomUUID().toString();
+        this.date = date;
+        this.prevTime = System.currentTimeMillis();
+        this.time = this.prevTime;
+        this.waitTime = waitTime;
+        this.result = result;
+        this.stopCondition = (z) -> false;
+        this.updateCallback = updateCallback;
+        this.successCallback = () -> {};
+    }
+
     public TimeLineTask(long waitTime, Runnable updateCallback, T result) {
         this.id = UUID.randomUUID().toString();
         this.date = new TimeLineDate(1L, 1L ,1L);

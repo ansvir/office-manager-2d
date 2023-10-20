@@ -24,25 +24,28 @@ import com.tohant.om2d.actor.ui.modal.AbstractModal;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.actor.ui.slide.AbstractSlideShow;
 import com.tohant.om2d.actor.ui.slide.DefaultSlideShow;
+import com.tohant.om2d.command.office.BuildNewOfficeCommand;
 import com.tohant.om2d.command.ui.ForceToggleCommand;
 import com.tohant.om2d.command.ui.ToggleCommand;
 import com.tohant.om2d.model.Region;
-import com.tohant.om2d.model.entity.*;
+import com.tohant.om2d.model.entity.ProgressEntity;
 import com.tohant.om2d.storage.cache.Cache;
-import com.tohant.om2d.storage.database.*;
+import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.util.AssetsUtil;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
-import static com.tohant.om2d.actor.constant.Constant.*;
+import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 import static com.tohant.om2d.model.Region.EUROPE;
 import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.*;
-import static com.tohant.om2d.service.ServiceUtil.*;
+import static com.tohant.om2d.service.ServiceUtil.buildRandomCompanyName;
 import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class MenuUiActorService extends ActorService {
@@ -202,32 +205,9 @@ public class MenuUiActorService extends ActorService {
     }
 
     private GameTextButton createStartButton() {
-        int level = 0;
         return new GameTextButton(MENU_NEW_COMPANY_START_BUTTON.name(), () -> {
-            List<CellEntity> cells = IntStream.range(0, GRID_HEIGHT).boxed()
-                    .flatMap(r -> IntStream.range(0, GRID_WIDTH).boxed()
-                            .map(c -> new CellEntity(r, c, null)))
-                    .collect(Collectors.toList());
-            LevelEntity levelEntity = new LevelEntity(level, cells);
-            OfficeEntity officeEntity = new OfficeEntity(RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, 2000.0f, List.of(levelEntity), List.of(),
-                    Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION)));
-            CompanyEntity companyEntity = new CompanyEntity(RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity));
-            CompanyDao.getInstance().create(companyEntity);
-            officeEntity.setCompanyEntity(companyEntity);
-            OfficeDao.getInstance().create(officeEntity);
-            levelEntity.setOfficeEntity(officeEntity);
-            LevelDao.getInstance().create(levelEntity);
-            CellDao cellDao = CellDao.getInstance();
-            cells.forEach(c -> {
-                c.setLevelEntity(levelEntity);
-                cellDao.create(c);
-            });
-            ProgressEntity progressEntity = new ProgressEntity(companyEntity, officeEntity.getId().toString(), levelEntity.getId().toString());
-            ProgressDao.getInstance().create(progressEntity);
-            RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progressEntity.getId().toString());
-            RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, officeEntity.getId().toString());
-            RuntimeCacheService.getInstance().setValue(CURRENT_LEVEL_ID, levelEntity.getId().toString());
-            RuntimeCacheService.getInstance().setBoolean(READY_TO_START, true);
+            Region region = Region.valueOf(RuntimeCacheService.getInstance().getValue(CURRENT_REGION));
+            new BuildNewOfficeCommand(true, region).execute();
         }, "Start", skin);
     }
 
@@ -241,6 +221,7 @@ public class MenuUiActorService extends ActorService {
                 GameTextButton button = new GameTextButton(finalI + "_LOAD_GAME_BUTTON",
                         () -> {
                             ProgressEntity progressEntity = progresses.get(finalI);
+                            RuntimeCacheService.getInstance().setFloat(CURRENT_BUDGET, progressEntity.getCompanyEntity().getBudget());
                             RuntimeCacheService.getInstance().setValue(Cache.CURRENT_PROGRESS_ID, progressEntity.getId().toString());
                             RuntimeCacheService.getInstance().setValue(CURRENT_OFFICE_ID, progressEntity.getCurrentOfficeId());
                             RuntimeCacheService.getInstance().setValue(CURRENT_LEVEL_ID, progressEntity.getCurrentLevelId());

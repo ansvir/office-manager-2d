@@ -4,6 +4,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.tohant.om2d.model.Region;
+import com.tohant.om2d.service.ServiceUtil;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -19,8 +20,6 @@ public class OfficeEntity implements Serializable {
     private String name;
     @DatabaseField
     private float popularity;
-    @DatabaseField
-    private float budget;
     @ForeignCollectionField(eager = true, columnName = "level_id")
     private Collection<LevelEntity> levelEntities;
     @ForeignCollectionField(eager = true, columnName = "resident_id")
@@ -31,19 +30,17 @@ public class OfficeEntity implements Serializable {
     @DatabaseField
     private Region region;
 
-    public OfficeEntity(String name, float popularity, float budget, List<LevelEntity> levelEntities, List<ResidentEntity> residentEntities, Region region) {
+    public OfficeEntity(String name, float popularity, List<LevelEntity> levelEntities, List<ResidentEntity> residentEntities, Region region) {
         this.name = name;
         this.popularity = popularity;
-        this.budget = budget;
         this.levelEntities = levelEntities;
         this.residentEntities = residentEntities;
         this.region = region;
     }
 
-    public OfficeEntity(String name, float popularity, float budget, Collection<LevelEntity> levelEntities, Collection<ResidentEntity> residentEntities, CompanyEntity companyEntity, Region region) {
+    public OfficeEntity(String name, float popularity, Collection<LevelEntity> levelEntities, Collection<ResidentEntity> residentEntities, CompanyEntity companyEntity, Region region) {
         this.name = name;
         this.popularity = popularity;
-        this.budget = budget;
         this.levelEntities = levelEntities;
         this.residentEntities = residentEntities;
         this.companyEntity = companyEntity;
@@ -78,14 +75,6 @@ public class OfficeEntity implements Serializable {
         this.popularity = popularity;
     }
 
-    public float getBudget() {
-        return budget;
-    }
-
-    public void setBudget(float budget) {
-        this.budget = budget;
-    }
-
     public Collection<LevelEntity> getLevelEntities() {
         return levelEntities;
     }
@@ -116,5 +105,18 @@ public class OfficeEntity implements Serializable {
 
     public void setCompanyEntity(CompanyEntity companyEntity) {
         this.companyEntity = companyEntity;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public static OfficeEntity createEmpty(Region region) {
+        return new OfficeEntity(ServiceUtil.buildRandomCompanyName(), 0.0f,
+                List.of(LevelEntity.createEmpty()), List.of(), region);
     }
 }

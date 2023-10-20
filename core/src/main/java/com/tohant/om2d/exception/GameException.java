@@ -20,7 +20,8 @@ public class GameException extends RuntimeException {
         E300("One single hall near room cannot be destroyed!", Type.WARNING),
         E400("No more than 3 games can be saved at a time!", Type.WARNING),
         E500("Insufficient funds to build a new office!", Type.WARNING),
-        E600("You are already have an office in that region!", Type.WARNING);
+        E600("You are already have an office in that region!", Type.WARNING),
+        E700("Not enough budget to build a new office!", Type.WARNING);
 
         private final String message;
         private final Type type;

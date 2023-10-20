@@ -19,9 +19,13 @@ public class CompanyEntity implements Serializable {
     @ForeignCollectionField(eager = true, columnName = "office_id")
     private Collection<OfficeEntity> officeEntities;
 
-    public CompanyEntity(String name, Collection<OfficeEntity> officeEntities) {
+    @DatabaseField
+    private float budget;
+
+    public CompanyEntity(String name, Collection<OfficeEntity> officeEntities, float budget) {
         this.name = name;
         this.officeEntities = officeEntities;
+        this.budget = budget;
     }
 
     public CompanyEntity() {
@@ -52,4 +56,11 @@ public class CompanyEntity implements Serializable {
         this.officeEntities = officeEntities;
     }
 
+    public float getBudget() {
+        return budget;
+    }
+
+    public void setBudget(float budget) {
+        this.budget = budget;
+    }
 }

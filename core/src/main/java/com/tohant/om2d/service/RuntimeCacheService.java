@@ -28,7 +28,6 @@ public class RuntimeCacheService {
         this.setObject(GAME_EXCEPTION, new Array<>());
         this.setLong(CURRENT_OFFICE_CELLS_WIDTH, GRID_WIDTH);
         this.setLong(CURRENT_OFFICE_CELLS_HEIGHT, GRID_HEIGHT);
-        this.setFloat(CURRENT_BUDGET, 10000.0f);
         this.setValue(CURRENT_TIME, "01/01/0001");
         this.setLong(OFFICES_AMOUNT, 0L);
         this.setLong(HALLS_AMOUNT, 0L);
@@ -66,8 +65,8 @@ public class RuntimeCacheService {
         this.runtimeCache.setValue(key, value);
     }
 
-    public float getFloat(String key) {
-        return (float) runtimeCache.getValue(key);
+    public Float getFloat(String key) {
+        return (Float) runtimeCache.getValue(key);
     }
 
     public void setLong(String key, long value) {

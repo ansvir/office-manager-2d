@@ -6,8 +6,6 @@ import com.tohant.om2d.command.Command;
 import com.tohant.om2d.service.MenuUiActorService;
 import com.tohant.om2d.service.UiActorService;
 
-import static com.tohant.om2d.actor.constant.Constant.COORD_DELIMITER;
-
 public class ToggleCommand implements Command {
 
     private final String id;

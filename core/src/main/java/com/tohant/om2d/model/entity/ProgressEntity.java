@@ -20,10 +20,14 @@ public class ProgressEntity implements Serializable {
     @DatabaseField
     private String currentLevelId;
 
-    public ProgressEntity(CompanyEntity companyEntity, String currentOfficeId, String currentLevelId) {
+    @DatabaseField
+    private String timeline;
+
+    public ProgressEntity(CompanyEntity companyEntity, String currentOfficeId, String currentLevelId, String timeline) {
         this.companyEntity = companyEntity;
         this.currentOfficeId = currentOfficeId;
         this.currentLevelId = currentLevelId;
+        this.timeline = timeline;
     }
 
     public ProgressEntity() {
@@ -60,5 +64,13 @@ public class ProgressEntity implements Serializable {
 
     public void setCurrentLevelId(String currentLevelId) {
         this.currentLevelId = currentLevelId;
+    }
+
+    public String getTimeline() {
+        return timeline;
+    }
+
+    public void setTimeline(String timeline) {
+        this.timeline = timeline;
     }
 }
