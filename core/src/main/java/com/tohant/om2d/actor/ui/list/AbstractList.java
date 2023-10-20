@@ -6,6 +6,9 @@ import com.badlogic.gdx.utils.Array;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
+/**
+ * List of items, with ability to choose on of them and make it selected.
+ */
 public abstract class AbstractList extends Table {
 
     private final Array<Actor> elements;
@@ -32,6 +35,10 @@ public abstract class AbstractList extends Table {
         return elements;
     }
 
+    /**
+     * Method used to make {@param component} actor active in this list.
+     * @param component Actor to make active and current.
+     */
     public void select(Actor component) {
         for (int i = 0; i < this.elements.size; i++) {
             if (this.elements.get(i).getName().equals(component.getName())) {

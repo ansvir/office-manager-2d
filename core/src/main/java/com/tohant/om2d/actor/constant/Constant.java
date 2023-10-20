@@ -1,5 +1,8 @@
 package com.tohant.om2d.actor.constant;
 
+/**
+ * Major constants that represent game states, sizes, name patterns or static names, etc.
+ */
 public final class Constant {
 
     public static final int CELL_SIZE = 80;

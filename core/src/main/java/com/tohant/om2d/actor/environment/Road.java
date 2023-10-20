@@ -8,6 +8,9 @@ import com.tohant.om2d.service.AssetService;
 
 import static com.tohant.om2d.actor.constant.Constant.TEXTURE_SIZE;
 
+/**
+ * Road actor. Serves as background texture for cars or any other transport.
+ */
 public class Road extends Actor {
 
     private RoadType type;

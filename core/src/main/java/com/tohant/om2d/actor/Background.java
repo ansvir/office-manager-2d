@@ -25,6 +25,10 @@ import static com.tohant.om2d.actor.environment.Car.Type.Direction.TOP;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CAR;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROAD;
 
+/**
+ * Represents background on the game stage. It contains some actors that independent
+ * on other game stage actors and is separated from other actors itself.
+ */
 public class Background extends Group {
     
     private final AssetService assetService;
@@ -46,6 +50,13 @@ public class Background extends Group {
         executor.submit(backgroundTimeline);
     }
 
+    /**
+     * Retrieves background texture from according field in {@link AssetService} and
+     * draws it. Independently of main game timeline updates its actors, i.e. cars and roads.
+     * @param batch Batch used to draw the background
+     * @param parentAlpha The parent alpha, to be multiplied with this actor's alpha, allowing the parent's alpha to affect all
+     *           children.
+     */
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);

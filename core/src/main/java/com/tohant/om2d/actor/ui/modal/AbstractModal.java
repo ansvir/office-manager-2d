@@ -9,6 +9,9 @@ import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
+/**
+ * Modal window
+ */
 public abstract class AbstractModal extends Window implements ToggleActor {
 
     protected static final String CONTENT_NAME = "CONTENT";
@@ -50,6 +53,7 @@ public abstract class AbstractModal extends Window implements ToggleActor {
         setSize(getPrefWidth(), getPrefHeight());
     }
 
+    @Deprecated
     public void setModalData(ModalData modalData) {
         getTitleLabel().setText(modalData.getTitle());
 //        updateContentText(modalData.getText());
@@ -61,6 +65,7 @@ public abstract class AbstractModal extends Window implements ToggleActor {
         this.setPosition(position.x, position.y);
     }
 
+    @Deprecated
     private void updateActors(ModalData modalData) {
         for (int i = 0; i < modalData.getActors().size; i++) {
             int iCopy = i;
