@@ -61,8 +61,7 @@ import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.model.Region.EUROPE;
 import static com.tohant.om2d.service.ServiceUtil.buildRandomCompanyName;
 import static com.tohant.om2d.service.UiActorService.UiComponentConstant.*;
-import static com.tohant.om2d.storage.cache.Cache.COMPANY_NAME;
-import static com.tohant.om2d.storage.cache.Cache.CURRENT_REGION;
+import static com.tohant.om2d.storage.cache.Cache.*;
 
 public class UiActorService extends ActorService {
 
@@ -72,7 +71,6 @@ public class UiActorService extends ActorService {
 
     private UiActorService() {
         this.skin = AssetsUtil.getDefaultSkin();
-        initGameScreen();
     }
 
     public static UiActorService getInstance() {
@@ -82,11 +80,11 @@ public class UiActorService extends ActorService {
         return instance;
     }
 
-    private void initGameScreen() {
+    public void initGameScreen() {
         RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
         ProgressEntity progressEntity = ProgressDao.getInstance().queryForId(UUID.fromString(runtimeCache.getValue(Cache.CURRENT_PROGRESS_ID)));
         String officeId = RuntimeCacheService.getInstance().getValue(Cache.CURRENT_OFFICE_ID);
-        Array<Actor> uiActors = (Array<Actor>) runtimeCache.getObject(Cache.UI_ACTORS);
+        Array<Actor> uiActors = new Array<>();
         uiActors.add(createMap(progressEntity.getCompanyEntity().getOfficeEntities().stream()
                 .filter(o -> o.getId().toString().equals(officeId)).findFirst().get()));
         uiActors.add(createBudgetLabel());
@@ -101,6 +99,7 @@ public class UiActorService extends ActorService {
         uiActors.add(createRoomsButtonsMenu());
         uiActors.add(createToggleGridButton());
         uiActors.add(createBuildNewOfficeModal());
+        runtimeCache.setObject(UI_ACTORS, uiActors);
     }
 
     private GameStandaloneLabel createBudgetLabel() {
@@ -152,7 +151,7 @@ public class UiActorService extends ActorService {
         DefaultModal modal = new DefaultModal(ROOM_INFO_MODAL.name(), "", Array.with(new GameLabel(ROOM_INFO_LABEL.name(), "", skin),
                 createDestroyRoomButton()), createCloseRoomInfoButton(), skin);
         modal.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
-        modal.toggle();
+        modal.forceToggle(false);
         return modal;
     }
 
@@ -227,7 +226,7 @@ public class UiActorService extends ActorService {
         DefaultModal modal = new DefaultModal(OFFICE_INFO_MODAL.name(), "Statistics", Array.with(new GameLabel(OFFICE_INFO_LABEL.name(), "", skin)),
                 createCloseOfficeInfoButton(), skin);
         modal.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
-        modal.toggle();
+        modal.forceToggle(false);
         return modal;
     }
 
@@ -235,7 +234,7 @@ public class UiActorService extends ActorService {
         DefaultModal modal = new DefaultModal(PEOPLE_INFO_MODAL.name(), "Staff and Residents", Array.with(new GameLabel(PEOPLE_INFO_LABEL.name(), "", skin)),
                 createClosePeopleInfoButton(), skin);
         modal.setPosition(DEFAULT_PAD, Gdx.graphics.getHeight() - DEFAULT_PAD * 3 - DEFAULT_PAD);
-        modal.toggle();
+        modal.forceToggle(false);
         return modal;
     }
 
@@ -300,7 +299,7 @@ public class UiActorService extends ActorService {
                 createCloseWorldModalButton(), skin);
         modal.setSize(modalSize.x, modalSize.y + popularity.getHeight() + DEFAULT_PAD * 3f);
         modal.setPosition(Gdx.graphics.getWidth() / 2f - modal.getWidth() / 2f, Gdx.graphics.getHeight() / 2f - modal.getHeight() / 2f);
-        modal.toggle();
+        modal.forceToggle(false);
         return modal;
     }
 
@@ -323,7 +322,7 @@ public class UiActorService extends ActorService {
                 Array.with(new NamedItemGrid(ENVIRONMENT_MODAL_ITEM_GRID.name(), getItems())), createCloseEnvironmentModalButton(), skin);
         modal.setPosition(Gdx.graphics.getWidth() - DEFAULT_PAD * 2, Gdx.graphics.getHeight() / 2f);
         modal.setSize(modal.getPrefWidth(), modal.getPrefHeight());
-        modal.toggle();
+        modal.forceToggle(false);
         return modal;
     }
 

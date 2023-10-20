@@ -58,6 +58,7 @@ public class GameScreen implements Screen {
 
     public GameScreen(Game game) {
         this.game = game;
+
     }
 
     @Override
@@ -70,6 +71,7 @@ public class GameScreen implements Screen {
         gameCache = RuntimeCacheService.getInstance();
         eventListener = CachedEventListener.getInstance();
         uiActorService = UiActorService.getInstance();
+        uiActorService.initGameScreen();
         gameStage = new GameStage(gameViewport, batch);
         uiStage = new UiStage(uiViewport, batch);
         for (Actor a : uiActorService.getUiActors()) {
@@ -83,8 +85,7 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(multiplexer);
         executor = new AsyncExecutor(1);
         AssetService.getInstance().getBgMusic().play();
-        RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-        runtimeCache.setObject(Cache.OFFICE_INFO, new OfficeInfo("Office Inc."));
+        gameCache.setObject(Cache.OFFICE_INFO, new OfficeInfo("Office Inc."));
 //        men = new Staff[1];
     }
 

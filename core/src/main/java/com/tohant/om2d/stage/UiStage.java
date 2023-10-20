@@ -3,14 +3,13 @@ package com.tohant.om2d.stage;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.tohant.om2d.command.ui.RestoreDefaultsCommand;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.cache.Cache;
 import com.tohant.om2d.command.office.UpdateBudgetCommand;
 import com.tohant.om2d.command.office.UpdateOfficeInfoCommand;
 import com.tohant.om2d.command.office.UpdateTimeCommand;
 import com.tohant.om2d.command.room.UpdateRoomInfoCommand;
-import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.command.ui.RestoreDefaultsCommand;
+import com.tohant.om2d.service.RuntimeCacheService;
+import com.tohant.om2d.storage.cache.Cache;
 
 import static com.badlogic.gdx.Input.Keys.ESCAPE;
 import static com.tohant.om2d.actor.constant.Constant.DAY_WAIT_TIME_MILLIS;
@@ -18,13 +17,11 @@ import static com.tohant.om2d.actor.constant.Constant.DAY_WAIT_TIME_MILLIS;
 public class UiStage extends AbstractStage {
 
     private final RuntimeCacheService cacheService;
-    private final UiActorService uiActorService;
     private float deltaTimestamp;
 
     public UiStage(Viewport viewport, Batch batch) {
         super(viewport, batch);
         cacheService = RuntimeCacheService.getInstance();
-        uiActorService = UiActorService.getInstance();
     }
 
     @Override

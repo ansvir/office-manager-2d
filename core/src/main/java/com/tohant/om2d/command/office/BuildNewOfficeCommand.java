@@ -35,7 +35,7 @@ public class BuildNewOfficeCommand implements Command {
         LevelEntity levelEntity = new LevelEntity(level, cells);
         OfficeEntity officeEntity = new OfficeEntity(RuntimeCacheService.getInstance().getValue(COMPANY_NAME), 0.0f, List.of(levelEntity), List.of(),
                 region);
-        ProgressEntity progressEntity = null;
+        ProgressEntity progressEntity;
         if (newGame) {
             CompanyEntity companyEntity = new CompanyEntity(RuntimeCacheService.getInstance().getValue(COMPANY_NAME), List.of(officeEntity), 2000.0f);
             CompanyDao.getInstance().create(companyEntity);
@@ -48,12 +48,14 @@ public class BuildNewOfficeCommand implements Command {
             ProgressDao.getInstance().create(progressEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_PROGRESS_ID, progressEntity.getId().toString());
         } else {
+            progressEntity = ProgressDao.getInstance()
+                    .queryForId(UUID.fromString(RuntimeCacheService.getInstance().getValue(CURRENT_PROGRESS_ID)));
+            CompanyEntity companyEntity = progressEntity.getCompanyEntity();
+            companyEntity.getOfficeEntities().add(officeEntity);
+            officeEntity.setCompanyEntity(companyEntity);
             OfficeDao.getInstance().create(officeEntity);
             levelEntity.setOfficeEntity(officeEntity);
             LevelDao.getInstance().create(levelEntity);
-            progressEntity = ProgressDao.getInstance()
-                    .queryForId(UUID.fromString(RuntimeCacheService.getInstance().getValue(CURRENT_PROGRESS_ID)));
-            progressEntity.getCompanyEntity().getOfficeEntities().add(officeEntity);
             ProgressDao.getInstance().update(progressEntity);
             RuntimeCacheService.getInstance().setValue(CURRENT_TIME, progressEntity.getTimeline());
         }
