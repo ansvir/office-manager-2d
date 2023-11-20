@@ -7,8 +7,11 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.di.annotation.Component;
+import com.tohant.om2d.service.GameActorFactory;
 import com.tohant.om2d.command.Command;
+import com.tohant.om2d.service.GameActorSearchService;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17,13 +20,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+@Component
+@RequiredArgsConstructor
 public class UpdatePeopleCommand implements Command {
+
+    private final GameActorFactory gameActorFactory;
 
     @Override
     public void execute() {
-        UiActorService uiActorService = UiActorService.getInstance();
-        Array<Actor> staff = uiActorService.getActorsByIdPrefix(UiActorService.UiComponentConstant.STAFF.name());
-        Array<Actor> cells = uiActorService.getActorsByIdPrefix(UiActorService.UiComponentConstant.CELL.name());
+        Array<Actor> staff = GameActorSearchService.getActorsByIdPrefix(gameActorFactory, GameActorFactory.UiComponentConstant.STAFF.name());
+        Array<Actor> cells = GameActorSearchService.getActorsByIdPrefix(gameActorFactory, GameActorFactory.UiComponentConstant.CELL.name());
         AtomicReference<Float> moodIndex = new AtomicReference<>(1.0f);
         AtomicReference<Float> hungerIndex = new AtomicReference<>(0.0f);
         AtomicLong cleaningAmount = new AtomicLong(0L);
@@ -84,12 +90,12 @@ public class UpdatePeopleCommand implements Command {
                     }
                     info.put(k, label.toString());
                 });
-        DefaultModal modal = (DefaultModal) uiActorService.getActorById(UiActorService.UiComponentConstant.PEOPLE_INFO_MODAL.name());
+        DefaultModal modal = (DefaultModal) GameActorSearchService.getActorById(GameActorFactory.UiComponentConstant.PEOPLE_INFO_MODAL.name());
         info.forEach((k, v) -> {
             result.append(v);
             result.append("\n");
         });
-        modal.updateContentText(UiActorService.UiComponentConstant.PEOPLE_INFO_LABEL.name(), result.toString());
+        modal.updateContentText(GameActorFactory.UiComponentConstant.PEOPLE_INFO_LABEL.name(), result.toString());
     }
 
 }

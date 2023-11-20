@@ -7,8 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.tohant.om2d.actor.ui.button.AbstractTextButton;
 import com.tohant.om2d.actor.ToggleActor;
+import com.tohant.om2d.actor.ui.button.GameTextButton;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
@@ -16,15 +16,15 @@ public abstract class AbstractPane extends Window implements ToggleActor {
 
     private boolean isCollapsed;
     private final Array<Actor> elements;
-    private final AbstractTextButton collapse;
+    private final GameTextButton collapse;
     private final Alignment alignment;
 
-    public AbstractPane(String id, Array<Actor> elements, AbstractTextButton collapse, Alignment alignment, String title, Skin skin) {
+    public AbstractPane(String id, Array<Actor> elements, Alignment alignment, String title, Skin skin) {
         super(title, skin);
         setName(id);
         isCollapsed = false;
         this.elements = elements;
-        this.collapse = collapse;
+        this.collapse = collapseButton(skin);
         this.alignment = alignment;
         getTitleTable().add(collapse).pad(DEFAULT_PAD).right();
         getTitleTable().getCells().get(0).pad(DEFAULT_PAD);
@@ -64,4 +64,9 @@ public abstract class AbstractPane extends Window implements ToggleActor {
         }
         isCollapsed = !isCollapsed;
     }
+
+    private GameTextButton collapseButton(Skin skin) {
+        return new GameTextButton("COLLAPSE_" + getName(), this::toggle, "-", skin);
+    }
+
 }

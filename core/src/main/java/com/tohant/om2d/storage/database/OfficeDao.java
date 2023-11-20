@@ -2,30 +2,19 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.tohant.om2d.di.annotation.Dao;
+import com.tohant.om2d.model.entity.LevelEntity;
 import com.tohant.om2d.model.entity.OfficeEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class OfficeDao extends BaseDaoImpl<OfficeEntity, UUID> {
 
-    private static OfficeDao instance;
-
-    public OfficeDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), OfficeEntity.class);
-    }
-
-    public static OfficeDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new OfficeDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE OFFICE DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public OfficeDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), OfficeEntity.class);
     }
 
     @Override

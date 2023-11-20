@@ -4,17 +4,23 @@ import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import com.tohant.om2d.di.annotation.Component;
+import com.tohant.om2d.di.annotation.PostConstruct;
 import com.tohant.om2d.model.entity.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.sql.SQLException;
 
+@Getter
+@Component
 public class SQLiteDatabaseHelper {
 
     private static final String DATABASE_URL = "jdbc:sqlite:data/db/om2d.db";
-    private static SQLiteDatabaseHelper instance;
     private ConnectionSource connectionSource;
 
-    private SQLiteDatabaseHelper() {
+    @PostConstruct
+    public void init() {
         try {
             if (!Gdx.files.local("data/db").exists()) {
                 Gdx.files.local("data/db").mkdirs();
@@ -31,17 +37,6 @@ public class SQLiteDatabaseHelper {
         } catch (SQLException e) {
             Gdx.app.error("DATABASE CONNECTION", "CANNOT OBTAIN DATABASE CONNECTION, CAUSE: " + e.getLocalizedMessage());
         }
-    }
-
-    public static SQLiteDatabaseHelper getInstance() {
-        if (instance == null) {
-            instance = new SQLiteDatabaseHelper();
-        }
-        return instance;
-    }
-
-    public ConnectionSource getConnectionSource() {
-        return connectionSource;
     }
 
 }

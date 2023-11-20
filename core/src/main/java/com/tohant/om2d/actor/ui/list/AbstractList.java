@@ -3,9 +3,13 @@ package com.tohant.om2d.actor.ui.list;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Array;
+import lombok.Getter;
+import lombok.Setter;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
+@Getter
+@Setter
 public abstract class AbstractList extends Table {
 
     private final Array<Actor> elements;
@@ -26,10 +30,6 @@ public abstract class AbstractList extends Table {
 
     public Actor getCurrent() {
         return this.elements.get(this.selected);
-    }
-
-    public Array<Actor> getElements() {
-        return elements;
     }
 
     public void select(Actor component) {

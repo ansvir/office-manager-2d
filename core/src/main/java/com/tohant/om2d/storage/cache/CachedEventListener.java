@@ -3,41 +3,41 @@ package com.tohant.om2d.storage.cache;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncResult;
 import com.badlogic.gdx.utils.async.AsyncTask;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.tohant.om2d.di.annotation.Component;
+import com.tohant.om2d.di.annotation.PostConstruct;
 import com.tohant.om2d.model.task.CacheEventTask;
 import com.tohant.om2d.service.CacheSnapshotService;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 import java.util.function.Consumer;
 
+@Component
+@RequiredArgsConstructor
 public class CachedEventListener implements AsyncTask<Boolean> {
 
-    private static CachedEventListener instance;
+    private final GameCache gameCache;
     private volatile boolean isFinished;
     private volatile boolean isConsumed;
     private volatile boolean isPosted;
-    private final AsyncExecutor executor;
+    private AsyncExecutor executor;
     private AsyncResult<Map<String, ?>> result;
 
-    private CachedEventListener() {
+    @PostConstruct
+    public void init() {
         executor = new AsyncExecutor(1);
-    }
-
-    public static CachedEventListener getInstance() {
-        if (instance == null) {
-            instance = new CachedEventListener();
-        }
-        return instance;
     }
 
     public synchronized void post() {
         if (result == null) {
-            result = executor.submit(new CacheEventTask());
+            result = executor.submit(new CacheEventTask(gameCache.getCache().asMap()));
         } else {
             if (!isConsumed) {
                 consume();
                 if (result.isDone()) {
                     result.get();
-                    result = executor.submit(new CacheEventTask());
+                    result = executor.submit(new CacheEventTask(gameCache.getCache().asMap()));
                 }
             }
         }

@@ -1,16 +1,24 @@
 package com.tohant.om2d.command.ui;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.tohant.om2d.actor.ToggleActor;
 import com.tohant.om2d.command.Command;
+import com.tohant.om2d.di.annotation.Component;
 import com.tohant.om2d.model.entity.LevelEntity;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.service.GameActorFactory;
+import com.tohant.om2d.service.GameActorSearchService;
+import com.tohant.om2d.storage.cache.GameCache;
 import com.tohant.om2d.storage.database.LevelDao;
+import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
+@Component
+@RequiredArgsConstructor
 public class ToggleGridCommand implements Command {
+
+    private final GameCache gameCache;
+    private final GameActorFactory gameActorService;
+    private final LevelDao levelDao;
 
     @Override
     public void execute() {
@@ -18,11 +26,8 @@ public class ToggleGridCommand implements Command {
     }
 
     private void toggleGrid() {
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        LevelEntity levelEntity = LevelDao.getInstance().queryForId(UUID.fromString(cache.getValue(Cache.CURRENT_LEVEL_ID)));
-        Actor grid = uiActorService.getActorById(levelEntity.getId().toString());
-        new ToggleCommand(grid.getName()).execute();
+        LevelEntity levelEntity = levelDao.queryForId(UUID.fromString(gameCache.getValue(GameCache.CURRENT_LEVEL_ID)));
+        ((ToggleActor) GameActorSearchService.getActorById(levelEntity.getId().toString())).toggle();
     }
 
 }

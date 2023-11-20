@@ -1,10 +1,12 @@
 package com.tohant.om2d.model.task;
 
 import com.badlogic.gdx.utils.async.AsyncTask;
+import lombok.Getter;
 
 import java.util.UUID;
 import java.util.function.Predicate;
 
+@Getter
 public class TimeLineTask<T> implements AsyncTask<T> {
 
     private final String id;
@@ -121,35 +123,12 @@ public class TimeLineTask<T> implements AsyncTask<T> {
         return result.toString();
     }
 
-    public boolean isFinished() {
-        return isFinished;
-    }
-
     public void forceFinish() {
         this.isFinished = true;
-    }
-
-    public TimeLineDate getDate() {
-        return date;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public long getWaitTime() {
-        return this.waitTime;
-    }
-
-    public long getPrevTime() {
-        return this.prevTime;
-    }
-
-    public long getTime() {
-        return this.time;
     }
 
     public boolean isTimeUpdated() {
         return this.prevTime - this.time >= this.waitTime;
     }
+
 }

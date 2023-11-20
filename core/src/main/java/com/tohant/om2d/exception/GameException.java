@@ -1,5 +1,9 @@
 package com.tohant.om2d.exception;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
 public class GameException extends RuntimeException {
 
     private final Code code;
@@ -9,10 +13,8 @@ public class GameException extends RuntimeException {
         this.code = code;
     }
 
-    public Code getCode() {
-        return code;
-    }
-
+    @Getter
+    @AllArgsConstructor
     public enum Code {
         E000("Room must be destroyed before!", Type.WARNING),
         E100("Room can be placed only next to hall!", Type.WARNING),
@@ -26,33 +28,14 @@ public class GameException extends RuntimeException {
         private final String message;
         private final Type type;
 
-        Code(String message, Type type) {
-            this.message = message;
-            this.type = type;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Type getType() {
-            return type;
-        }
-
     }
 
+    @Getter
+    @AllArgsConstructor
     public enum Type {
         WARNING("Warning!"), HELP("Help");
 
         private final String title;
-
-        Type(String title) {
-            this.title = title;
-        }
-
-        public String getTitle() {
-            return title;
-        }
 
     }
 

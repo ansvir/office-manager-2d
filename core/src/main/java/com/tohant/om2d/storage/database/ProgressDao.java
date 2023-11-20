@@ -2,30 +2,20 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.tohant.om2d.di.annotation.Dao;
+import com.tohant.om2d.model.entity.LevelEntity;
+import com.tohant.om2d.model.entity.OfficeEntity;
 import com.tohant.om2d.model.entity.ProgressEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class ProgressDao extends BaseDaoImpl<ProgressEntity, UUID> {
 
-    private static ProgressDao instance;
-
-    public ProgressDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), ProgressEntity.class);
-    }
-
-    public static ProgressDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new ProgressDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE PROGRESS DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public ProgressDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), ProgressEntity.class);
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.tohant.om2d.model.Region;
-import com.tohant.om2d.service.ServiceUtil;
+import com.tohant.om2d.service.CommonService;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -116,7 +116,7 @@ public class OfficeEntity implements Serializable {
     }
 
     public static OfficeEntity createEmpty(Region region) {
-        return new OfficeEntity(ServiceUtil.buildRandomCompanyName(), 0.0f,
+        return new OfficeEntity(CommonService.buildRandomCompanyName(), 0.0f,
                 List.of(LevelEntity.createEmpty()), List.of(), region);
     }
 }

@@ -3,6 +3,8 @@ package com.tohant.om2d.model.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -14,6 +16,8 @@ import java.util.stream.IntStream;
 import static com.tohant.om2d.actor.constant.Constant.GRID_HEIGHT;
 import static com.tohant.om2d.actor.constant.Constant.GRID_WIDTH;
 
+@Getter
+@Setter
 @DatabaseTable(tableName = "LEVEL")
 public class LevelEntity implements Serializable {
 
@@ -39,42 +43,6 @@ public class LevelEntity implements Serializable {
 
     public LevelEntity() {
         // serialization constructor
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public long getLevel() {
-        return level;
-    }
-
-    public void setLevel(long level) {
-        this.level = level;
-    }
-
-    public Collection<CellEntity> getCellEntities() {
-        return cellEntities;
-    }
-
-    public void setCellEntities(List<CellEntity> cellEntities) {
-        this.cellEntities = cellEntities;
-    }
-
-    public void setCellEntities(Collection<CellEntity> cellEntities) {
-        this.cellEntities = cellEntities;
-    }
-
-    public OfficeEntity getOfficeEntity() {
-        return officeEntity;
-    }
-
-    public void setOfficeEntity(OfficeEntity officeEntity) {
-        this.officeEntity = officeEntity;
     }
 
     public static LevelEntity createEmpty() {

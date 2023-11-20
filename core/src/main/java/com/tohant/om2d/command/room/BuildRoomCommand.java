@@ -4,11 +4,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.utils.Array;
 import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.Grid;
+import com.tohant.om2d.actor.ToggleActor;
 import com.tohant.om2d.actor.man.*;
 import com.tohant.om2d.actor.room.*;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
 import com.tohant.om2d.command.Command;
-import com.tohant.om2d.command.ui.ForceToggleCommand;
+import com.tohant.om2d.di.annotation.Component;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.model.entity.CellEntity;
 import com.tohant.om2d.model.entity.LevelEntity;
@@ -16,14 +17,12 @@ import com.tohant.om2d.model.office.CompanyInfo;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.model.task.TimeLineDate;
-import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.service.AsyncRoomBuildService;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.service.*;
+import com.tohant.om2d.storage.cache.GameCache;
 import com.tohant.om2d.storage.database.CellDao;
 import com.tohant.om2d.storage.database.LevelDao;
 import com.tohant.om2d.util.AssetsUtil;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,42 +32,45 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
-import static com.tohant.om2d.service.ServiceUtil.*;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROOM_INFO_MODAL;
+import static com.tohant.om2d.service.CommonService.*;
+import static com.tohant.om2d.service.GameActorFactory.UiComponentConstant.ROOM_INFO_MODAL;
+import static com.tohant.om2d.storage.cache.GameCache.*;
 
+@Component
+@RequiredArgsConstructor
 public class BuildRoomCommand implements Command {
-
-    private final Cell cell;
-
-    public BuildRoomCommand(Cell cell) {
-        this.cell = cell;
-    }
+    
+    private final GameCache gameCache;
+    private final CellDao cellDao;
+    private final LevelDao levelDao;
+    private final GameActorSearchService gameActorSearchService;
+    private final CommonService commonService;
+    private final AsyncRoomBuildService asyncRoomBuildService;
 
     @Override
     public void execute() {
-        CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
+        String cellId = gameCache.getValue(CURRENT_CELL);
+        Cell cell = (Cell) gameActorSearchService.getActorById(cellId);
+        CellEntity cellEntity = cellDao.queryForId(UUID.fromString(cellId));
         if (cellEntity.getRoomEntity() != null) {
             throw new GameException(GameException.Code.E000);
         }
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        LevelEntity levelEntity = LevelDao.getInstance()
-                .queryForId(UUID.fromString(cache.getValue(Cache.CURRENT_LEVEL_ID)));
+        LevelEntity levelEntity = levelDao.queryForId(UUID.fromString(gameCache.getValue(CURRENT_LEVEL_ID)));
         String gridId = levelEntity.getId().toString();
-        Grid grid = (Grid) uiActorService.getActorById(gridId);
-        DefaultModal roomInfoModal = (DefaultModal) uiActorService.getActorById(ROOM_INFO_MODAL.name());
+        Grid grid = (Grid) gameActorSearchService.getActorById(gridId);
+        DefaultModal roomInfoModal = (DefaultModal) gameActorSearchService.getActorById(ROOM_INFO_MODAL.name());
         Room nextRoom = null;
-        Room.Type nextType = getCurrentRoomType();
+        Room.Type nextType = commonService.getCurrentRoomType();
         if (nextType != null) {
             float price = 0.0f;
             float cost = 0.0f;
             AtomicReference<Float> salaries = new AtomicReference<>(0.0f);
             if (checkNoCellOnGrid(grid.getChildren()) && nextType != Room.Type.HALL) {
                 throw new GameException(GameException.Code.E200);
-            } else if (nextType != Room.Type.HALL && nextToHalls(cell) < 1) {
+            } else if (nextType != Room.Type.HALL && commonService.nextToHalls(cell, gameActorSearchService) < 1) {
                 throw new GameException(GameException.Code.E100);
             }
-            float budget = cache.getFloat(Cache.CURRENT_BUDGET);
+            float budget = gameCache.getFloat(CURRENT_BUDGET);
             if (budget >= price) {
                 switch (nextType) {
                     case HALL: {
@@ -142,19 +144,19 @@ public class BuildRoomCommand implements Command {
                         break;
                     }
                 }
-                cache.setFloat(Cache.CURRENT_BUDGET, budget - price);
-                cache.setFloat(Cache.TOTAL_COSTS, cache.getFloat(Cache.TOTAL_COSTS) + cost);
-                setRoomsAmountByType(nextRoom.getType(), getRoomsAmountByType(nextRoom.getType()) + 1L);
+                gameCache.setFloat(CURRENT_BUDGET, budget - price);
+                gameCache.setFloat(TOTAL_COSTS, gameCache.getFloat(TOTAL_COSTS) + cost);
+                commonService.setRoomsAmountByType(nextRoom.getType(),
+                        commonService.getRoomsAmountByType(nextRoom.getType()) + 1L);
                 buildRoom(cell, nextRoom);
-                new ForceToggleCommand(roomInfoModal.getName(), true).execute();
-                cache.setValue(Cache.CURRENT_CELL, cell.getName());
-                AssetService.getInstance().getConstructionSound().play();
+                ((ToggleActor) gameActorSearchService.getActorById(roomInfoModal.getName())).forceToggle(true);
+                gameCache.setValue(CURRENT_CELL, cell.getName());
+                AssetService.CONSTRUCTION_SOUND.play();
             }
         }
     }
 
     public void buildRoom(Cell cell, Room room) {
-        AsyncRoomBuildService roomBuildService = AsyncRoomBuildService.getInstance();
         ProgressBar buildStatus = new ProgressBar(0, room.getRoomInfo().getBuildTime().getDays(),
                 1f, false, AssetsUtil.getDefaultSkin());
         buildStatus.setWidth(cell.getWidth() - DEFAULT_PAD / 2f);
@@ -163,8 +165,8 @@ public class BuildRoomCommand implements Command {
         cell.addActor(room);
         cell.addActor(buildStatus);
         cell.setEmpty(false);
-        ((Array<RoomBuildingModel>) RuntimeCacheService.getInstance().getObject(Cache.BUILD_TASKS))
-                .add(roomBuildService.submitBuild(cell, room));
+        ((Array<RoomBuildingModel>) gameCache.getObject(BUILD_TASKS))
+                .add(asyncRoomBuildService.submitBuild(cell, room));
     }
 
 }

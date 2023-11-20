@@ -15,35 +15,36 @@ import com.tohant.om2d.actor.environment.Road;
 import com.tohant.om2d.model.RoadType;
 import com.tohant.om2d.model.task.TimeLineTask;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.service.GameActorFactory;
+import com.tohant.om2d.service.GameActorSearchService;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tohant.om2d.actor.constant.Constant.*;
 import static com.tohant.om2d.actor.environment.Car.Type.Direction.BOTTOM;
 import static com.tohant.om2d.actor.environment.Car.Type.Direction.TOP;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.CAR;
-import static com.tohant.om2d.service.UiActorService.UiComponentConstant.ROAD;
+import static com.tohant.om2d.service.GameActorFactory.UiComponentConstant.CAR;
+import static com.tohant.om2d.service.GameActorFactory.UiComponentConstant.ROAD;
 
 public class Background extends Group {
-    
-    private final AssetService assetService;
+
     private final Array<Road> roads;
     private final Array<Car> cars;
     private final TimeLineTask<Boolean> backgroundTimeline;
     private final AsyncExecutor executor;
     private float timePassed;
+    private final GameActorSearchService gameActorSearchService;
 
-    public Background(String id, float width, float height) {
+    public Background(String id, float width, float height, GameActorSearchService gameActorSearchService) {
         setName(id);
         setSize(width, height);
-        this.assetService = AssetService.getInstance();
         roads = new Array<>();
         cars = new Array<>();
         createRoads();
         backgroundTimeline = new TimeLineTask<>(DAY_WAIT_TIME_MILLIS / 2L, () -> {}, true);
         executor = new AsyncExecutor(1);
         executor.submit(backgroundTimeline);
+        this.gameActorSearchService = gameActorSearchService;
     }
 
     @Override
@@ -55,10 +56,10 @@ public class Background extends Group {
             timePassed += Gdx.graphics.getDeltaTime();
         }
         updateCars();
-        Texture bg = assetService.getBackground();
+        Texture bg = AssetService.BACKGROUND;
         if (bg == null) {
             bg = createBackground();
-            assetService.setBackground(bg);
+            AssetService.BACKGROUND = bg;
         }
         batch.draw(bg, getX(), getY());
         for (int i = 0; i < roads.size; i++) {
@@ -72,8 +73,8 @@ public class Background extends Group {
     private Texture createBackground() {
         int width = Math.round(getWidth() / CELL_SIZE);
         int height = Math.round(getHeight() / CELL_SIZE);
-        Texture grass1 = assetService.getGrass1Texture();
-        Texture grass2 = assetService.getGrass2Texture();
+        Texture grass1 = AssetService.GRASS1;
+        Texture grass2 = AssetService.GRASS2;
         Pixmap grassBackground = new Pixmap((int) getWidth(), (int) getHeight(), Pixmap.Format.RGBA8888);
         Pixmap grassPixmap = null;
         for (int i = 0; i < width; i++) {
@@ -146,8 +147,7 @@ public class Background extends Group {
             getChildren().removeAll(carsToRemove, false);
         }
         trySpawnCar();
-        UiActorService uiActorService = UiActorService.getInstance();
-        Array<Actor> actors = uiActorService.getActorsByIdPrefix(CAR.name());
+        Array<Actor> actors = gameActorSearchService.getActorsByIdPrefix(CAR.name());
         actors.forEach(a -> {
             if (a instanceof Car) {
                 if (((Car) a).getDirection() == BOTTOM && a.getY() > -a.getHeight()) {

@@ -1,39 +1,45 @@
 package com.tohant.om2d.command.room;
 
 import com.tohant.om2d.actor.Cell;
+import com.tohant.om2d.actor.ToggleActor;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.Command;
-import com.tohant.om2d.command.ui.ForceToggleCommand;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.ServiceUtil;
-import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.di.annotation.Component;
+import com.tohant.om2d.service.CommonService;
+import com.tohant.om2d.service.GameActorFactory;
+import com.tohant.om2d.service.GameActorSearchService;
+import com.tohant.om2d.storage.cache.GameCache;
+import lombok.RequiredArgsConstructor;
 
+import static com.tohant.om2d.storage.cache.GameCache.CURRENT_CELL;
+
+@Component
+@RequiredArgsConstructor
 public class ChooseRoomCommand implements Command {
 
-    private final String cellId;
-
-    public ChooseRoomCommand(String cellId) {
-        this.cellId = cellId;
-    }
+    private final GameCache gameCache;
+    private final GameActorFactory gameActorFactory;
+    private final CommonService commonService;
+    private final BuildRoomCommand buildRoomCommand;
 
     @Override
     public void execute() {
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        Cell cell = (Cell) UiActorService.getInstance().getActorById(cellId);
-        Room.Type nextType = ServiceUtil.getCurrentRoomType();
+        Cell cell = (Cell) GameActorSearchService.getActorById(gameCache.getValue(CURRENT_CELL));
+        Room.Type nextType = commonService.getCurrentRoomType();
         if (cell.isEmpty() && nextType != null) {
-            BuildRoomCommand buildRoomCommand = new BuildRoomCommand(cell);
             buildRoomCommand.execute();
-            cache.setValue(Cache.CURRENT_CELL, cellId);
-            new ForceToggleCommand(UiActorService.UiComponentConstant.ROOM_INFO_MODAL.name(), true).execute();
-            cache.setValue(Cache.CURRENT_ROOM_TYPE, null);
+            gameCache.setValue(CURRENT_CELL, cell.getName());
+            ((ToggleActor) GameActorSearchService.getActorById(GameActorFactory.UiComponentConstant.ROOM_INFO_MODAL.name()))
+                    .forceToggle(true);
+            gameCache.setValue(GameCache.CURRENT_ROOM_TYPE, null);
         } else if (!cell.isEmpty()) {
-            cache.setValue(Cache.CURRENT_CELL, cellId);
-            new ForceToggleCommand(UiActorService.UiComponentConstant.ROOM_INFO_MODAL.name(), true).execute();
-        } else if (nextType == null) {
-            cache.setValue(Cache.CURRENT_CELL, null);
-            new ForceToggleCommand(UiActorService.UiComponentConstant.ROOM_INFO_MODAL.name(), false).execute();
+            gameCache.setValue(CURRENT_CELL, cell.getName());
+            ((ToggleActor) GameActorSearchService.getActorById(GameActorFactory.UiComponentConstant.ROOM_INFO_MODAL.name()))
+                    .forceToggle(true);
+        } else {
+            gameCache.setValue(CURRENT_CELL, null);
+            ((ToggleActor) GameActorSearchService.getActorById(GameActorFactory.UiComponentConstant.ROOM_INFO_MODAL.name()))
+                    .forceToggle(false);
         }
     }
 

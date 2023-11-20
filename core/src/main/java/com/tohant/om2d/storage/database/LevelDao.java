@@ -2,32 +2,18 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
-import com.tohant.om2d.model.entity.CellEntity;
+import com.tohant.om2d.di.annotation.Dao;
 import com.tohant.om2d.model.entity.LevelEntity;
-import com.tohant.om2d.model.entity.ProgressEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class LevelDao extends BaseDaoImpl<LevelEntity, UUID> {
 
-    private static LevelDao instance;
-
-    public LevelDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), LevelEntity.class);
-    }
-
-    public static LevelDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new LevelDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE LEVEL DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public LevelDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), LevelEntity.class);
     }
 
     @Override

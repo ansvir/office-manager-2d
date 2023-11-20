@@ -2,6 +2,8 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.tohant.om2d.di.annotation.Dao;
+import com.tohant.om2d.model.entity.OfficeEntity;
 import com.tohant.om2d.model.entity.WorkerEntity;
 
 import java.sql.SQLException;
@@ -9,24 +11,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class WorkerDao extends BaseDaoImpl<WorkerEntity, UUID> {
 
-    private static WorkerDao instance;
-
-    public WorkerDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), WorkerEntity.class);
-    }
-
-    public static WorkerDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new WorkerDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE WORKER DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public WorkerDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), WorkerEntity.class);
     }
 
     @Override

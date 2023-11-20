@@ -2,30 +2,22 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.j256.ormlite.support.ConnectionSource;
+import com.tohant.om2d.di.annotation.Dao;
+import com.tohant.om2d.di.annotation.PostConstruct;
 import com.tohant.om2d.model.entity.CompanyEntity;
+import com.tohant.om2d.model.entity.LevelEntity;
+import lombok.RequiredArgsConstructor;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class CompanyDao extends BaseDaoImpl<CompanyEntity, UUID> {
 
-    private static CompanyDao instance;
-
-    public CompanyDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), CompanyEntity.class);
-    }
-
-    public static CompanyDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new CompanyDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE COMPANY DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public CompanyDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), CompanyEntity.class);
     }
 
     @Override

@@ -5,9 +5,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.model.RoadType;
 import com.tohant.om2d.service.AssetService;
+import lombok.Getter;
+import lombok.Setter;
 
 import static com.tohant.om2d.actor.constant.Constant.TEXTURE_SIZE;
 
+@Getter
+@Setter
 public class Road extends Actor {
 
     private RoadType type;
@@ -19,30 +23,22 @@ public class Road extends Actor {
         setSize(TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
-    public RoadType getType() {
-        return type;
-    }
-
-    public void setType(RoadType type) {
-        this.type = type;
-    }
-
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         batch.draw(getRoadTypeTexture(this.type), getX(), getY());
     }
 
-    private static TextureRegion getRoadTypeTexture(RoadType type) {
-        AssetService assetService = AssetService.getInstance();
+    private TextureRegion getRoadTypeTexture(RoadType type) {
         TextureRegion texture = null;
         switch (type) {
-            case RIGHT: texture = assetService.getVRRoadTexture(); break;
-            case LEFT: texture = assetService.getVLRoadTexture(); break;
-            case TOP: texture = assetService.getHURoadTexture(); break;
-            case BOTTOM: texture = assetService.getHDRoadTexture(); break;
-            case EMPTY: texture = assetService.getEmptyRoadTexture(); break;
+            case RIGHT: texture = AssetService.VR_ROAD; break;
+            case LEFT: texture = AssetService.VL_ROAD; break;
+            case TOP: texture = AssetService.HU_ROAD; break;
+            case BOTTOM: texture = AssetService.HD_ROAD; break;
+            case EMPTY: texture = AssetService.EMPTY_ROAD; break;
         }
         return texture;
     }
+
 }

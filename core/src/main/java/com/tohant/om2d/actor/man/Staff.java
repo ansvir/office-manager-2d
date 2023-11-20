@@ -8,13 +8,18 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.tohant.om2d.actor.ObjectCell;
 import com.tohant.om2d.model.man.ManInfo;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.service.UiActorService;
+import com.tohant.om2d.service.GameActorFactory;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.tohant.om2d.service.ServiceUtil.*;
+import static com.tohant.om2d.service.CommonService.*;
 
+@Getter
+@Setter
 public abstract class Staff extends Actor {
 
     private static final float speed = 1.0f;
@@ -37,7 +42,7 @@ public abstract class Staff extends Actor {
         this.salary = salary;
         this.pathsQueue = new ConcurrentLinkedQueue<>();
         this.currentPath = null;
-        this.texture = AssetService.getInstance().getManStandTexture();
+        this.texture = AssetService.MAN_STAND;
         debug();
     }
 
@@ -64,12 +69,10 @@ public abstract class Staff extends Actor {
         batch.draw(texture, getX(), getY());
     }
 
-    public void addPath(ObjectCell source, ObjectCell destination) {
-        this.pathsQueue.add(findPath(source, destination));
-    }
-
     public abstract Type getType();
 
+    @Getter
+    @RequiredArgsConstructor
     public enum Type {
         SECURITY(1200.0f),
         WORKER(0.0f),
@@ -79,81 +82,6 @@ public abstract class Staff extends Actor {
 
         private final float salary;
 
-        Type(float salary) {
-            this.salary = salary;
-        }
-
-        public float getSalary() {
-            return salary;
-        }
-
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public float getSalary() {
-        return salary;
-    }
-
-    public void setSalary(float salary) {
-        this.salary = salary;
-    }
-
-    private List<ObjectCell> findPath(ObjectCell source, ObjectCell destination) {
-
-        if (source == null || destination == null) {
-            return null;
-        }
-
-        Queue<ObjectCell> queue = new LinkedList<>();
-        Set<ObjectCell> visited = new HashSet<>();
-        Map<ObjectCell, ObjectCell> parents = new HashMap<>();
-
-        queue.offer(source);
-        visited.add(source);
-
-        while (!queue.isEmpty()) {
-            ObjectCell currentCell = queue.poll();
-
-            if (currentCell == destination) {
-                List<ObjectCell> path = new ArrayList<>();
-                ObjectCell position = destination;
-                while (position != source) {
-                    path.add(position);
-                    position = parents.get(position);
-                }
-                path.add(source);
-                Collections.reverse(path);
-                return path;
-            }
-
-            for (int[] direction : DIRECTIONS) {
-                ObjectCell neighborCell = getNeighborObjectCell(currentCell, direction);
-
-                if (neighborCell != null && !visited.contains(neighborCell) && !neighborCell.isObstacle()) {
-                    queue.offer(neighborCell);
-                    visited.add(neighborCell);
-                    parents.put(neighborCell, currentCell);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private ObjectCell getNeighborObjectCell(ObjectCell cell, int[] direction) {
-        Vector2 cellCoords = getObjectCellCoordinates(cell);
-        String cellId = getObjectCellCellName(cell);
-        int newRow = (int) cellCoords.x + direction[0];
-        int newColumn = (int) cellCoords.y + direction[1];
-        String neighborObjectCellId = getObjectCellActorId(newRow, newColumn, cellId);
-        return (ObjectCell) UiActorService.getInstance().getActorById(neighborObjectCellId);
-    }
-
-    public ManInfo getManInfo() {
-        return manInfo;
     }
 
 }

@@ -2,30 +2,19 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.tohant.om2d.di.annotation.Dao;
+import com.tohant.om2d.model.entity.OfficeEntity;
 import com.tohant.om2d.model.entity.RoomEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class RoomDao extends BaseDaoImpl<RoomEntity, UUID> {
 
-    private static RoomDao instance;
-
-    public RoomDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), RoomEntity.class);
-    }
-
-    public static RoomDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new RoomDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE OFFICE DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public RoomDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), RoomEntity.class);
     }
 
     @Override

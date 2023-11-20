@@ -1,24 +1,20 @@
 package com.tohant.om2d.actor.ui.modal;
 
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.tohant.om2d.actor.ToggleActor;
-import com.tohant.om2d.actor.ui.button.AbstractTextButton;
+import com.tohant.om2d.actor.ui.button.GameTextButton;
 
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
 
 public abstract class AbstractModal extends Window implements ToggleActor {
 
-    protected static final String CONTENT_NAME = "CONTENT";
-    protected static final String ACTOR_N = "ACTOR#%s";
-
-    public AbstractModal(String id, String title, AbstractTextButton close, Skin skin) {
+    public AbstractModal(String id, String title, Skin skin) {
         super(title, skin);
         setName(id);
         getTitleTable().getCells().get(0).pad(DEFAULT_PAD);
-        getTitleTable().add(close).right();
+        getTitleTable().add(closeButton(skin)).right();
         setResizable(false);
         setMovable(true);
         /*if (modalData.getPosition() != null) {
@@ -50,26 +46,8 @@ public abstract class AbstractModal extends Window implements ToggleActor {
         setSize(getPrefWidth(), getPrefHeight());
     }
 
-    public void setModalData(ModalData modalData) {
-        getTitleLabel().setText(modalData.getTitle());
-//        updateContentText(modalData.getText());
-        updateActors(modalData);
-        this.setSize(getPrefWidth(), getPrefHeight());
-    }
-
-    public void updatePosition(Vector2 position) {
-        this.setPosition(position.x, position.y);
-    }
-
-    private void updateActors(ModalData modalData) {
-        for (int i = 0; i < modalData.getActors().size; i++) {
-            int iCopy = i;
-            getCells().forEach(c -> {
-                if (c.getActor() != null && c.getActor().getName() != null && c.getActor().getName().equals(String.format(ACTOR_N, iCopy))) {
-                    c.setActor(modalData.getActors().get(iCopy));
-                }
-            });
-        }
+    private GameTextButton closeButton(Skin skin) {
+        return new GameTextButton(getName() + "_CLOSE_BUTTON", () -> forceToggle(false), "X", skin);
     }
 
 }

@@ -7,7 +7,7 @@ import com.tohant.om2d.actor.Grid;
 import com.tohant.om2d.actor.man.Staff;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.command.Command;
-import com.tohant.om2d.command.ui.ForceToggleCommand;
+import com.tohant.om2d.di.annotation.Component;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.model.entity.CellEntity;
 import com.tohant.om2d.model.entity.ResidentEntity;
@@ -15,29 +15,39 @@ import com.tohant.om2d.model.entity.RoomEntity;
 import com.tohant.om2d.model.entity.WorkerEntity;
 import com.tohant.om2d.model.task.RoomBuildingModel;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.service.CommonService;
+import com.tohant.om2d.service.GameActorFactory;
+import com.tohant.om2d.service.GameActorSearchService;
+import com.tohant.om2d.storage.cache.GameCache;
 import com.tohant.om2d.storage.database.CellDao;
 import com.tohant.om2d.storage.database.ResidentDao;
 import com.tohant.om2d.storage.database.RoomDao;
 import com.tohant.om2d.storage.database.WorkerDao;
+import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static com.tohant.om2d.actor.constant.Constant.CELL_SIZE;
-import static com.tohant.om2d.service.ServiceUtil.*;
+import static com.tohant.om2d.storage.cache.GameCache.CURRENT_CELL;
 
+@Component
+@RequiredArgsConstructor
 public class DestroyRoomCommand implements Command {
 
+    private final GameActorFactory gameActorFactory;
+    private final GameActorSearchService gameActorSearchService;
+    private final GameCache gameCache;
+    private final CellDao cellDao;
+    private final CommonService commonService;
+    private final WorkerDao workerDao;
+    private final RoomDao roomDao;
+    private final ResidentDao residentDao;
+    
     @Override
     public void execute() {
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cache = RuntimeCacheService.getInstance();
-        String cellId = cache.getValue(Cache.CURRENT_CELL);
-        Cell currentCell = (Cell) uiActorService.getActorById(cellId);
+        String cellId = gameCache.getValue(CURRENT_CELL);
+        Cell currentCell = (Cell) gameActorSearchService.getActorById(cellId);
         if (currentCell != null && !currentCell.isEmpty()) {
             AtomicReference<Room> roomAtomic = new AtomicReference<>();
             Array<Actor> children = currentCell.getChildren();
@@ -49,7 +59,7 @@ public class DestroyRoomCommand implements Command {
             Room room = roomAtomic.get();
             if (room != null) {
                 if (room.getType() == Room.Type.HALL &&
-                        checkHallNextToRoomThatHasNoOtherHalls(currentCell)) {
+                        commonService.checkHallNextToRoomThatHasNoOtherHalls(currentCell, gameActorSearchService)) {
                     throw new GameException(GameException.Code.E300);
                 }
                 Staff.Type currentStaffType = null;
@@ -67,21 +77,21 @@ public class DestroyRoomCommand implements Command {
                         currentStaffTypeSalary = Staff.Type.CLEANING.getSalary();
                         break;
                 }
-                cache.setFloat(Cache.TOTAL_COSTS, cache.getFloat(Cache.TOTAL_COSTS) - room.getRoomInfo().getCost());
+                gameCache.setFloat(GameCache.TOTAL_COSTS, gameCache.getFloat(GameCache.TOTAL_COSTS) - room.getRoomInfo().getCost());
                 if (room.getType() == Room.Type.OFFICE) {
-                    cache.setFloat(Cache.TOTAL_INCOMES, cache.getFloat(Cache.TOTAL_INCOMES) - 100.0f
+                    gameCache.setFloat(GameCache.TOTAL_INCOMES, gameCache.getFloat(GameCache.TOTAL_INCOMES) - 100.0f
                             * room.getRoomInfo().getStaff().size);
                 }
                 if (currentStaffType != null) {
-                    setEmployeesAmountByType(currentStaffType,
-                            getEmployeesAmountByType(currentStaffType)
+                    commonService.setEmployeesAmountByType(currentStaffType,
+                            commonService.getEmployeesAmountByType(currentStaffType)
                                     - room.getRoomInfo().getStaff().size);
                 }
-                cache.setFloat(Cache.TOTAL_SALARIES, cache.getFloat(Cache.TOTAL_SALARIES)
+                gameCache.setFloat(GameCache.TOTAL_SALARIES, gameCache.getFloat(GameCache.TOTAL_SALARIES)
                         - room.getRoomInfo().getStaff().size * currentStaffTypeSalary);
-                setRoomsAmountByType(room.getType(),
-                        getRoomsAmountByType(room.getType()) - 1L);
-                Array<RoomBuildingModel> buildingModels = (Array<RoomBuildingModel>) cache.getObject(Cache.BUILD_TASKS);
+                commonService.setRoomsAmountByType(room.getType(),
+                        commonService.getRoomsAmountByType(room.getType()) - 1L);
+                Array<RoomBuildingModel> buildingModels = (Array<RoomBuildingModel>) gameCache.getObject(GameCache.BUILD_TASKS);
                 AtomicReference<RoomBuildingModel> buildingModelAtomic = new AtomicReference<>();
                 for (int i = 0; i < buildingModels.size; i++) {
                     RoomBuildingModel b = buildingModels.get(i);
@@ -93,58 +103,40 @@ public class DestroyRoomCommand implements Command {
                 if (buildingModel != null) {
                     if (!buildingModel.getTimeLineTask().isFinished()) {
                         buildingModels.removeValue(buildingModel, false);
-                        destroyBuildingRoom(currentCell);
+                        destroyExistingRoom(currentCell);
                     }
                 } else {
                     destroyRoom(currentCell, room);
                 }
             }
-            cache.setValue(Cache.CURRENT_CELL, null);
-            new ForceToggleCommand(UiActorService.UiComponentConstant.ROOM_INFO_MODAL.name(), false).execute();
-            AssetService.getInstance().getDemolishSound().play();
+            gameCache.setValue(CURRENT_CELL, null);
+            AssetService.DEMOLISH_SOUND.play();
         }
     }
 
     private void destroyRoom(Cell cell, Room room) {
-        RoomEntity roomEntity = RoomDao.getInstance().queryForId(UUID.fromString(room.getName()));
-        WorkerDao.getInstance().deleteIds(roomEntity.getWorkerEntities().stream().map(WorkerEntity::getId)
+        RoomEntity roomEntity = roomDao.queryForId(UUID.fromString(room.getName()));
+        workerDao.deleteIds(roomEntity.getWorkerEntities().stream().map(WorkerEntity::getId)
                 .collect(Collectors.toList()));
-        RoomDao.getInstance().deleteById(roomEntity.getId());
-        CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
+        roomDao.deleteById(roomEntity.getId());
         if (room.getType() == Room.Type.OFFICE) {
             ResidentEntity residentEntity = roomEntity.getResidentEntity();
-            ResidentDao.getInstance().deleteById(residentEntity.getId());
+            residentDao.deleteById(residentEntity.getId());
         }
-        cellEntity.setRoomEntity(null);
-        cellEntity.setItems(null);
-        CellDao.getInstance().update(cellEntity);
-        Cell newCell = new Cell(cellEntity.getId().toString(),
-                new ChooseRoomCommand(cellEntity.getId().toString()), cellEntity.getX() * CELL_SIZE,
-                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);
-        Grid grid = (Grid) UiActorService.getInstance().getActorById(RuntimeCacheService.getInstance().getValue(Cache.CURRENT_LEVEL_ID));
-        Array<Actor> gridChildren = grid.getChildren();
-        for (int i = 0 ; i < gridChildren.size; i++) {
-            if (gridChildren.get(i) instanceof Cell
-                    && gridChildren.get(i).getName().equals(cell.getName())) {
-                gridChildren.set(i, newCell);
-                break;
-            }
-        }
+        destroyExistingRoom(cell);
     }
 
-    private void destroyBuildingRoom(Cell cell) {
-        CellEntity cellEntity = CellDao.getInstance().queryForId(UUID.fromString(cell.getName()));
+    private void destroyExistingRoom(Cell cell) {
+        CellEntity cellEntity = cellDao.queryForId(UUID.fromString(cell.getName()));
         cellEntity.setRoomEntity(null);
         cellEntity.setItems(null);
-        CellDao.getInstance().update(cellEntity);
-        Cell newCell = new Cell(cellEntity.getId().toString(),
-                new ChooseRoomCommand(cellEntity.getId().toString()), cellEntity.getX() * CELL_SIZE,
-                cellEntity.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, null, null);
-        Grid grid = (Grid) UiActorService.getInstance().getActorById(RuntimeCacheService.getInstance().getValue(Cache.CURRENT_LEVEL_ID));
+        cellDao.update(cellEntity);
+        Cell newCell = gameActorFactory.createCell(cellEntity);
+        Grid grid = (Grid) gameActorSearchService.getActorById(gameCache.getValue(GameCache.CURRENT_LEVEL_ID));
         Array<Actor> gridChildren = grid.getChildren();
         for (int i = 0 ; i < gridChildren.size; i++) {
             if (gridChildren.get(i) instanceof Cell
-                    && gridChildren.get(i).getName().equals(cell.getName())) {
+                    && gridChildren.get(i).getName().equals(cellEntity.getId().toString())) {
                 gridChildren.set(i, newCell);
                 break;
             }

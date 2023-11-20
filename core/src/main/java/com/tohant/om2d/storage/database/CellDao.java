@@ -2,30 +2,19 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.tohant.om2d.di.annotation.Dao;
 import com.tohant.om2d.model.entity.CellEntity;
+import com.tohant.om2d.model.entity.LevelEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class CellDao extends BaseDaoImpl<CellEntity, UUID> {
 
-    private static CellDao instance;
-
-    public CellDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), CellEntity.class);
-    }
-
-    public static CellDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new CellDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE CELL DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public CellDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), CellEntity.class);
     }
 
     @Override

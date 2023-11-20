@@ -16,26 +16,37 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.tohant.om2d.actor.ToggleActor;
 import com.tohant.om2d.actor.ui.label.GameLabel;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
-import com.tohant.om2d.command.ui.ForceToggleCommand;
+import com.tohant.om2d.di.annotation.Component;
 import com.tohant.om2d.exception.GameException;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.service.MenuUiActorService;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.service.GameActorSearchService;
+import com.tohant.om2d.service.GameMenuActorFactory;
+import com.tohant.om2d.storage.cache.GameCache;
 import com.tohant.om2d.storage.database.ProgressDao;
 import com.tohant.om2d.util.AssetsUtil;
+import lombok.RequiredArgsConstructor;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 import static com.tohant.om2d.actor.constant.Constant.DEFAULT_PAD;
-import static com.tohant.om2d.service.MenuUiActorService.MenuUiComponentConstant.MENU_LOAD_GAME_MODAL;
+import static com.tohant.om2d.service.GameMenuActorFactory.MenuUiComponentConstant.*;
+import static com.tohant.om2d.storage.cache.GameCache.GAME_EXCEPTION;
+import static com.tohant.om2d.storage.cache.GameCache.READY_TO_START;
 
+@Component
+@RequiredArgsConstructor
 public class MenuScreen implements Screen {
 
     private static final int MENU_BUTTON_WIDTH = (int) (Gdx.graphics.getWidth() / 3f);
     private static final int MENU_BUTTON_HEIGHT = (int) (Gdx.graphics.getHeight() / 3f);
 
+    private final GameCache cache;
+    private final GameScreen gameScreen;
+    private final GameMenuActorFactory gameMenuActorService;
+    private final ProgressDao progressDao;
+    
     private Game game;
     private TextButton start;
     private TextButton load;
@@ -50,10 +61,6 @@ public class MenuScreen implements Screen {
     private Table menuButtons;
     private Texture menuButtonsBg;
 
-    public MenuScreen(Game game) {
-        this.game = game;
-    }
-
     @Override
     public void show() {
         skin = AssetsUtil.getDefaultSkin();
@@ -65,17 +72,17 @@ public class MenuScreen implements Screen {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                AssetService.getInstance().getChooseSound().play();
+                AssetService.CHOOSE_SOUND.play();
             }
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 super.touchDown(event, x, y, pointer, button);
-                if (ProgressDao.getInstance().countOf() >= 3) {
-                    Array<GameException> exceptions = (Array<GameException>) RuntimeCacheService.getInstance().getObject(Cache.GAME_EXCEPTION);
+                if (progressDao.countOf() >= 3) {
+                    Array<GameException> exceptions = (Array<GameException>) cache.getObject(GAME_EXCEPTION);
                     exceptions.add(new GameException(GameException.Code.E400));
                 } else {
-                    new ForceToggleCommand(MenuUiActorService.MenuUiComponentConstant.MENU_NEW_COMPANY_MODAL.name(), true).execute();
+                    ((ToggleActor) GameActorSearchService.getActorById(MENU_NEW_COMPANY_MODAL.name())).forceToggle(true);
                 }
                 return false;
             }
@@ -90,7 +97,7 @@ public class MenuScreen implements Screen {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                AssetService.getInstance().getChooseSound().play();
+                AssetService.CHOOSE_SOUND.play();
             }
 
             @Override
@@ -114,7 +121,7 @@ public class MenuScreen implements Screen {
         menuButtons.add(title2).padTop(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD * 2f).left();
         menuButtons.row();
         table.add(menuButtons);
-        if (ProgressDao.getInstance().countOf() > 0) {
+        if (progressDao.countOf() > 0) {
             menuButtons.add(start).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD).grow().center().colspan(2);
             menuButtons.row();
             menuButtons.add(load).padLeft(DEFAULT_PAD * 2f).padRight(DEFAULT_PAD * 2f).padBottom(DEFAULT_PAD * 2f).grow().center().colspan(2);
@@ -123,13 +130,13 @@ public class MenuScreen implements Screen {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     super.enter(event, x, y, pointer, fromActor);
-                    AssetService.getInstance().getChooseSound().play();
+                    AssetService.CHOOSE_SOUND.play();
                 }
 
                 @Override
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     super.touchDown(event, x, y, pointer, button);
-                    new ForceToggleCommand(MENU_LOAD_GAME_MODAL.name(), true).execute();
+                    ((ToggleActor) GameActorSearchService.getActorById(MENU_LOAD_GAME_MODAL.name())).forceToggle(true);
                     return false;
                 }
             });
@@ -143,9 +150,9 @@ public class MenuScreen implements Screen {
         background = new Texture("bg.png");
         stage.addActor(table);
         stage.addActor(exit);
-        MenuUiActorService.getInstance().getUiActors().iterator().forEach(stage::addActor);
+        gameMenuActorService.getGameActors().iterator().forEach(stage::addActor);
         Gdx.input.setInputProcessor(stage);
-        AssetService.getInstance().getMenuScreenBgMusic().play();
+        AssetService.MENU_SCREEN_BG_MUSIC.play();
     }
 
     @Override
@@ -209,13 +216,12 @@ public class MenuScreen implements Screen {
     }
 
     private void updateNotificationModal(GameException e) {
-        MenuUiActorService menuUiActorService = MenuUiActorService.getInstance();
-        DefaultModal notification = (DefaultModal) menuUiActorService.getActorById(MenuUiActorService.MenuUiComponentConstant.MENU_NOTIFICATION_MODAL.name());
+        DefaultModal notification = (DefaultModal) GameActorSearchService.getActorById(GameMenuActorFactory.MenuUiComponentConstant.MENU_NOTIFICATION_MODAL.name());
         notification.getTitleLabel().setText(e.getCode().getType().getTitle());
         notification.getActions().forEach(Action::reset);
         notification.addAction(sequence(alpha(1.0f), delay(4f), fadeOut(3f)));
         notification.setVisible(true);
-        GameLabel label = (GameLabel) menuUiActorService.getActorById(MenuUiActorService.MenuUiComponentConstant.MENU_NOTIFICATION_INFO_LABEL.name());
+        GameLabel label = (GameLabel) GameActorSearchService.getActorById(MENU_NOTIFICATION_INFO_LABEL.name());
         String message = e.getCode().getMessage();
         float maxWidth = Gdx.graphics.getWidth() / 2f;
         float maxHeight = Gdx.graphics.getHeight() / 4f;
@@ -232,11 +238,11 @@ public class MenuScreen implements Screen {
         notification.setPosition(Gdx.graphics.getWidth() / 2f
                 - notification.getWidth() / 2f, Gdx.graphics.getHeight() - notification.getHeight() - DEFAULT_PAD);
         notification.setWidth(notification.getPrefWidth());
-        AssetService.getInstance().getNotificationSound().play();
+        AssetService.NOTIFICATION_SOUND.play();
     }
 
     private void checkForExceptionsAndThrowIfExist(int i) {
-        Array<GameException> exceptions = (Array<GameException>) RuntimeCacheService.getInstance().getObject(Cache.GAME_EXCEPTION);
+        Array<GameException> exceptions = (Array<GameException>) cache.getObject(GAME_EXCEPTION);
         if (exceptions.size > 0 && i < exceptions.size) {
             checkForExceptionsAndThrowIfExist(i + 1);
             GameException e = exceptions.get(i);
@@ -246,12 +252,16 @@ public class MenuScreen implements Screen {
     }
 
     private void checkIsReadyToStart() {
-        RuntimeCacheService runtimeCache = RuntimeCacheService.getInstance();
-        if (runtimeCache.getBoolean(Cache.READY_TO_START)) {
-            runtimeCache.setBoolean(Cache.READY_TO_START, false);
-            AssetService.getInstance().getMenuScreenBgMusic().stop();
-            game.setScreen(new GameScreen(game));
+        if (cache.getBoolean(READY_TO_START)) {
+            cache.setBoolean(READY_TO_START, false);
+            AssetService.MENU_SCREEN_BG_MUSIC.stop();
+            gameScreen.setGame(game);
+            game.setScreen(gameScreen);
         }
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 
 }

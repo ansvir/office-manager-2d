@@ -1,18 +1,20 @@
 package com.tohant.om2d.model.task;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 import java.util.Objects;
 
+@Getter
+@Setter
+@AllArgsConstructor
 public class TimeLineDate implements Comparable<TimeLineDate> {
 
     private long days;
     private long month;
     private long years;
-
-    public TimeLineDate(long days, long month, long years) {
-        this.days = days;
-        this.month = month;
-        this.years = years;
-    }
 
     public TimeLineDate(TimeLineDate date) {
         this.days = date.getDays();
@@ -25,30 +27,6 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         this.days = Long.parseLong(parts[0]);
         this.month = Long.parseLong(parts[1]);
         this.years = Long.parseLong(parts[2]);
-    }
-
-    public long getDays() {
-        return days;
-    }
-
-    public void setDays(long days) {
-        this.days = days;
-    }
-
-    public long getMonth() {
-        return month;
-    }
-
-    public void setMonth(long month) {
-        this.month = month;
-    }
-
-    public long getYears() {
-        return years;
-    }
-
-    public void setYears(long years) {
-        this.years = years;
     }
 
     @Override
@@ -104,6 +82,8 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         return new TimeLineDate(days, months, years);
     }
 
+    @Getter
+    @RequiredArgsConstructor
     public enum Frequency {
 
         NEVER("never"),
@@ -114,14 +94,6 @@ public class TimeLineDate implements Comparable<TimeLineDate> {
         ONE_YEAR("1year");
 
         private final String value;
-
-        Frequency(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
 
     }
 

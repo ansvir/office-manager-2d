@@ -2,30 +2,20 @@ package com.tohant.om2d.storage.database;
 
 import com.badlogic.gdx.Gdx;
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.tohant.om2d.di.annotation.Dao;
+import com.tohant.om2d.model.entity.LevelEntity;
+import com.tohant.om2d.model.entity.OfficeEntity;
 import com.tohant.om2d.model.entity.ResidentEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+@Dao
 public class ResidentDao extends BaseDaoImpl<ResidentEntity, UUID> {
 
-    private static ResidentDao instance;
-
-    public ResidentDao() throws SQLException {
-        super(SQLiteDatabaseHelper.getInstance().getConnectionSource(), ResidentEntity.class);
-    }
-
-    public static ResidentDao getInstance() {
-        if (instance == null) {
-            try {
-                instance = new ResidentDao();
-            } catch (SQLException e) {
-                Gdx.app.error("DAO INSTANTIATION EXCEPTION", "CANNOT INSTANTIATE RESIDENT DAO, CAUSE: "
-                        + e.getLocalizedMessage());
-            }
-        }
-        return instance;
+    public ResidentDao(SQLiteDatabaseHelper sqLiteDatabaseHelper) throws SQLException {
+        super(sqLiteDatabaseHelper.getConnectionSource(), ResidentEntity.class);
     }
 
     @Override

@@ -2,35 +2,31 @@ package com.tohant.om2d;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.async.AsyncExecutor;
-import com.badlogic.gdx.utils.async.AsyncResult;
 
+import com.tohant.om2d.di.DIContainer;
 import com.tohant.om2d.screen.MenuScreen;
 import com.tohant.om2d.service.AssetService;
-import com.tohant.om2d.storage.cache.CachedEventListener;
+import lombok.SneakyThrows;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class OfficeManager2D extends Game {
 
-	private AsyncExecutor executor;
-	private AsyncResult<Boolean> result;
-	private AssetService assetService;
+    private MenuScreen startScreen;
 
-	@Override
-	public void create () {
-		executor = new AsyncExecutor(1);
-		result = executor.submit(CachedEventListener.getInstance());
-		assetService = AssetService.getInstance();
-		Gdx.graphics.setCursor(assetService.getDefaultCursor());
-		setScreen(new MenuScreen(this));
-	}
+    @SneakyThrows
+    @Override
+    public void create() {
+        Gdx.graphics.setCursor(AssetService.DEFAULT_CURSOR);
+        initBeanContainer();
+        setScreen(startScreen);
+    }
 
-	@Override
-	public void dispose() {
-		CachedEventListener.getInstance().stop();
-		if (result.get()) {
-			System.out.println("[LOG] EVENT LISTENER SUCCESSFULLY STOPPED");
-		}
-		executor.dispose();
-	}
+    private void initBeanContainer() throws IOException, InvocationTargetException, IllegalAccessException {
+        DIContainer diContainer = new DIContainer(getClass());
+        startScreen = diContainer.resolve(MenuScreen.class);
+        startScreen.setGame(this);
+    }
 
 }

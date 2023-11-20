@@ -6,31 +6,39 @@ import com.tohant.om2d.actor.Cell;
 import com.tohant.om2d.actor.room.OfficeRoom;
 import com.tohant.om2d.actor.room.Room;
 import com.tohant.om2d.actor.ui.modal.DefaultModal;
+import com.tohant.om2d.di.annotation.Component;
+import com.tohant.om2d.di.annotation.PostConstruct;
 import com.tohant.om2d.model.room.RoomInfo;
 import com.tohant.om2d.model.task.TimeLineTask;
-import com.tohant.om2d.service.RuntimeCacheService;
-import com.tohant.om2d.service.ServiceUtil;
-import com.tohant.om2d.service.UiActorService;
-import com.tohant.om2d.storage.cache.Cache;
+import com.tohant.om2d.service.CommonService;
+import com.tohant.om2d.service.GameActorFactory;
+import com.tohant.om2d.service.GameActorSearchService;
+import com.tohant.om2d.storage.cache.GameCache;
 import com.tohant.om2d.command.Command;
 import com.tohant.om2d.model.task.RoomBuildingModel;
+import lombok.RequiredArgsConstructor;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+@Component
+@RequiredArgsConstructor
 public class UpdateRoomInfoCommand implements Command {
 
-    private final float deltaTimestamp;
+    private final GameCache gameCache;
+    private final GameActorFactory gameActorService;
+    private final CommonService commonService;
 
-    public UpdateRoomInfoCommand(float deltaTimestamp) {
-        this.deltaTimestamp = deltaTimestamp;
+    private float deltaTimestamp;
+
+    @PostConstruct
+    public void init() {
+        this.deltaTimestamp = gameCache.getFloat(GameCache.CURRENT_DELTA_TIME);
     }
 
     @Override
     public void execute() {
-        UiActorService uiActorService = UiActorService.getInstance();
-        RuntimeCacheService cacheService = RuntimeCacheService.getInstance();
-        Array<RoomBuildingModel> tasks = (Array<RoomBuildingModel>) cacheService.getObject(Cache.BUILD_TASKS);
-        Cell currentCell = (Cell) uiActorService.getActorById(RuntimeCacheService.getInstance().getValue(Cache.CURRENT_CELL));
+        Array<RoomBuildingModel> tasks = (Array<RoomBuildingModel>) gameCache.getObject(GameCache.BUILD_TASKS);
+        Cell currentCell = (Cell) GameActorSearchService.getActorById(gameCache.getValue(GameCache.CURRENT_CELL));
         if (currentCell != null) {
             AtomicReference<RoomBuildingModel> buildingModel = new AtomicReference<>();
             String currentId = currentCell.getName();
@@ -39,8 +47,8 @@ public class UpdateRoomInfoCommand implements Command {
                     buildingModel.set(t);
                 }
             });
-            DefaultModal roomInfoModal = (DefaultModal) uiActorService.getActorById(UiActorService.UiComponentConstant.ROOM_INFO_MODAL.name());
-            Room room = ServiceUtil.getCellRoom(currentCell);
+            DefaultModal roomInfoModal = (DefaultModal) GameActorSearchService.getActorById(GameActorFactory.UiComponentConstant.ROOM_INFO_MODAL.name());
+            Room room = commonService.getCellRoom(currentCell);
             String title;
             String text;
             if (room != null) {
@@ -75,7 +83,7 @@ public class UpdateRoomInfoCommand implements Command {
                     }
                 }
                 roomInfoModal.getTitleLabel().setText(title);
-                roomInfoModal.updateContentText(UiActorService.UiComponentConstant.ROOM_INFO_LABEL.name(), text);
+                roomInfoModal.updateContentText(GameActorFactory.UiComponentConstant.ROOM_INFO_LABEL.name(), text);
             }
         }
     }
